@@ -1,0 +1,26 @@
+{
+  "api": {
+    "host": "http://trimet.dev.conveyal.com",
+    "path": "/otp/routers/default",
+    "port": 8001
+  },
+  "map": {
+    "initLat": 45.52,
+    "initLon": -122.682
+  },
+  "geocoderSettings": {
+    "boundary": {
+      "circle": {
+        "centerPoint": {
+          "lat": 45.52,
+          "lon": -122.682
+        },
+        "radius": 100
+      }
+    },
+    "apiKey": "MAPZEN_KEY"
+  },
+  "modes": [
+    "TRANSIT,WALK"
+  ]
+}
