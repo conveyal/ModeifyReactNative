@@ -14,9 +14,6 @@
 .*/Libraries/react-native/React.js
 .*/Libraries/react-native/ReactNative.js
 
-; user-added modules
-.*/node_modules/reqwest
-
 [include]
 
 [libs]
