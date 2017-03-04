@@ -2948,9 +2948,9 @@ react-deep-force-update@^1.0.0:
   version "3.0.0"
   resolved "https://github.com/evansiroky/react-native-autocomplete-input.git#9ab32df311d4d7f657b04a9e63c896945d2dfe74"
 
-react-native-maps@^0.12.4:
-  version "0.12.4"
-  resolved "https://registry.yarnpkg.com/react-native-maps/-/react-native-maps-0.12.4.tgz#2bc115d39cad542d66c241bc0cba4dddd87e44f7"
+"react-native-maps@https://github.com/airbnb/react-native-maps.git":
+  version "0.13.0"
+  resolved "https://github.com/airbnb/react-native-maps.git#1efb8efad50c2ed37a8c091cf7b28d8744eec0f3"
 
 react-native@0.41.2:
   version "0.41.2"
