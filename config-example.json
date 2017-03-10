@@ -10,12 +10,11 @@
   },
   "geocoderSettings": {
     "boundary": {
-      "circle": {
-        "centerPoint": {
-          "lat": 45.52,
-          "lon": -122.682
-        },
-        "radius": 100
+      "rect": {
+        "minLon": -78.4039,
+        "minLat": 38.0784,
+        "maxLon": -76.1902,
+        "maxLat": 39.6987
       }
     },
     "apiKey": "MAPZEN_KEY"
