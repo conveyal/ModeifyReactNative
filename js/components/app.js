@@ -4,12 +4,10 @@ import React, { Component } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 
 import LocationSelection from '../containers/location-selection'
-
+import Map from '../containers/map'
 
 export default class App extends Component {
-
   render () {
-    console.log(this.props)
     return (
       <View style={styles.app}>
         <View style={styles.nav}>
@@ -22,6 +20,7 @@ export default class App extends Component {
         {/***************************************************
           Map
           ***************************************************/}
+        <Map />
       </View>
     )
   }

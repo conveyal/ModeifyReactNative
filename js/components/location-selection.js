@@ -1,5 +1,6 @@
 // @flow
 
+import lonlat from '@conveyal/lonlat'
 import {autocomplete} from 'isomorphic-mapzen-search'
 import throttle from 'lodash.throttle'
 import React, {Component} from 'react'
@@ -82,6 +83,7 @@ export default class App extends Component {
       currentFocus: 'none',
       geocodeResults: this.state.geocodeResults.cloneWithRows([])
     })
+    this.props.blurLocationSelection()
   }
 
   _onFromFocus = () => {
@@ -89,6 +91,7 @@ export default class App extends Component {
       currentFocus: 'from',
       geocodeResults: this.state.geocodeResults.cloneWithRows([])
     })
+    this.props.focusToLocationSelection()
   }
 
   _onFromTextChange = (text) => {
@@ -97,11 +100,19 @@ export default class App extends Component {
   }
 
   _onGeocodeResultSelect = (value: GeocodeResult) => {
-    const {currentFocus} = this.state
+    const {currentFocus, geocodeResults} = this.state
     this.setState({
       currentFocus: 'none',
       [`${currentFocus}Value`]: value.properties.label,
-      geocodeResults: this.state.geocodeResults.cloneWithRows([])
+      geocodeResults: geocodeResults.cloneWithRows([])
+    })
+    this.props.blurLocationSelection()
+    this.props.setLocation({
+      type: currentFocus,
+      location: {
+        ...lonlat(value.geometry.coordinates),
+        name: value.properties.label
+      }
     })
   }
 
@@ -110,6 +121,7 @@ export default class App extends Component {
       currentFocus: 'to',
       geocodeResults: this.state.geocodeResults.cloneWithRows([])
     })
+    this.props.focusToLocationSelection()
   }
 
   _onToTextChange = (text) => {

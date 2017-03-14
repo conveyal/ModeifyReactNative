@@ -8,13 +8,8 @@ import {Provider} from 'react-redux'
 import App from './containers/app.js'
 import reducers from './reducers'
 
-const config = require('../config.json')
-
 //set up the Redux store
-const store = createStore({
-  otp: createOtpReducer(config),
-  ...reducers
-})
+const store = createStore(reducers)
 
 const Main = () => {
   return (

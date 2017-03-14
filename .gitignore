@@ -55,3 +55,7 @@ fastlane/screenshots
 
 # project secrets
 config.json
+
+# testing
+tmp
+coverage
