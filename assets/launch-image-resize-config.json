@@ -1,0 +1,52 @@
+{
+  "iOS": {
+    "images": [{
+      "filename": "-320x480.png",
+      "idiom": "iphone",
+      "size": "320x480",
+      "scale": "1x"
+    },
+    {
+      "filename": "-640x960.png",
+      "idiom": "iphone",
+      "size": "640x960",
+      "scale": "1x"
+    },
+    {
+      "filename": "-640x1136.png",
+      "idiom": "iphone",
+      "size": "640x1136",
+      "scale": "1x"
+    },
+    {
+      "filename": "-1242x2208.png",
+      "idiom": "iphone",
+      "size": "1242x2208",
+      "scale": "1x"
+    },
+    {
+      "filename": "-750x1334.png",
+      "idiom": "iphone",
+      "size": "750x1334",
+      "scale": "1x"
+    },
+    {
+      "filename": "-2208x1242.png",
+      "idiom": "iphone",
+      "size": "2208x1242",
+      "scale": "1x"
+    },
+    {
+      "filename": "-640x960.png",
+      "idiom": "iphone",
+      "size": "640x960",
+      "scale": "1x"
+    },
+    {
+      "filename": "-640x1136.png",
+      "idiom": "iphone",
+      "size": "640x1136",
+      "scale": "1x"
+    }]
+  }
+}

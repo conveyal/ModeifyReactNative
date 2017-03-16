@@ -1,0 +1,70 @@
+{
+  "iOS": {
+    "images": [{
+      "filename": "-20x20-2x.png",
+      "idiom": "iphone",
+      "size": "20x20",
+      "scale": "2x"
+    },
+    {
+      "filename": "-20x20-3x.png",
+      "idiom": "iphone",
+      "size": "20x20",
+      "scale": "3x"
+    },
+    {
+      "filename": "-29x29-1x.png",
+      "idiom": "iphone",
+      "size": "29x29",
+      "scale": "1x"
+    },
+    {
+      "filename": "-29x29-2x.png",
+      "idiom": "iphone",
+      "size": "29x29",
+      "scale": "2x"
+    },
+    {
+      "filename": "-29x29-3x.png",
+      "idiom": "iphone",
+      "size": "29x29",
+      "scale": "3x"
+    },
+    {
+      "filename": "-40x40-2x.png",
+      "idiom": "iphone",
+      "size": "40x40",
+      "scale": "2x"
+    },
+    {
+      "filename": "-40x40-3x.png",
+      "idiom": "iphone",
+      "size": "40x40",
+      "scale": "3x"
+    },
+    {
+      "filename": "-57x57-1x.png",
+      "idiom": "iphone",
+      "size": "57x57",
+      "scale": "1x"
+    },
+    {
+      "filename": "-57x57-2x.png",
+      "idiom": "iphone",
+      "size": "57x57",
+      "scale": "2x"
+    },
+    {
+      "filename": "-60x60-2x.png",
+      "idiom": "iphone",
+      "size": "60x60",
+      "scale": "2x"
+    },
+    {
+      "filename": "-60x60-3x.png",
+      "idiom": "iphone",
+      "size": "60x60",
+      "scale": "3x"
+    }]
+  }
+}
