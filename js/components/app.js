@@ -28,6 +28,7 @@ export default class App extends Component {
 
 const styles = StyleSheet.create({
   app: {
+    backgroundColor: '#fff',
     flex: 1
   },
   nav: {
