@@ -5,7 +5,7 @@ import createOtpReducer from 'otp-react-redux/lib/reducers/create-otp-reducer'
 import qs from 'qs'
 import {handleActions} from 'redux-actions'
 
-import * as locationSelection from './location-selection'
+import * as app from './app'
 import * as user from './user'
 
 const otpConfig = require('../../config.json')
@@ -28,7 +28,7 @@ otpConfig.customOtpQueryBuilder = (api, query) => {
 }
 
 export default {
-  locationSelection: handleActions(locationSelection.reducers, locationSelection.initialState),
+  app: handleActions(app.reducers, app.initialState),
   otp: createOtpReducer(otpConfig),
   user: handleActions(user.reducers, user.initialState)
 }

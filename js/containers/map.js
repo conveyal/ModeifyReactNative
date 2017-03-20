@@ -9,7 +9,7 @@ const mapStateToProps = (state, ownProps) => {
   return {
     activeSearch,
     fromLocation: currentQuery.from,
-    locationFieldHasFocus: state.locationSelection.locationFieldHasFocus,
+    locationFieldHasFocus: state.app.locationFieldHasFocus,
     searches,
     toLocation: currentQuery.to
   }

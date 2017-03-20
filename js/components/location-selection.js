@@ -31,7 +31,7 @@ type State = {
   toValue: string;
 }
 
-export default class App extends Component {
+export default class LocationSelection extends Component {
   state: State
 
   constructor(props: Props) {

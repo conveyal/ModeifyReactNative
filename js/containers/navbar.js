@@ -1,7 +1,8 @@
 // @flow
+
 import { connect } from 'react-redux'
 
-import App from '../components/app'
+import Navbar from '../components/navbar'
 
 const mapStateToProps = (state, ownProps) => {
   return {
@@ -13,4 +14,4 @@ const mapDispatchToProps = (dispatch, ownProps) => {
   return {}
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(App)
+export default connect(mapStateToProps, mapDispatchToProps)(Navbar)

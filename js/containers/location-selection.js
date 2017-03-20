@@ -2,7 +2,7 @@
 import {clearLocation, setLocation} from 'otp-react-redux/lib/actions/map'
 import {connect} from 'react-redux'
 
-import {blur, focus} from '../actions/location-selection'
+import {blurLocationField, focusLocationField} from '../actions/app'
 import LocationSelection from '../components/location-selection'
 
 const mapStateToProps = (state, ownProps) => {
@@ -14,9 +14,9 @@ const mapStateToProps = (state, ownProps) => {
 const mapDispatchToProps = (dispatch, ownProps) => {
   const type = ownProps.type
   return {
-    blurLocationSelection: () => { dispatch(blur()) },
+    blurLocationSelection: () => { dispatch(blurLocationField()) },
     clearLocation: (opts) => { dispatch(clearLocation(opts)) },
-    focusToLocationSelection: () => { dispatch(focus()) },
+    focusToLocationSelection: () => { dispatch(focusLocationField()) },
     setLocation: (opts) => { dispatch(setLocation(opts)) }
   }
 }

@@ -11,7 +11,7 @@ type Props = {
   activeSearch: number
 }
 
-export default class App extends Component {
+export default class Map extends Component {
 
   constructor(props: Props) {
     super(props)

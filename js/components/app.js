@@ -5,14 +5,14 @@ import { StyleSheet, Text, View } from 'react-native'
 
 import LocationSelection from '../containers/location-selection'
 import Map from '../containers/map'
+import Navbar from '../containers/navbar'
 
 export default class App extends Component {
   render () {
+    const {appState} = this.props
     return (
       <View style={styles.app}>
-        <View style={styles.nav}>
-          <Text style={styles.title}>CarFreeAtoZ</Text>
-        </View>
+        <Navbar />
         {/***************************************************
           Location Selection
           ***************************************************/}
@@ -30,12 +30,5 @@ const styles = StyleSheet.create({
   app: {
     backgroundColor: '#fff',
     flex: 1
-  },
-  nav: {
-    borderBottomWidth: 1
-  },
-  title: {
-    fontSize: 20,
-    textAlign: 'center'
   }
 })
