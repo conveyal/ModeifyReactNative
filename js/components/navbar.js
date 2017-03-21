@@ -1,56 +1,87 @@
 // @flow
 
 import React, { Component } from 'react'
-import { Image, StyleSheet, Text, View } from 'react-native'
+import { Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 
 const titleTextLookup = {
-
+  'location-selection': 'PLAN YOUR TRIP DETAILS'
 }
 
 export default class Navbar extends Component {
+  _onBack = () => {
+    this.props.back(this.props.appState)
+  }
+
+  _onClose = () => {
+    this.props.close()
+  }
+
   render () {
     const {appState} = this.props
     return (
-      <View style={styles.nav}>
-        {appState !== 'home' &&
-          <Image
-            source={require('../../assets/back.png')}
-            style={styles.back}
-            />
+      <View>
+        {Platform.OS === 'ios' &&
+          <View style={styles.statusBarSpacer} />
         }
-        {appState === 'home'
-          ? <Image
-              source={require('../../assets/nav-logo.png')}
-              style={styles.homeLogo}
+        <View style={styles.nav}>
+          {appState !== 'home' &&
+            <TouchableOpacity
+              onPress={this._onBack}
+              style={styles.backContainer}
+              >
+              <Image
+                source={require('../../assets/back.png')}
+                style={styles.backImage}
+                />
+            </TouchableOpacity>
+          }
+          {appState === 'home'
+            ? <Image
+                source={require('../../assets/nav-logo.png')}
+                style={styles.homeLogo}
+                />
+            : <Text style={styles.title}>{titleTextLookup[appState]}</Text>
+          }
+          {appState !== 'home' &&
+          <TouchableOpacity
+            onPress={this._onClose}
+            style={styles.closeContainer}
+            >
+            <Image
+              source={require('../../assets/close.png')}
+              style={styles.closeImage}
               />
-          : <Text style={styles.title}>titleTextLookup[appState]</Text>
-        }
-        {appState !== 'home' &&
-          <Image
-            source={require('../../assets/close.png')}
-            style={styles.close}
-            />
-        }
+          </TouchableOpacity>
+          }
+        </View>
       </View>
     )
   }
 }
 
 const styles = StyleSheet.create({
-  back: {
+  backContainer: {
     position: 'absolute',
     height: 34,
     left: 10,
-    resizeMode: 'contain',
     top: 10,
     width: 34
   },
-  close: {
+  backImage: {
+    height: 34,
+    resizeMode: 'contain',
+    width: 34
+  },
+  closeContainer: {
     position: 'absolute',
     height: 34,
     right: 10,
-    resizeMode: 'contain',
     top: 10,
+    width: 34
+  },
+  closeImage: {
+    height: 34,
+    resizeMode: 'contain',
     width: 34
   },
   homeLogo: {
@@ -67,7 +98,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     height: 50
   },
+  statusBarSpacer: {
+    backgroundColor: '#5a7491',
+    height: 20
+  },
   title: {
-    fontSize: 20
+    color: '#fff',
+    fontSize: 17,
+    marginTop: 15
   }
 })

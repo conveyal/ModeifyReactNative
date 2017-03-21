@@ -2,6 +2,7 @@
 
 import { connect } from 'react-redux'
 
+import {back, close} from '../actions/app'
 import Navbar from '../components/navbar'
 
 const mapStateToProps = (state, ownProps) => {
@@ -11,7 +12,10 @@ const mapStateToProps = (state, ownProps) => {
 }
 
 const mapDispatchToProps = (dispatch, ownProps) => {
-  return {}
+  return {
+    back: (opts) => { dispatch(back(opts)) },
+    close: () => { dispatch(close()) }
+  }
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(Navbar)

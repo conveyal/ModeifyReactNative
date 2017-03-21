@@ -36,12 +36,24 @@ export default class LocationSelection extends Component {
 
   constructor(props: Props) {
     super(props)
+  }
+
+  componentWillMount () {
+    const {currentQuery} = this.props
+
+    // check if from location needs to be geocoded
+    if (currentQuery.from &&
+      currentQuery.from.currentLocation &&
+      !currentQuery.from.lat &&
+      currentQuery.from.lat !== 0) {
+      this._geolocateLocation('from')
+    }
 
     this.state = {
       currentFocus: 'none',
-      fromValue: '',
+      fromValue: parseLocation(currentQuery.from),
       geocodeResults: new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2}),
-      toValue: ''
+      toValue: parseLocation(currentQuery.to)
     }
   }
 
@@ -77,6 +89,34 @@ export default class LocationSelection extends Component {
         this.setState({ geocodeResults: geocodeResults.cloneWithRows([]) })
       })
   }, 500)
+
+  _geolocateLocation = (locationType) => {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        this.props.setLocation({
+          type: locationType,
+          location: {
+            currentLocation: true,
+            name: 'Current Location',
+            ...lonlat(position.coords)
+          }
+        })
+      },
+      (error) => alert(`Your location could not be determined.
+        Please search for an address.`),
+      {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000}
+    )
+  }
+
+  _getInputStyles (type) {
+    if (isCurrentLocation(this.props.currentQuery, type)) {
+      return {
+        textInputInline: styles.currentLocationText
+      }
+    } else {
+      return {}
+    }
+  }
 
   _onBlur = () => {
     this.setState({
@@ -130,34 +170,40 @@ export default class LocationSelection extends Component {
   }
 
   render () {
-    const {placeholder, type} = this.props
+    const {appState} = this.props
     const {currentFocus, fromValue, geocodeResults, toValue} = this.state
 
     return (
       <View style={{flex: 1}}>
-        <View style={styles.locationsForm}>
+        <View style={styles[`locationsForm-${appState}`]}>
           <GiftedForm
             formName='tripPlanningForm'
             >
-            <GiftedForm.SeparatorWidget />
+            {appState !== 'home' &&
+              <GiftedForm.TextInputWidget
+                clearButtonMode='while-editing'
+                image={require('../../assets/search.png')}
+                name='from-location'
+                onBlur={this._onBlur}
+                onChangeText={this._onFromTextChange}
+                onTextInputFocus={this._onFromFocus}
+                placeholder='Enter starting location'
+                underlined
+                value={fromValue}
+                widgetStyles={this._getInputStyles('from')}
+                />
+            }
             <GiftedForm.TextInputWidget
               clearButtonMode='while-editing'
-              name='from-location'
-              onBlur={this._onBlur}
-              onChangeText={this._onFromTextChange}
-              onTextInputFocus={this._onFromFocus}
-              placeholder='Enter starting location'
-              value={fromValue}
-              />
-            <GiftedForm.SeparatorWidget />
-            <GiftedForm.TextInputWidget
-              clearButtonMode='while-editing'
+              image={require('../../assets/search.png')}
               name='to-location'
               onBlur={this._onBlur}
               onChangeText={this._onToTextChange}
               onTextInputFocus={this._onToFocus}
-              placeholder='Enter destination location'
+              placeholder='Where do you want to go?'
+              underlined
               value={toValue}
+              widgetStyles={this._getInputStyles('to')}
               />
           </GiftedForm>
         </View>
@@ -182,7 +228,23 @@ export default class LocationSelection extends Component {
 }
 
 const styles = StyleSheet.create({
-  locationsForm: {
-    height: 120
+  currentLocationText: {
+    color: '#15b3ff',
+    fontWeight: 'bold'
+  },
+  'locationsForm-home': {
+    height: 50
+  },
+  'locationsForm-location-selection': {
+    height: 100
   }
 })
+
+function isCurrentLocation (query, type) {
+  const location = query[type]
+  return location && location.currentLocation
+}
+
+function parseLocation (location) {
+  return location ? location.name : undefined
+}

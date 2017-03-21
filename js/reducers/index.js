@@ -27,8 +27,15 @@ otpConfig.customOtpQueryBuilder = (api, query) => {
   return `${planEndpoint}?${qs.stringify(params)}`
 }
 
+const initialOtpQuery = {
+  from: {
+    name: 'Current Location',
+    currentLocation: true
+  }
+}
+
 export default {
   app: handleActions(app.reducers, app.initialState),
-  otp: createOtpReducer(otpConfig),
+  otp: createOtpReducer(otpConfig, initialOtpQuery),
   user: handleActions(user.reducers, user.initialState)
 }

@@ -101,14 +101,10 @@ const polylineStyles = {
 const styles = StyleSheet.create({
   map: {
     ...StyleSheet.absoluteFillObject,
-    top: 100
   },
   mapContainer: {
     ...StyleSheet.absoluteFillObject,
-    height: 400,
-    justifyContent: 'flex-end',
-    top: 100,
-    alignItems: 'center',
+    top: 120,
   },
   mapContainerWithLocationFocus: {
     top: 300
