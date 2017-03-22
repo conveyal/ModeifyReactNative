@@ -1,10 +1,12 @@
 // @flow
 
 import lonlat from '@conveyal/lonlat'
+import isEqual from 'lodash.isequal'
 import {autocomplete} from 'isomorphic-mapzen-search'
 import throttle from 'lodash.throttle'
 import React, {Component} from 'react'
 import {
+  Image,
   ListView,
   StyleSheet,
   Text,
@@ -23,11 +25,24 @@ type GeocodeQueryCache = {
 
 const geocodeQueries: GeocodeQueryCache = {}
 
-type Props = {}
+type LocationType = {
+  currentLocation?: boolean;
+  lat: number;
+  lon: number;
+  name: string;
+}
+
+type Props = {
+  currentQuery: {
+    from?: LocationType;
+    to?: LocationType;
+  }
+}
 type State = {
   currentFocus: string;
   fromValue: string;
   geocodeResults: ListView.DataSource;
+  noGeocodeResultsFound?: boolean;
   toValue: string;
 }
 
@@ -57,6 +72,24 @@ export default class LocationSelection extends Component {
     }
   }
 
+  componentWillReceiveProps (nextProps: Props) {
+    const updatedState = {}
+    const locationTypes = ['from', 'to']
+    locationTypes.forEach((locationType) => {
+      if (!isEqual(
+        nextProps.currentQuery[locationType],
+        this.props.currentQuery[locationType]
+      )) {
+        updatedState[`${locationType}Value`] = parseLocation(
+          nextProps.currentQuery[locationType]
+        )
+      }
+    })
+    if (Object.keys(updatedState).length > 0) {
+      this.setState(updatedState)
+    }
+  }
+
   _autocompleteText = throttle((text) => {
     if (!text) {
       return
@@ -70,7 +103,8 @@ export default class LocationSelection extends Component {
 
     if (geocodeQueries[text]) {
       return this.setState({
-        geocodeResults: geocodeResults.cloneWithRows(geocodeQueries[text])
+        geocodeResults: geocodeResults.cloneWithRows(geocodeQueries[text]),
+        noGeocodeResultsFound: geocodeQueries[text].length === 0
       })
     }
 
@@ -82,11 +116,15 @@ export default class LocationSelection extends Component {
         // console.log(`successful geocode for ${text}`)
         geocodeQueries[text] = geojson.features
         this.setState({
-          geocodeResults: geocodeResults.cloneWithRows(geojson.features)
+          geocodeResults: geocodeResults.cloneWithRows(geojson.features),
+          noGeocodeResultsFound: geojson.features.length === 0
         })
       })
       .catch((err) => {
-        this.setState({ geocodeResults: geocodeResults.cloneWithRows([]) })
+        this.setState({
+          geocodeResults: geocodeResults.cloneWithRows([]),
+          noGeocodeResultsFound: true
+        })
       })
   }, 500)
 
@@ -111,10 +149,12 @@ export default class LocationSelection extends Component {
   _getInputStyles (type) {
     if (isCurrentLocation(this.props.currentQuery, type)) {
       return {
-        textInputInline: styles.currentLocationText
+        textInputInline: styles.currentLocationTextInput
       }
     } else {
-      return {}
+      return {
+        textInputInline: styles.regularTextInput
+      }
     }
   }
 
@@ -129,8 +169,10 @@ export default class LocationSelection extends Component {
   _onFromFocus = () => {
     this.setState({
       currentFocus: 'from',
-      geocodeResults: this.state.geocodeResults.cloneWithRows([])
+      geocodeResults: this.state.geocodeResults.cloneWithRows([]),
+      noGeocodeResultsFound: false
     })
+    this.props.clearLocation({ type: 'from' })
     this.props.focusToLocationSelection()
   }
 
@@ -141,12 +183,9 @@ export default class LocationSelection extends Component {
 
   _onGeocodeResultSelect = (value: GeocodeResult) => {
     const {currentFocus, geocodeResults} = this.state
-    this.setState({
-      currentFocus: 'none',
+    this._postSelectLocation({
       [`${currentFocus}Value`]: value.properties.label,
-      geocodeResults: geocodeResults.cloneWithRows([])
     })
-    this.props.blurLocationSelection()
     this.props.setLocation({
       type: currentFocus,
       location: {
@@ -159,8 +198,10 @@ export default class LocationSelection extends Component {
   _onToFocus = () => {
     this.setState({
       currentFocus: 'to',
-      geocodeResults: this.state.geocodeResults.cloneWithRows([])
+      geocodeResults: this.state.geocodeResults.cloneWithRows([]),
+      noGeocodeResultsFound: false
     })
+    this.props.clearLocation({ type: 'to' })
     this.props.focusToLocationSelection()
   }
 
@@ -169,9 +210,50 @@ export default class LocationSelection extends Component {
     this._autocompleteText(text)
   }
 
+  _postSelectLocation (nextState: Object) {
+    const {currentFocus, geocodeResults} = this.state
+    nextState.geocodeResults = geocodeResults.cloneWithRows([])
+    const otherField = currentFocus === 'from' ? 'to' : 'from'
+    if (!this.state[`${otherField}Value`]) {
+      // other value hasn't been set yet, focus to it
+      this.refs[`${otherField}Input`].refs.input.focus()
+    } else {
+      // other value set, blur field
+      this.refs[`${currentFocus}Input`].refs.input.blur()
+      this.props.blurLocationSelection()
+      nextState.currentFocus = 'none'
+    }
+    this.setState(nextState)
+  }
+
+  _selectOnMap = () => {
+
+  }
+
+  _setAsCurrentLocation = () => {
+    const {currentFocus} = this.state
+    this._geolocateLocation(currentFocus)
+    this._postSelectLocation({
+      [`${currentFocus}Value`]: 'Current Location'
+    })
+  }
+
   render () {
     const {appState} = this.props
-    const {currentFocus, fromValue, geocodeResults, toValue} = this.state
+    const {currentFocus, fromValue, noGeocodeResultsFound, geocodeResults, toValue} = this.state
+    let currentFocusValue
+    let otherFieldValue
+    switch (currentFocus) {
+      case 'from':
+        currentFocusValue = fromValue
+        otherFieldValue = toValue
+        break
+      case 'to':
+        currentFocusValue = toValue
+        otherFieldValue = fromValue
+        break
+    }
+
 
     return (
       <View style={{flex: 1}}>
@@ -188,6 +270,7 @@ export default class LocationSelection extends Component {
                 onChangeText={this._onFromTextChange}
                 onTextInputFocus={this._onFromFocus}
                 placeholder='Enter starting location'
+                ref='fromInput'
                 underlined
                 value={fromValue}
                 widgetStyles={this._getInputStyles('from')}
@@ -201,6 +284,7 @@ export default class LocationSelection extends Component {
               onChangeText={this._onToTextChange}
               onTextInputFocus={this._onToFocus}
               placeholder='Where do you want to go?'
+              ref='toInput'
               underlined
               value={toValue}
               widgetStyles={this._getInputStyles('to')}
@@ -208,18 +292,63 @@ export default class LocationSelection extends Component {
           </GiftedForm>
         </View>
         {currentFocus !== 'none' &&
-          <View>
-            <Text>{currentFocus}</Text>
-            <ListView
-              dataSource={geocodeResults}
-              renderRow={(geocodeResult: GeocodeResult) => (
-                <TouchableOpacity
-                  onPress={() => this._onGeocodeResultSelect(geocodeResult)}
-                  >
-                  <Text>{geocodeResult.properties.label}</Text>
-                </TouchableOpacity>
-              )}
-            />
+          <View style={styles.resultContainer}>
+            {!currentFocusValue &&
+              otherFieldValue !== 'Current Location' &&
+              <TouchableOpacity
+                onPress={this._setAsCurrentLocation}
+                style={styles.resultSelectionButton}
+                >
+                <Image
+                  source={require('../../assets/crosshair.png')}
+                  style={styles.resultSelectionButtonImage}
+                  />
+                <Text style={styles.resultSelectionButtonText}>
+                  Use Current Location
+                </Text>
+              </TouchableOpacity>
+            }
+            <TouchableOpacity
+              onPress={this._selectOnMap}
+              style={styles.resultSelectionButton}
+              >
+              <Image
+                source={require('../../assets/map.png')}
+                style={styles.resultSelectionButtonImage}
+                />
+              <Text style={styles.resultSelectionButtonText}>
+                Selection Location on Map
+              </Text>
+            </TouchableOpacity>
+            {currentFocusValue !== 'Current Location' &&
+              <View>
+                <View style={styles.resultDividerContainer}>
+                  <Text style={styles.resultDividerText}>Search Results</Text>
+                </View>
+                {(geocodeResults.getRowCount() > 0
+                  ? <ListView
+                      dataSource={geocodeResults}
+                      renderRow={(geocodeResult: GeocodeResult) => (
+                        <TouchableOpacity
+                          onPress={() => this._onGeocodeResultSelect(geocodeResult)}
+                          >
+                          <Text style={styles.geocodeResult}>
+                            {geocodeResult.properties.label}
+                          </Text>
+                        </TouchableOpacity>
+                      )}
+                    />
+                  : <Text>{
+                    (currentFocusValue === undefined
+                      || currentFocusValue.length < 4)
+                      ? 'Type to search for an address'
+                      : (noGeocodeResultsFound
+                        ? `No addresses found for: "{${currentFocusValue}}"`
+                        : 'Searching...')}
+                    </Text>
+                )}
+              </View>
+            }
           </View>
         }
       </View>
@@ -228,15 +357,51 @@ export default class LocationSelection extends Component {
 }
 
 const styles = StyleSheet.create({
-  currentLocationText: {
+  resultSelectionButton: {
+    flexDirection: 'row',
+    height: 30
+  },
+  resultSelectionButtonText: {
+    fontSize: 16,
+    marginTop: 4,
+    marginLeft: 10
+  },
+  resultSelectionButtonImage: {
+    height: 30,
+    resizeMode: 'contain',
+    width: 30
+  },
+  currentLocationTextInput: {
     color: '#15b3ff',
     fontWeight: 'bold'
+  },
+  geocodeResult: {
+    fontSize: 16,
+    marginVertical: 10
   },
   'locationsForm-home': {
     height: 50
   },
   'locationsForm-location-selection': {
     height: 100
+  },
+  regularTextInput: {
+    color: '#000',
+    fontWeight: 'normal'
+  },
+  resultContainer: {
+    flex: 1,
+    flexDirection: 'column',
+    padding: 10
+  },
+  resultDividerContainer: {
+    borderBottomWidth: 1,
+    marginBottom: 10,
+    marginTop: 10
+  },
+  resultDividerText: {
+    fontSize: 18,
+    fontWeight: 'bold'
   }
 })
 
@@ -245,6 +410,6 @@ function isCurrentLocation (query, type) {
   return location && location.currentLocation
 }
 
-function parseLocation (location) {
+function parseLocation (location): any {
   return location ? location.name : undefined
 }

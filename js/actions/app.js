@@ -19,11 +19,10 @@ export function focusToLocationSelection () {
  *
  * Actions depend on what view called back
  */
-export function back (currentAppState) {
+export function back (currentAppState: string) {
   switch (currentAppState) {
     case 'location-selection':
       return close()
-      break
     default:
       break
   }
