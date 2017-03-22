@@ -2,7 +2,7 @@
 
 import lonlat from '@conveyal/lonlat'
 import isEqual from 'lodash.isequal'
-import {autocomplete} from 'isomorphic-mapzen-search'
+import {autocomplete, reverse} from 'isomorphic-mapzen-search'
 import throttle from 'lodash.throttle'
 import React, {Component} from 'react'
 import {
@@ -13,6 +13,7 @@ import {
   TouchableOpacity,
   View
 } from 'react-native'
+import MapView from 'react-native-maps'
 import {GiftedForm} from 'react-native-gifted-form'
 
 import type {GeocodeResult} from '../types'
@@ -32,6 +33,11 @@ type LocationType = {
   name: string;
 }
 
+type MarkerLocation = {
+  latitude: number;
+  longitude: number;
+}
+
 type Props = {
   currentQuery: {
     from?: LocationType;
@@ -42,11 +48,15 @@ type State = {
   currentFocus: string;
   fromValue: string;
   geocodeResults: ListView.DataSource;
+  markerLocation: MarkerLocation;
   noGeocodeResultsFound?: boolean;
+  selectingOnMap?: boolean;
   toValue: string;
 }
 
 export default class LocationSelection extends Component {
+  currentAutocompleteQuery: string
+  currentReverseQuery: MarkerLocation
   state: State
 
   constructor(props: Props) {
@@ -68,6 +78,7 @@ export default class LocationSelection extends Component {
       currentFocus: 'none',
       fromValue: parseLocation(currentQuery.from),
       geocodeResults: new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2}),
+      markerLocation: config.map.initialRegion,
       toValue: parseLocation(currentQuery.to)
     }
   }
@@ -91,11 +102,11 @@ export default class LocationSelection extends Component {
   }
 
   _autocompleteText = throttle((text) => {
-    if (!text) {
-      return
-    }
+    if (!text) return
 
-    const {geocodeResults} = this.state
+    const {geocodeResults, selectingOnMap} = this.state
+
+    if (selectingOnMap) return
 
     if (text.length < 4) {
       return this.setState({ geocodeResults: geocodeResults.cloneWithRows([]) })
@@ -108,10 +119,16 @@ export default class LocationSelection extends Component {
       })
     }
 
+    // going to geocode, set current query
+    this.currentAutocompleteQuery = text
+
     autocomplete(Object.assign(config.geocoderSettings, {
       text
     }))
       .then((geojson) => {
+        if (geojson.isomorphicMapzenSearchQuery.text !==
+          this.currentAutocompleteQuery) return
+
         if (!geojson.features) throw geojson
         // console.log(`successful geocode for ${text}`)
         geocodeQueries[text] = geojson.features
@@ -166,6 +183,22 @@ export default class LocationSelection extends Component {
     this.props.blurLocationSelection()
   }
 
+  _onConfirmMapLocation = () => {
+    const {currentFocus, markerLocation} = this.state
+
+    this.props.setLocation({
+      type: currentFocus,
+      location: {
+        name: this.state[`${currentFocus}Value`],
+        ...lonlat(markerLocation)
+      }
+    })
+
+    this._postSelectLocation({
+      selectingOnMap: false
+    })
+  }
+
   _onFromFocus = () => {
     this.setState({
       currentFocus: 'from',
@@ -195,6 +228,44 @@ export default class LocationSelection extends Component {
     })
   }
 
+  _onMapRegionChange = (region: MarkerLocation) => {
+    this.setState({ markerLocation: region })
+  }
+
+  _onMapRegionChangeComplete = (region: MarkerLocation) => {
+    const {currentFocus} = this.state
+
+    this.setState({
+      [`${currentFocus}Value`]: lonlat.print(region)
+    })
+
+    this.currentReverseQuery = region
+
+    reverse(Object.assign(
+      config.geocoderSettings,
+      { point: region }
+    ))
+      .then((geojson) => {
+        if (
+          lonlat.isEqual(
+            this.currentReverseQuery,
+            {
+              lat: geojson.isomorphicMapzenSearchQuery['point.lat'],
+              lon: geojson.isomorphicMapzenSearchQuery['point.lon']
+            }
+          ) &&
+          geojson.features.length > 0
+        ) {
+          this.setState({
+            [`${currentFocus}Value`]: geojson.features[0].properties.label
+          })
+        }
+      })
+      .catch((err) => {
+        // do nothing, simply use gps coordinates
+      })
+  }
+
   _onToFocus = () => {
     this.setState({
       currentFocus: 'to',
@@ -210,7 +281,8 @@ export default class LocationSelection extends Component {
     this._autocompleteText(text)
   }
 
-  _postSelectLocation (nextState: Object) {
+  _postSelectLocation (nextState?: Object) {
+    nextState = nextState || {}
     const {currentFocus, geocodeResults} = this.state
     nextState.geocodeResults = geocodeResults.cloneWithRows([])
     const otherField = currentFocus === 'from' ? 'to' : 'from'
@@ -227,7 +299,7 @@ export default class LocationSelection extends Component {
   }
 
   _selectOnMap = () => {
-
+    this.setState({ selectingOnMap: true })
   }
 
   _setAsCurrentLocation = () => {
@@ -238,9 +310,97 @@ export default class LocationSelection extends Component {
     })
   }
 
-  render () {
+  // --------------------------------------------------
+  // rendering functions
+  // --------------------------------------------------
+
+  _renderInputs () {
     const {appState} = this.props
-    const {currentFocus, fromValue, noGeocodeResultsFound, geocodeResults, toValue} = this.state
+    const {fromValue, toValue} = this.state
+    return (
+      <View style={styles[`locationsForm-${appState}`]}>
+        <GiftedForm
+          formName='tripPlanningForm'
+          >
+          {appState !== 'home' &&
+            <GiftedForm.TextInputWidget
+              clearButtonMode='while-editing'
+              image={require('../../assets/search.png')}
+              name='from-location'
+              onBlur={this._onBlur}
+              onChangeText={this._onFromTextChange}
+              onTextInputFocus={this._onFromFocus}
+              placeholder='Enter starting location'
+              ref='fromInput'
+              underlined
+              value={fromValue}
+              widgetStyles={this._getInputStyles('from')}
+              />
+          }
+          <GiftedForm.TextInputWidget
+            clearButtonMode='while-editing'
+            image={require('../../assets/search.png')}
+            name='to-location'
+            onBlur={this._onBlur}
+            onChangeText={this._onToTextChange}
+            onTextInputFocus={this._onToFocus}
+            placeholder='Where do you want to go?'
+            ref='toInput'
+            underlined
+            value={toValue}
+            widgetStyles={this._getInputStyles('to')}
+            />
+        </GiftedForm>
+      </View>
+    )
+  }
+
+  _renderMapSelection () {
+    const {markerLocation, selectingOnMap} = this.state
+
+    if (!selectingOnMap) return null
+
+    return (
+      <View style={styles.mapSelectionContainer}>
+        <View style={styles.mapInstructions}>
+          <Text>Move the map to the desired location</Text>
+          <TouchableOpacity
+            onPress={this._onConfirmMapLocation}
+            style={styles.confirmMapLocationButton}
+            >
+            <Text
+              style={styles.confirmMapLocationButtonText}
+              >
+              Confirm Location
+            </Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.mapContainer}>
+          <MapView
+            initialRegion={config.map.initialRegion}
+            onRegionChange={this._onMapRegionChange}
+            onRegionChangeComplete={this._onMapRegionChangeComplete}
+            style={styles.map}
+            >
+            <MapView.Marker
+              coordinate={markerLocation}
+              />
+          </MapView>
+        </View>
+      </View>
+    )
+  }
+
+  _renderResults () {
+    const {
+      currentFocus,
+      fromValue,
+      noGeocodeResultsFound,
+      geocodeResults,
+      selectingOnMap,
+      toValue
+    } = this.state
+
     let currentFocusValue
     let otherFieldValue
     switch (currentFocus) {
@@ -254,122 +414,91 @@ export default class LocationSelection extends Component {
         break
     }
 
+    if (currentFocus === 'none' || selectingOnMap) return null
 
     return (
-      <View style={{flex: 1}}>
-        <View style={styles[`locationsForm-${appState}`]}>
-          <GiftedForm
-            formName='tripPlanningForm'
+      <View style={styles.resultContainer}>
+        {otherFieldValue !== 'Current Location' &&
+          <TouchableOpacity
+            onPress={this._setAsCurrentLocation}
+            style={styles.resultSelectionButton}
             >
-            {appState !== 'home' &&
-              <GiftedForm.TextInputWidget
-                clearButtonMode='while-editing'
-                image={require('../../assets/search.png')}
-                name='from-location'
-                onBlur={this._onBlur}
-                onChangeText={this._onFromTextChange}
-                onTextInputFocus={this._onFromFocus}
-                placeholder='Enter starting location'
-                ref='fromInput'
-                underlined
-                value={fromValue}
-                widgetStyles={this._getInputStyles('from')}
-                />
-            }
-            <GiftedForm.TextInputWidget
-              clearButtonMode='while-editing'
-              image={require('../../assets/search.png')}
-              name='to-location'
-              onBlur={this._onBlur}
-              onChangeText={this._onToTextChange}
-              onTextInputFocus={this._onToFocus}
-              placeholder='Where do you want to go?'
-              ref='toInput'
-              underlined
-              value={toValue}
-              widgetStyles={this._getInputStyles('to')}
+            <Image
+              source={require('../../assets/crosshair.png')}
+              style={styles.resultSelectionButtonImage}
               />
-          </GiftedForm>
-        </View>
-        {currentFocus !== 'none' &&
-          <View style={styles.resultContainer}>
-            {!currentFocusValue &&
-              otherFieldValue !== 'Current Location' &&
-              <TouchableOpacity
-                onPress={this._setAsCurrentLocation}
-                style={styles.resultSelectionButton}
-                >
-                <Image
-                  source={require('../../assets/crosshair.png')}
-                  style={styles.resultSelectionButtonImage}
-                  />
-                <Text style={styles.resultSelectionButtonText}>
-                  Use Current Location
-                </Text>
-              </TouchableOpacity>
-            }
-            <TouchableOpacity
-              onPress={this._selectOnMap}
-              style={styles.resultSelectionButton}
-              >
-              <Image
-                source={require('../../assets/map.png')}
-                style={styles.resultSelectionButtonImage}
+            <Text style={styles.resultSelectionButtonText}>
+              Use Current Location
+            </Text>
+          </TouchableOpacity>
+        }
+        <TouchableOpacity
+          onPress={this._selectOnMap}
+          style={styles.resultSelectionButton}
+          >
+          <Image
+            source={require('../../assets/map.png')}
+            style={styles.resultSelectionButtonImage}
+            />
+          <Text style={styles.resultSelectionButtonText}>
+            Selection Location on Map
+          </Text>
+        </TouchableOpacity>
+        {currentFocusValue !== 'Current Location' &&
+          <View>
+            <View style={styles.resultDividerContainer}>
+              <Text style={styles.resultDividerText}>Search Results</Text>
+            </View>
+            {(geocodeResults.getRowCount() > 0
+              ? <ListView
+                  dataSource={geocodeResults}
+                  renderRow={(geocodeResult: GeocodeResult) => (
+                    <TouchableOpacity
+                      onPress={() => this._onGeocodeResultSelect(geocodeResult)}
+                      >
+                      <Text style={styles.geocodeResult}>
+                        {geocodeResult.properties.label}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
                 />
-              <Text style={styles.resultSelectionButtonText}>
-                Selection Location on Map
-              </Text>
-            </TouchableOpacity>
-            {currentFocusValue !== 'Current Location' &&
-              <View>
-                <View style={styles.resultDividerContainer}>
-                  <Text style={styles.resultDividerText}>Search Results</Text>
-                </View>
-                {(geocodeResults.getRowCount() > 0
-                  ? <ListView
-                      dataSource={geocodeResults}
-                      renderRow={(geocodeResult: GeocodeResult) => (
-                        <TouchableOpacity
-                          onPress={() => this._onGeocodeResultSelect(geocodeResult)}
-                          >
-                          <Text style={styles.geocodeResult}>
-                            {geocodeResult.properties.label}
-                          </Text>
-                        </TouchableOpacity>
-                      )}
-                    />
-                  : <Text>{
-                    (currentFocusValue === undefined
-                      || currentFocusValue.length < 4)
-                      ? 'Type to search for an address'
-                      : (noGeocodeResultsFound
-                        ? `No addresses found for: "{${currentFocusValue}}"`
-                        : 'Searching...')}
-                    </Text>
-                )}
-              </View>
-            }
+              : <Text>{
+                (currentFocusValue === undefined
+                  || currentFocusValue.length < 4)
+                  ? 'Type to search for an address'
+                  : (noGeocodeResultsFound
+                    ? `No addresses found for: "{${currentFocusValue}}"`
+                    : 'Searching...')}
+                </Text>
+            )}
           </View>
         }
+      </View>
+    )
+  }
+
+  render () {
+    return (
+      <View style={{flex: 1}}>
+        {this._renderInputs()}
+        {this._renderResults()}
+        {this._renderMapSelection()}
       </View>
     )
   }
 }
 
 const styles = StyleSheet.create({
-  resultSelectionButton: {
-    flexDirection: 'row',
-    height: 30
+  confirmMapLocationButton: {
+    backgroundColor: '#63cc81',
+    marginTop: 10,
+    padding: 10,
+    width: 200
   },
-  resultSelectionButtonText: {
+  confirmMapLocationButtonText: {
+    color: '#fff',
     fontSize: 16,
-    marginTop: 4,
-    marginLeft: 10
-  },
-  resultSelectionButtonImage: {
-    height: 30,
-    resizeMode: 'contain',
-    width: 30
+    textAlign: 'center'
   },
   currentLocationTextInput: {
     color: '#15b3ff',
@@ -384,6 +513,20 @@ const styles = StyleSheet.create({
   },
   'locationsForm-location-selection': {
     height: 100
+  },
+  map: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  mapContainer: {
+    ...StyleSheet.absoluteFillObject,
+    top: 85,
+  },
+  mapInstructions: {
+    alignItems: 'center',
+    padding: 10
+  },
+  mapSelectionContainer: {
+    flex: 1
   },
   regularTextInput: {
     color: '#000',
@@ -402,6 +545,20 @@ const styles = StyleSheet.create({
   resultDividerText: {
     fontSize: 18,
     fontWeight: 'bold'
+  },
+  resultSelectionButton: {
+    flexDirection: 'row',
+    height: 30
+  },
+  resultSelectionButtonImage: {
+    height: 30,
+    resizeMode: 'contain',
+    width: 30
+  },
+  resultSelectionButtonText: {
+    fontSize: 16,
+    marginTop: 4,
+    marginLeft: 10
   }
 })
 
