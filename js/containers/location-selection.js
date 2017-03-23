@@ -1,5 +1,5 @@
 // @flow
-import {clearLocation, setLocation} from 'otp-react-redux/lib/actions/map'
+import {clearLocation, setLocation, switchLocations} from 'otp-react-redux/lib/actions/map'
 import {connect} from 'react-redux'
 
 import {blurLocationField, focusToLocationSelection} from '../actions/app'
@@ -18,7 +18,8 @@ const mapDispatchToProps = (dispatch, ownProps) => {
     blurLocationSelection: () => { dispatch(blurLocationField()) },
     clearLocation: (opts) => { dispatch(clearLocation(opts)) },
     focusToLocationSelection: () => { dispatch(focusToLocationSelection()) },
-    setLocation: (opts) => { dispatch(setLocation(opts)) }
+    setLocation: (opts) => { dispatch(setLocation(opts)) },
+    switchLocations: () => { dispatch(switchLocations()) }
   }
 }
 

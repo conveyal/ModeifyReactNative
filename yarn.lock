@@ -3408,9 +3408,9 @@ osenv@^0.1.0, osenv@^0.1.4:
     os-homedir "^1.0.0"
     os-tmpdir "^1.0.0"
 
-"otp-react-redux@https://github.com/opentripplanner/otp-react-redux.git#custom-otp-query-2":
+"otp-react-redux@https://github.com/opentripplanner/otp-react-redux.git#switching":
   version ""
-  resolved "https://github.com/opentripplanner/otp-react-redux.git#91fd5ee9bd405e8e0f99cd7e79303799513a1a12"
+  resolved "https://github.com/opentripplanner/otp-react-redux.git#967a995608cf342ec06fd3424a86ee6050b06bd6"
   dependencies:
     "@conveyal/lonlat" "^1.1.0"
     "@mapbox/polyline" "^0.2.0"
@@ -3718,8 +3718,8 @@ react-input-autosize@^1.1.0:
   resolved "https://registry.yarnpkg.com/react-input-autosize/-/react-input-autosize-1.1.0.tgz#3fe1ac832387d8abab85f6051ceab1c9e5570853"
 
 react-leaflet@^1.1.0:
-  version "1.1.3"
-  resolved "https://registry.yarnpkg.com/react-leaflet/-/react-leaflet-1.1.3.tgz#c81316ec2c4b2cedaa2e56dba817001024aac398"
+  version "1.1.4"
+  resolved "https://registry.yarnpkg.com/react-leaflet/-/react-leaflet-1.1.4.tgz#a447c74302d2c4192b1e26795b3c7dd92aa93244"
   dependencies:
     lodash "^4.0.0"
     warning "^3.0.0"
