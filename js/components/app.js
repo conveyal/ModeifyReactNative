@@ -4,14 +4,34 @@ import React, { Component } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 
 import LocationSelection from '../containers/location-selection'
-import Map from '../containers/map'
+import ResultsList from '../containers/results-list'
+import ResultsMap from '../containers/results-map'
 import Navbar from '../containers/navbar'
 
 export default class App extends Component {
-  _renderMap () {
+  _renderLocationSelection () {
     switch (this.props.appState) {
       case 'home':
-        return <Map />
+      case 'location-selection':
+        return <LocationSelection />
+      default:
+        return null
+    }
+  }
+
+  _renderResultsList () {
+    switch (this.props.appState) {
+      case 'results-list':
+        return <ResultsList />
+      default:
+        return null
+    }
+  }
+
+  _renderResultsMap () {
+    switch (this.props.appState) {
+      case 'home':
+        return <ResultsMap />
       default:
         return null
     }
@@ -22,14 +42,9 @@ export default class App extends Component {
     return (
       <View style={styles.app}>
         <Navbar />
-        {/***************************************************
-        Location Selection
-        ***************************************************/}
-        <LocationSelection />
-        {/***************************************************
-          Map
-          ***************************************************/}
-        {this._renderMap()}
+        {this._renderLocationSelection()}
+        {this._renderResultsMap()}
+        {this._renderResultsList()}
       </View>
     )
   }

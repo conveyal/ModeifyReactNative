@@ -11,7 +11,7 @@ type Props = {
   activeSearch: number
 }
 
-export default class Map extends Component {
+export default class ResultsMap extends Component {
 
   constructor(props: Props) {
     super(props)
@@ -42,7 +42,7 @@ export default class Map extends Component {
           })
           itemsToRender.push(
             <MapView.Polyline
-              key={`trip-plan-querty-${activeSearch}-${accessMode.mode}`}
+              key={`trip-plan-query-${activeSearch}-${accessMode.mode}`}
               coordinates={combinedLineCoordinates}
               {...polylineStyles[accessMode.mode]}
               />

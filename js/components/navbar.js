@@ -4,7 +4,8 @@ import React, { Component } from 'react'
 import { Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 
 const titleTextLookup = {
-  'location-selection': 'PLAN YOUR TRIP DETAILS'
+  'location-selection': 'PLAN YOUR TRIP DETAILS',
+  'results-list': 'RESULTS'
 }
 
 export default class Navbar extends Component {

@@ -31,6 +31,16 @@ export const reducers = {
         $set: false
       }
     })
+  },
+  // ------------------------------------------------
+  // OTP-RR handlers
+  // ------------------------------------------------
+  'PLAN_REQUEST' (state: appReducerState, action: reduxAction) {
+    return update(state, {
+      appState: {
+        $set: 'results-list'
+      }
+    })
   }
 }
 
