@@ -26,7 +26,7 @@ type Props = {
 
 type State = {
   isPending: boolean;
-  planResults?: ListView.DataSource;
+  options?: ListView.DataSource;
   resultIndex?: number;
 }
 
@@ -39,14 +39,12 @@ export default class ResultsList extends Component {
 
   state = {
     isPending: true,
-    planResults: new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2}),
+    options: new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2}),
     resultIndex: 0
   }
 
   componentWillReceiveProps (nextProps: Props) {
-    console.log('componentWillReceiveProps')
-    console.log(nextProps)
-    const {planResults} = this.state
+    const {options} = this.state
     let {resultIndex} = this.state
     const {searches} = nextProps
     const currentSearch = searches[searches.length - 1]
@@ -61,7 +59,7 @@ export default class ResultsList extends Component {
       routeResult.parseResponse(currentSearch.planResponse)
 
     if (resultChanged) {
-      nextState.planResults = planResults.cloneWithRows(routeResult.getResults())
+      nextState.options = options.cloneWithRows(routeResult.getResults())
       nextState.resultIndex = resultIndex + 1
     }
 
@@ -73,15 +71,15 @@ export default class ResultsList extends Component {
       nextState.resultIndex !== this.state.resultIndex
   }
 
-  _onResultTitlePress = (planResult) => {
+  _onResultTitlePress = (option) => {
 
   }
 
   render () {
     const {fromLocation, toLocation} = this.props
-    const {isPending, planResults} = this.state
+    const {isPending, options} = this.state
 
-    const hasResults = planResults.getRowCount() > 0
+    const hasResults = options.getRowCount() > 0
 
     return (
       <ScrollView
@@ -95,23 +93,26 @@ export default class ResultsList extends Component {
         }
         {!isPending && hasResults &&
           <ListView
-            dataSource={planResults}
-            renderRow={(planResult) => (
-              <TouchableOpacity
-                onPress={() => this._onResultTitlePress(planResult)}
-                >
-                <Text style={styles.planResultTitle}>
-                  {planResult.summary}
+            dataSource={options}
+            renderRow={(option) => (
+              <View style={styles.optionCard}>
+                <Text style={styles.optionTitle}>
+                  {option.modeDescriptor}
                 </Text>
                 <View>
                   <View style={styles.segments} >
 
                   </View>
-                  <View style={styles.timeContainer} >
-
+                  <View style={styles.summary} >
+                    <View style={styles.timeContainer}>
+                      <Text style={styles.time}>
+                        {option.averageTime}
+                      </Text>
+                      <Text style={styles.timeMinutes}>mins</Text>
+                    </View>
                   </View>
                 </View>
-              </TouchableOpacity>
+              </View>
             )}
           />
         }
@@ -124,9 +125,41 @@ const styles = StyleSheet.create({
   infoText: {
     fontSize: 16
   },
+  optionCard: {
+    borderRadius: 5,
+    marginVertical: 5
+  },
+  optionTitle: {
+    backgroundColor: '#455a71',
+    color: '#fff',
+    fontSize: 14,
+    padding: 5
+  },
   resultListContainer: {
     backgroundColor: '#5a7491',
     flex: 1,
     padding: 10
+  },
+  segments: {
+    backgroundColor: '#edeff0'
+  },
+  summary: {
+    backgroundColor: '#fff',
+    minHeight: 150
+  },
+  time: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginRight: 5
+  },
+  timeContainer: {
+    flexDirection: 'row',
+    height: 40,
+    left: 10,
+    position: 'absolute',
+    top: 10
+  },
+  timeMinutes: {
+    fontSize: 18
   }
 })
