@@ -24,6 +24,7 @@
 		"react-native": "0.41.2",
 		"react-native-gifted-form": "^0.0.13",
 		"react-native-maps": "https://github.com/airbnb/react-native-maps.git",
+		"react-native-vector-icons": "^4.0.0",
 		"react-redux": "^5.0.2",
 		"redux": "^3.6.0",
 		"redux-actions": "^2.0.1",

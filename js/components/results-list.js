@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   View
 } from 'react-native'
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
 
 import RouteResult from '../util/route-result'
 
@@ -44,7 +45,6 @@ export default class ResultsList extends Component {
   }
 
   componentWillReceiveProps (nextProps: Props) {
-    console.log('componentWillReceiveProps')
     const {options} = this.state
     let {resultIndex} = this.state
     const {searches} = nextProps
@@ -105,7 +105,7 @@ export default class ResultsList extends Component {
                 </Text>
                 <View>
                   <View style={styles.segments} >
-
+                    <Icon name='bus' size={30} />
                   </View>
                   <View style={styles.summary} >
                     <View style={styles.timeContainer}>
