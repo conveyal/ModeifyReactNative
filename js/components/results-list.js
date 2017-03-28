@@ -44,6 +44,7 @@ export default class ResultsList extends Component {
   }
 
   componentWillReceiveProps (nextProps: Props) {
+    console.log('componentWillReceiveProps')
     const {options} = this.state
     let {resultIndex} = this.state
     const {searches} = nextProps

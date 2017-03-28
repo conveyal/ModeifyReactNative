@@ -22,7 +22,7 @@ otpConfig.customOtpQueryBuilder = (api, query) => {
     egressModes: 'WALK,BICYCLE_RENT',
     endTime: time.end,
     from,
-    limit: 2,
+    limit: 5,
     maxBikeTime: 20,
     maxWalkTime: 15,
     maxCarTime: 45,
