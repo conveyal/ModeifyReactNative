@@ -59,7 +59,7 @@ export default class ResultsList extends Component {
       routeResult.parseResponse(currentSearch.planResponse)
 
     if (resultChanged) {
-      nextState.options = options.cloneWithRows(routeResult.getResults())
+      nextState.options = options.cloneWithRows(routeResult.results)
       nextState.resultIndex = resultIndex + 1
     }
 
@@ -90,6 +90,9 @@ export default class ResultsList extends Component {
         }
         {!isPending && !hasResults &&
           <Text style={styles.infoText}>No results found between these locations!</Text>
+        }
+        {routeResult.hasError &&
+          <Text style={styles.infoText}>An error occurred.  Please try again!</Text>
         }
         {!isPending && hasResults &&
           <ListView

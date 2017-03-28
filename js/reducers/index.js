@@ -1,6 +1,5 @@
 // @flow
 
-import {toLatFirstString} from '@conveyal/lonlat'
 import createOtpReducer from 'otp-react-redux/lib/reducers/create-otp-reducer'
 import qs from 'qs'
 import {handleActions} from 'redux-actions'
@@ -15,22 +14,38 @@ otpConfig.customOtpQueryBuilder = (api, query) => {
   // TODO: handle mode
   const params = {
     accessModes: 'WALK,BICYCLE,BICYCLE_RENT,CAR_PARK',
+    bikeSafe: 1000,
+    bikeSpeed: 3.57632,
+    bikeTrafficStress: 4,
     date,
     directModes: 'WALK,BICYCLE,BICYCLE_RENT,CAR',
     egressModes: 'WALK,BICYCLE_RENT',
     endTime: time.end,
-    from: toLatFirstString(from),
+    from,
+    limit: 2,
+    maxBikeTime: 20,
+    maxWalkTime: 15,
+    maxCarTime: 45,
+    queryOtp: false,
+    queryR5: true,
     startTime: time.start,
-    to: toLatFirstString(to),
-    transitModes: 'BUS,TRAINISH'
+    to,
+    transitModes: 'BUS,TRAINISH',
+    walkSpeed: 1.34112
   }
-  return `${planEndpoint}?${qs.stringify(params)}`
+  const url = `${planEndpoint}?${qs.stringify(params)}`
+  console.log(url)
+  return url
 }
 
 const initialOtpQuery = {
   from: {
     name: 'Current Location',
     currentLocation: true
+  },
+  time: {
+    end: '9:00',
+    start: '7:00'
   }
 }
 

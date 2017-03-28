@@ -14,15 +14,12 @@ type RouteResultConfig = {
 }
 
 export default class RouteResult {
+  hasError: boolean;
   lastResponse: TripPlanResult;
   results: TripPlanResult;
 
   constructor (config?: RouteResultConfig) {
 
-  }
-
-  getResults () {
-    return this.results
   }
 
   /**
@@ -36,7 +33,12 @@ export default class RouteResult {
     }
 
     this.lastResponse = response
-    this.results = scorer.processOptions(response.profile)
+    if (response.error) {
+      this.hasError = true
+      this.results = []
+      return true
+    }
+    this.results = scorer.processOptions(response.r5.profile)
       .map((option) => addModeifyData(option))
 
     console.log(this.results.slice(4))
