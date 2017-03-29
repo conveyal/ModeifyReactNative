@@ -100,9 +100,16 @@ export default class ResultsList extends Component {
             dataSource={options}
             renderRow={(option) => (
               <View style={styles.optionCard}>
-                <Text style={styles.optionTitle}>
-                  {option.modeDescriptor}
-                </Text>
+                <View style={styles.optionHeader}>
+                  <Text style={styles.optionTitle}>
+                    {option.modeDescriptor}
+                  </Text>
+                  {option.costPerTrip &&
+                    <Text style={styles.cost}>
+                      $ {option.costPerTrip}
+                    </Text>
+                  }
+                </View>
                 <View style={styles.optionContent}>
                   <View style={styles.segments} >
                     {option.segments.map((segment, idx) =>
@@ -191,6 +198,18 @@ const WalkBikeText = (props) => (
 )
 
 const styles = StyleSheet.create({
+  cost: {
+    backgroundColor: '#8ec449',
+    bottom: 3,
+    color: '#394e1d',
+    fontWeight: 'bold',
+    paddingTop: 3,
+    position: 'absolute',
+    right: 0,
+    textAlign: 'right',
+    top: 3,
+    width: 70
+  },
   infoText: {
     fontSize: 16
   },
@@ -204,11 +223,13 @@ const styles = StyleSheet.create({
   optionContent: {
     flexDirection: 'row'
   },
-  optionTitle: {
+  optionHeader: {
     backgroundColor: '#455a71',
-    color: '#fff',
-    fontSize: 14,
     padding: 5
+  },
+  optionTitle: {
+    color: '#fff',
+    fontSize: 14
   },
   resultListContainer: {
     backgroundColor: '#5a7491',

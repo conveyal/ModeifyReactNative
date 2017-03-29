@@ -48,18 +48,14 @@ export default class RouteResult {
 }
 
 function addModeifyData (option) {
-  calculateModePresence(option)
+  setModePresence(option)
   setModeString(option)
   setSegments(option)
   setDistances(option)
+  setCost(option)
   setTimes(option)
 
   return option
-}
-
-function calculateModePresence (option) {
-  option.hasCar = option.modes.indexOf('car') !== -1
-  option.hasTransit = option.transit ? option.transit.length > 0 : false
 }
 
 function distances (option, mode, val) {
@@ -87,6 +83,23 @@ function patternFilter (by) {
   }
 }
 
+function setCost (option) {
+  if (option.cost === 0) {
+    return
+  }
+
+  let cost = 0
+  if (option.transitCost) {
+    cost += option.transitCost
+  }
+  if (option.hasCar) {
+    cost += scorer.rates.mileageRate * option.driveDistances
+    cost += scorer.rates.carParkingCost
+  }
+
+  option.costPerTrip = cost.toFixed(2)
+}
+
 function setDistances (option) {
   option.driveDistances = distances(option, 'car', 'driveDistance')
 
@@ -94,6 +107,11 @@ function setDistances (option) {
     distances(option, 'bicycle_rent', 'bikeDistance')
 
   option.walkDistances = distances(option, 'walk', 'walkDistance')
+}
+
+function setModePresence (option) {
+  option.hasCar = option.modes.indexOf('car') !== -1
+  option.hasTransit = option.transit ? option.transit.length > 0 : false
 }
 
 function setModeString (option) {
