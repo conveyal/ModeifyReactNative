@@ -100,14 +100,16 @@ exports.modeToIcon = function (m) {
   switch (m) {
     case 'bicycle':
       return 'bike'
+    case 'bicycle_rent':
+      return 'cabi'
+    case 'carshare':
+      return 'car'
     case 'pedestrian':
       return 'walk'
     case 'rail':
-    case 'subway':
-    case 'tram':
       return 'train'
-    case 'bicycle_rent':
-      return 'cabi'
+    case 'subway':
+      return 'subway-variant'
     default:
       return m
   }

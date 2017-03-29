@@ -50,6 +50,7 @@ export default class RouteResult {
 function addModeifyData (option) {
   setModeString(option)
   calculateMinutes(option)
+  setSegments(option)
 
   return option
 }
@@ -134,14 +135,16 @@ function setModeString (option) {
 
 function setSegments (option, segmentOptions) {
   segmentOptions = segmentOptions || {}
+  const inline = !!segmentOptions.inline
+  const small = !!segmentOptions.small
 
-  let accessMode = option.access()[0].mode.toLowerCase()
+  let accessMode = option.access[0].mode.toLowerCase()
 
   // style a park-and-ride access mode the same as a regular car trip
   if (accessMode === 'car_park') accessMode = 'car'
 
   let accessModeIcon = convert.modeToIcon(accessMode)
-  const egress = option.egress()
+  const {egress} = option
   let segments = []
   const transitSegments = option.transit ? option.transit : []
 
@@ -151,32 +154,27 @@ function setSegments (option, segmentOptions) {
 
   segments.push({
     mode: accessModeIcon,
-    inline: !!segmentOptions.inline,
-    small: !!segmentOptions.small,
+    inline,
+    small,
     svg: true
   })
 
   segments = segments.concat(transitSegments.map(function (segment) {
     const patterns = segment.segmentPatterns.filter(patternFilter('color'))
-    let background = patterns[0].color
+    let background = [patterns[0].color]
 
     if (patterns.length > 0) {
-      let percent = 0
-      const increment = 1 / patterns.length * 100
-      background = 'linear-gradient(to right'
+      background = []
       for (let i = 0; i < patterns.length; i++) {
-        const color = patterns[i].color
-        background += ',' + color + ' ' + percent + '%, ' + color + ' ' + (percent + increment) + '%'
-        percent += increment
+        background.push(patterns[i].color)
       }
-      background += ')'
     }
 
     return {
       background: background,
       mode: convert.modeToIcon(segment.mode),
-      inline: !!segmentOptions.inline,
-      small: !!segmentOptions.small,
+      inline,
+      small,
       shortName: patterns[0].shield,
       longName: patterns[0].longName || patterns[0].shield
     }
@@ -187,8 +185,8 @@ function setSegments (option, segmentOptions) {
     if (egressMode !== 'walk') {
       segments.push({
         mode: convert.modeToIcon(egressMode),
-        inline: !!segmentOptions.inline,
-        small: !!segmentOptions.small,
+        inline,
+        small,
         svg: true
       })
     }

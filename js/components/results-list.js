@@ -103,9 +103,49 @@ export default class ResultsList extends Component {
                 <Text style={styles.optionTitle}>
                   {option.modeDescriptor}
                 </Text>
-                <View>
+                <View style={styles.optionContent}>
                   <View style={styles.segments} >
-                    <Icon name='bus' size={30} />
+                    {option.segments.map((segment, idx) =>
+                      <View style={styles.segmentRow}>
+                        <View>
+                          <Icon
+                            name={segment.mode}
+                            size={30}
+                            style={styles.modeIcon}
+                            />
+                          {idx < option.segments.length - 1 &&
+                            <Icon
+                              name='menu-down'
+                              size={20}
+                              style={styles.transferIcon}
+                              />
+                          }
+                        </View>
+                        <View
+                          style={styles.segmentShortNameContainer}
+                          >
+                          {segment.background &&
+                            segment.background.map((color) =>
+                              <View style={[
+                                  styles.segmentRouteBackground,
+                                  {
+                                    backgroundColor: color
+                                  }
+                                ]} />
+                          )}
+                          <Text
+                            style={styles.segmentShortNameStroke}
+                            >
+                            {segment.shortName}
+                          </Text>
+                          <Text
+                            style={styles.segmentShortName}
+                            >
+                            {segment.shortName}
+                          </Text>
+                        </View>
+                      </View>
+                    )}
                   </View>
                   <View style={styles.summary} >
                     <View style={styles.timeContainer}>
@@ -129,9 +169,15 @@ const styles = StyleSheet.create({
   infoText: {
     fontSize: 16
   },
+  modeIcon: {
+    height: 27
+  },
   optionCard: {
     borderRadius: 5,
     marginVertical: 5
+  },
+  optionContent: {
+    flexDirection: 'row'
   },
   optionTitle: {
     backgroundColor: '#455a71',
@@ -144,12 +190,52 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 10
   },
+  segmentRow: {
+    flexDirection: 'row'
+  },
+  segmentRouteBackground: {
+    flex: 1
+  },
   segments: {
-    backgroundColor: '#edeff0'
+    backgroundColor: '#edeff0',
+    padding: 5,
+    width: 90
+  },
+  segmentShortName: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'transparent',
+    color: '#fff',
+    textAlign: 'center',
+    top: 5
+  },
+  segmentShortNameStroke: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'transparent',
+    color: '#455a71',
+    fontSize: 15,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    textShadowColor: '#455a71',
+    textShadowOffset: {
+      height: 1,
+      width: 1
+    },
+    top: 5
+  },
+  segmentShortNameContainer: {
+    borderColor: '#edeff0',
+    borderRadius: 7,
+    borderStyle: 'solid',
+    borderWidth: 1,
+    flexDirection: 'row',
+    height: 30,
+    marginLeft: 5,
+    overflow: 'hidden',
+    width: 45
   },
   summary: {
     backgroundColor: '#fff',
-    minHeight: 150
+    flex: 1
   },
   time: {
     fontSize: 18,
@@ -165,5 +251,9 @@ const styles = StyleSheet.create({
   },
   timeMinutes: {
     fontSize: 18
+  },
+  transferIcon: {
+    height: 15,
+    paddingLeft: 3
   }
 })
