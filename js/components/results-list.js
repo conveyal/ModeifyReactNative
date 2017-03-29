@@ -154,6 +154,23 @@ export default class ResultsList extends Component {
                       </Text>
                       <Text style={styles.timeMinutes}>mins</Text>
                     </View>
+                    <View style={styles.walkBikeTimeContainer}>
+                      {option.freeflowTime &&
+                        <WalkBikeText>{option.freeflowTime} without traffic</WalkBikeText>
+                      }
+                      {option.hasTransit && option.bikeDistances &&
+                        <WalkBikeText>{option.bikeTim} min biking</WalkBikeText>
+                      }
+                      {option.hasTransit && option.walkDistances &&
+                        <WalkBikeText>{option.walkTime} min walking</WalkBikeText>
+                      }
+                      {!option.hasTransit && option.bikeDistances &&
+                        <WalkBikeText>{option.bikeDistances} mi biking</WalkBikeText>
+                      }
+                      {!option.hasTransit && option.walkDistances &&
+                        <WalkBikeText>{option.walkDistances} mi walking</WalkBikeText>
+                      }
+                    </View>
                   </View>
                 </View>
               </View>
@@ -164,6 +181,14 @@ export default class ResultsList extends Component {
     )
   }
 }
+
+const WalkBikeText = (props) => (
+  <Text
+    style={styles.walkBikeTimeText}
+    >
+    {props.children}
+  </Text>
+)
 
 const styles = StyleSheet.create({
   infoText: {
@@ -255,5 +280,12 @@ const styles = StyleSheet.create({
   transferIcon: {
     height: 15,
     paddingLeft: 3
+  },
+  walkBikeTimeText: {
+    color: '#748395'
+  },
+  walkBikeTimeContainer: {
+    marginLeft: 10,
+    marginTop: 36
   }
 })

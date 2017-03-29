@@ -48,29 +48,26 @@ export default class RouteResult {
 }
 
 function addModeifyData (option) {
+  calculateModePresence(option)
   setModeString(option)
-  calculateMinutes(option)
   setSegments(option)
+  setDistances(option)
+  setTimes(option)
 
   return option
 }
 
-function calculateMinutes (option) {
-  let averageTime
-  if (hasTransit(option) || !hasCar(option)) {
-    averageTime = Math.round(option.time / 60)
+function calculateModePresence (option) {
+  option.hasCar = option.modes.indexOf('car') !== -1
+  option.hasTransit = option.transit ? option.transit.length > 0 : false
+}
+
+function distances (option, mode, val) {
+  if (option.modes.indexOf(mode) === -1) {
+    return false
   } else {
-    averageTime = Math.round(option.time / 60 * 1.35)
+    return convert.metersToMiles(option[val])
   }
-  option.averageTime = averageTime
-}
-
-function hasCar (option) {
-  return option.modes.indexOf('car') !== -1
-}
-
-function hasTransit (option) {
-  return option.transit ? option.transit.length > 0 : false
 }
 
 function patternFilter (by) {
@@ -90,6 +87,15 @@ function patternFilter (by) {
   }
 }
 
+function setDistances (option) {
+  option.driveDistances = distances(option, 'car', 'driveDistance')
+
+  option.bikeDistances = distances(option, 'bicycle', 'bikeDistance') ||
+    distances(option, 'bicycle_rent', 'bikeDistance')
+
+  option.walkDistances = distances(option, 'walk', 'walkDistance')
+}
+
 function setModeString (option) {
   let modeStr = ''
   const accessMode = option.access[0].mode.toLowerCase()
@@ -103,20 +109,20 @@ function setModeString (option) {
       modeStr = 'bike'
       break
     case 'car':
-      if (hasTransit(option)) {
+      if (option.hasTransit) {
         modeStr = 'drive'
       } else {
         modeStr = 'carpool/vanpool'
       }
       break
     case 'walk':
-      if (!hasTransit(option)) {
+      if (!option.hasTransit) {
         modeStr = 'walk'
       }
       break
   }
 
-  if (hasTransit(option)) {
+  if (option.hasTransit) {
     if (modeStr.length > 0) modeStr += ' to '
     modeStr += 'transit'
   }
@@ -193,4 +199,26 @@ function setSegments (option, segmentOptions) {
   }
 
   option.segments = segments
+}
+
+function setTimes (option) {
+  let averageTime
+  if (option.hasTransit || !option.hasCar) {
+    averageTime = Math.round(option.time / 60)
+  } else {
+    averageTime = Math.round(option.time / 60 * 1.35)
+    option.freeflowTime = Math.round(option.time / 60)
+  }
+  option.averageTime = averageTime
+  option.bikeTime = timeFromSpeedAndDistance(scorer.rates.bikeSpeed, option.bikeDistance)
+  option.walkTime = timeFromSpeedAndDistance(scorer.rates.walkSpeed, option.walkDistance)
+}
+
+function timeFromSpeedAndDistance (s, d) {
+  var t = d / s
+  if (t < 60) {
+    return '< 1'
+  } else {
+    return parseInt(t / 60, 10)
+  }
 }

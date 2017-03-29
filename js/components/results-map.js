@@ -67,13 +67,13 @@ export default class ResultsMap extends Component {
           style={styles.map}
           initialRegion={config.map.initialRegion}
           >
-          {fromLocation &&
+          {hasCoords(fromLocation) &&
             <MapView.Marker
               coordinate={toLatLng(fromLocation)}
               title={fromLocation.name}
               />
           }
-          {toLocation &&
+          {hasCoords(toLocation) &&
             <MapView.Marker
               coordinate={toLatLng(toLocation)}
               title={toLocation.name}
@@ -110,6 +110,11 @@ const styles = StyleSheet.create({
     top: 300
   }
 })
+
+function hasCoords(location) {
+  return location && (location.lat || location.lat === 0) &&
+    (location.lon || location.lon === 0)
+}
 
 function toLatLng (location) {
   return {
