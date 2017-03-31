@@ -38,7 +38,8 @@ export default class RouteResult {
     segments.push({
       description: this.fromLocation.name,
       icon: {
-        name: 'star'
+        modeifyIcon: true,
+        name: 'start'
       },
       iconColor: '#8ec449',
       rowStyle: {
@@ -57,9 +58,10 @@ export default class RouteResult {
 
     // Add transit segments
     let lastColor = ''
-    const length = option.transit.length
+    const transitSegments = option.transit || []
+    const length = transitSegments.length
     for (let i = 0; i < length; i++) {
-      const segment = option.transit[i]
+      const segment = transitSegments[i]
       const departureTimes = segment.departureTimes || []
       const fromName = segment.fromName
       const patterns = segment.segmentPatterns
@@ -74,23 +76,40 @@ export default class RouteResult {
         if (i > 0) {
           segments.push(setRowStyle({
             description: 'Walk ' + (Math.ceil(segment.walkTime / 60) + 1) + ' min',
-            icon: 'walk'
+            icon: {
+              name: 'walk'
+            }
           }))
         }
 
         // board
         segments.push(setRowStyle({
-          color,
           description: fromName,
+          icon: {
+            materialIcon: true,
+            name: 'checkbox-blank-circle'
+          },
+          routeStyle: {
+            board: true,
+            color
+          },
           textStyle: {
             fontWeight: 'bold'
           }
         }))
       } else {
+        // transfer at same stop
         segments.push(setRowStyle({
-          color: 'linear-gradient(to bottom, ' + lastColor + ' 0%, ' +
-            lastColor + ' 50%,' + color + ' 50%, ' + color + ' 100%)',
           description: fromName,
+          icon: {
+            materialIcon: true,
+            name: 'checkbox-blank-circle'
+          },
+          routeStyle: {
+            color,
+            lastColor,
+            transfer: true
+          },
           textStyle: {
             fontWeight: 'bold'
           }
@@ -98,16 +117,26 @@ export default class RouteResult {
       }
 
       segments.push(setRowStyle({
-        color: color,
         description: 'Take ' + getRouteNames(segment.routes),
+        routeStyle: {
+          take: true,
+          color
+        },
         segment: true
       }))
 
       // Check if you are deboarding
-      if (i + 1 >= length || option.transit[i + 1].walkTime > 0) {
+      if (i + 1 >= length || transitSegments[i + 1].walkTime > 0) {
         segments.push(setRowStyle({
-          color,
           description: segment.toName,
+          icon: {
+            materialIcon: true,
+            name: 'checkbox-blank-circle'
+          },
+          routeStyle: {
+            alight: true,
+            lastColor: color
+          },
           textStyle: {
             fontWeight: 'bold'
           }
@@ -127,7 +156,8 @@ export default class RouteResult {
     segments.push({
       description: this.toLocation.name,
       icon: {
-        name: 'map-marker'
+        modeifyIcon: true,
+        name: 'end'
       },
       iconColor: '#f5a81c',
       rowStyle: {
@@ -188,11 +218,26 @@ const MODE_TO_ACTION = {
 }
 
 const MODE_TO_ICON = {
-  BICYCLE: 'bike',
-  BICYCLE_RENT: 'cabi',
-  CAR: 'car',
-  CAR_PARK: 'car',
-  WALK: 'walk'
+  BICYCLE: {
+    materialIcon: true,
+    name: 'bike'
+  },
+  BICYCLE_RENT: {
+    modeifyIcon: true,
+    name: 'cabi'
+  },
+  CAR: {
+    materialIcon: true,
+    name: 'car'
+  },
+  CAR_PARK: {
+    materialIcon: true,
+    name: 'car'
+  },
+  WALK: {
+    materialIcon: true,
+    name: 'walk'
+  }
 }
 
 const DIRECTION_TO_CARDINALITY = {
@@ -313,9 +358,7 @@ function narrativeDirections (edges) {
         ' ' +
         streetEdge.absoluteDirection.toLowerCase() +
         streetSuffix
-      step.icon = {
-        name: MODE_TO_ICON[streetEdge.mode]
-      }
+      step.icon = MODE_TO_ICON[streetEdge.mode]
     } else {
       step.description = toSentenceCase(streetEdge.relativeDirection) + streetSuffix
       step.icon = {

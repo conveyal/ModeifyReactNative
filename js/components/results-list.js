@@ -13,6 +13,7 @@ import {
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome'
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons'
 
+import ModeifyIcon from './ModeifyIcon'
 import RouteResult from '../util/route-result'
 
 import type {Location} from '../types'
@@ -132,11 +133,64 @@ export default class ResultsList extends Component {
     return (
       <View style={[styles.optionDetailsRow, optionDetail.rowStyle]}>
         <View style={styles.optionDetailIcon}>
-          {optionDetail.icon && !optionDetail.icon.fontAwesome &&
+          {optionDetail.routeStyle && (
+            optionDetail.routeStyle.alight ||
+            optionDetail.routeStyle.transfer) &&
+            <View style={{
+                backgroundColor: optionDetail.routeStyle.lastColor,
+                height: 20,
+                left: 13,
+                position: 'absolute',
+                top: 0,
+                width: 24
+              }}
+              >
+              <Text>&nbsp;</Text>
+            </View>
+          }
+          {optionDetail.routeStyle && optionDetail.routeStyle.take &&
+            <View style={{
+                backgroundColor: optionDetail.routeStyle.color,
+                bottom: 0,
+                left: 13,
+                position: 'absolute',
+                top: 0,
+                width: 24
+              }}
+              >
+              <Text>&nbsp;</Text>
+            </View>
+          }
+          {optionDetail.routeStyle && (
+            optionDetail.routeStyle.board ||
+            optionDetail.routeStyle.transfer) &&
+            <View style={{
+                backgroundColor: optionDetail.routeStyle.color,
+                height: 30,
+                left: 13,
+                position: 'absolute',
+                top: 17,
+                width: 24
+              }}
+              >
+              <Text>&nbsp;</Text>
+            </View>
+          }
+          {optionDetail.icon && optionDetail.icon.modeifyIcon &&
+            <ModeifyIcon
+              color={optionDetail.iconColor}
+              name={optionDetail.icon.name}
+              size={30}
+              />
+          }
+          {optionDetail.icon && optionDetail.icon.materialIcon &&
             <MaterialIcon
               color={optionDetail.iconColor}
               name={optionDetail.icon.name}
               size={30}
+              style={{
+                backgroundColor: 'transparent'
+              }}
               />
           }
           {optionDetail.icon && optionDetail.icon.fontAwesome &&
