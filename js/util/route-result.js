@@ -77,6 +77,7 @@ export default class RouteResult {
           segments.push(setRowStyle({
             description: 'Walk ' + (Math.ceil(segment.walkTime / 60) + 1) + ' min',
             icon: {
+              materialIcon: true,
               name: 'walk'
             }
           }))
