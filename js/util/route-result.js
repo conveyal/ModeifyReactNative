@@ -2,6 +2,7 @@
 
 import isEqual from 'lodash.isequal'
 import ProfileScorer from 'otp-profile-score'
+import toSentenceCase from 'to-sentence-case'
 
 import convert from './convert'
 
@@ -14,12 +15,132 @@ type RouteResultConfig = {
 }
 
 export default class RouteResult {
+  fromLocation: Object;
   hasError: boolean;
   lastResponse: TripPlanResult;
   results: TripPlanResult;
+  toLocation: Object;
+
+  hasChanged = false
 
   constructor (config?: RouteResultConfig) {
 
+  }
+
+  getSegmentDetailsForOption (option: Object) {
+    if (option.segmentDetails) {
+      return option.segmentDetails
+    }
+
+    let segments = []
+
+    // add from location
+    segments.push({
+      description: this.fromLocation.name,
+      icon: {
+        name: 'star'
+      },
+      iconColor: '#8ec449',
+      rowStyle: {
+        backgroundColor: '#fff'
+      },
+      textStyle: {
+        fontWeight: 'bold'
+      }
+    })
+
+    segmentRowIdx = 1
+
+    segments = segments.concat(
+      narrativeDirections(option.access[0].streetEdges, segmentRowIdx)
+    )
+
+    // Add transit segments
+    let lastColor = ''
+    const length = option.transit.length
+    for (let i = 0; i < length; i++) {
+      const segment = option.transit[i]
+      const departureTimes = segment.departureTimes || []
+      const fromName = segment.fromName
+      const patterns = segment.segmentPatterns
+      const color = patterns[0].color
+      const routeAgencyNames = {}
+      segment.routes.forEach((route) => {
+        routeAgencyNames[route.id] = route.agencyName
+      })
+
+      // Check for a walking distance to see if you are boarding or transferring
+      if (segment.walkTime !== 0 || i === 0) {
+        if (i > 0) {
+          segments.push(setRowStyle({
+            description: 'Walk ' + (Math.ceil(segment.walkTime / 60) + 1) + ' min',
+            icon: 'walk'
+          }))
+        }
+
+        // board
+        segments.push(setRowStyle({
+          color,
+          description: fromName,
+          textStyle: {
+            fontWeight: 'bold'
+          }
+        }))
+      } else {
+        segments.push(setRowStyle({
+          color: 'linear-gradient(to bottom, ' + lastColor + ' 0%, ' +
+            lastColor + ' 50%,' + color + ' 50%, ' + color + ' 100%)',
+          description: fromName,
+          textStyle: {
+            fontWeight: 'bold'
+          }
+        }))
+      }
+
+      segments.push(setRowStyle({
+        color: color,
+        description: 'Take ' + getRouteNames(segment.routes),
+        segment: true
+      }))
+
+      // Check if you are deboarding
+      if (i + 1 >= length || option.transit[i + 1].walkTime > 0) {
+        segments.push(setRowStyle({
+          color,
+          description: segment.toName,
+          textStyle: {
+            fontWeight: 'bold'
+          }
+        }))
+      }
+
+      lastColor = color
+    }
+
+    if (option.egress && option.egress.length > 0) {
+      segments = segments.concat(
+        narrativeDirections(option.egress[0].streetEdges)
+      )
+    }
+
+    // add to location
+    segments.push({
+      description: this.toLocation.name,
+      icon: {
+        name: 'map-marker'
+      },
+      iconColor: '#f5a81c',
+      rowStyle: {
+        backgroundColor: '#fff'
+      },
+      textStyle: {
+        fontWeight: 'bold'
+      }
+    })
+
+    option.segmentDetails = segments
+
+    return option.segmentDetails
   }
 
   /**
@@ -29,22 +150,69 @@ export default class RouteResult {
    */
   parseResponse (response: TripPlanResult) {
     if (isEqual(response, this.lastResponse)) {
-      return false
+      return
     }
 
+    this.hasChanged = true
     this.lastResponse = response
     if (response.error) {
       this.hasError = true
       this.results = []
-      return true
+      return
     }
     this.results = scorer.processOptions(response.r5.profile)
       .map((option) => addModeifyData(option))
 
-    console.log(this.results.slice(4))
-
-    return true
+    console.log(this.results)
   }
+
+  setLocation (type: 'from' | 'to', location: Object) {
+    if (type === 'from') {
+      if (this.fromLocation !== location) this.hasChanged = true
+      this.fromLocation = location
+    } else {
+      if (this.toLocation !== location) this.hasChanged = true
+      this.toLocation = location
+    }
+  }
+}
+
+let segmentRowIdx
+
+const MODE_TO_ACTION = {
+  BICYCLE: 'Bike',
+  BICYCLE_RENT: 'Bike',
+  CAR: 'Drive',
+  CAR_PARK: 'Drive',
+  WALK: 'Walk'
+}
+
+const MODE_TO_ICON = {
+  BICYCLE: 'bike',
+  BICYCLE_RENT: 'cabi',
+  CAR: 'car',
+  CAR_PARK: 'car',
+  WALK: 'walk'
+}
+
+const DIRECTION_TO_CARDINALITY = {
+  CIRCLE_COUNTERCLOCKWISE: 'repeat',
+  HARD_LEFT: 'arrow-left',
+  HARD_RIGHT: 'arrow-right',
+  RIGHT: 'arrow-right',
+  LEFT: 'arrow-left',
+  CONTINUE: 'arrow-up',
+  SLIGHTLY_RIGHT: 'arrow-right',
+  SLIGHTLY_LEFT: 'arrow-right',
+  UTURN_LEFT: 'repeat',
+  UTURN_RIGHT: 'repeat'
+}
+
+const DIRECTION_TO_CARDINALITY_TRANSFORM = {
+  CIRCLE_COUNTERCLOCKWISE: 'fa-repeat fa-flip-horizontal',
+  SLIGHTLY_RIGHT: 'fa-arrow-right fa-northeast',
+  SLIGHTLY_LEFT: 'fa-arrow-right fa-northwest',
+  UTURN_LEFT: 'fa-repeat fa-flip-horizontal'
 }
 
 function addModeifyData (option) {
@@ -64,6 +232,105 @@ function distances (option, mode, val) {
   } else {
     return convert.metersToMiles(option[val])
   }
+}
+
+function getAgencyName (internalName) {
+  switch (internalName) {
+    case 'MET': return 'Metro'
+    case 'Arlington Transit': return 'ART'
+    case 'Maryland Transit Administration': return 'MTA'
+    case 'Potomac and Rappahannock Transportation Commission': return 'PRTC'
+    case 'Virginia Railway Express': return 'VRE'
+    case 'Montgomery County MD Ride On': return 'Ride On'
+    case 'Alexandria Transit Company (DASH)': return 'DASH'
+  }
+  return internalName
+}
+
+function getRouteNames (routes) {
+  var agencyRoutes = {} // maps agency name to array of routes
+  routes.forEach(function (r) {
+    var agencyName = r.agencyName
+    // FIXME: fix this in the R5 response
+    if (!agencyName || agencyName === 'UNKNOWN') {
+      agencyName = r.id.split(':')[0]
+      agencyName = agencyName.substring(0, agencyName.length - 54)
+    }
+    if (!(agencyName in agencyRoutes)) {
+      agencyRoutes[agencyName] = []
+    }
+    agencyRoutes[agencyName].push(r)
+  })
+  var agencyStrings = []
+  for (var agencyName in agencyRoutes) {
+    var rtes = agencyRoutes[agencyName]
+    // TODO: handle DC-specific behavior via config
+    var displayName = (agencyName === 'MET' || agencyName === 'WMATA')
+      ? rtes[0].mode === 'SUBWAY'
+        ? 'Metrorail'
+        : 'Metrobus'
+      : getAgencyName(agencyName)
+    displayName = displayName.replace('_', ' ') // FIXME: shouldn't be necessary after R5 API fix
+    agencyStrings.push(displayName + ' ' + rtes.map(function (r) { return r.shortName }).join('/'))
+  }
+  return agencyStrings.join(', ')
+}
+
+function narrativeDirections (edges) {
+  if (!edges) return []
+
+  const narrative = []
+
+  edges.forEach((streetEdge) => {
+    if (!streetEdge.streetName && !streetEdge.bikeRentalOffStation) {
+      return
+    }
+
+    const linkOrPath = streetEdge.streetName === 'Link' ||
+      streetEdge.streetName === 'Path'
+    if (linkOrPath || streetEdge.relativeDirection === 'CONTINUE') {
+      return
+    }
+
+    const streetSuffix = ' on ' + streetEdge.streetName
+    const step = {}
+    if (streetEdge.bikeRentalOnStation) {
+      step.description = 'Rent bike from ' +
+        streetEdge.bikeRentalOnStation.name +
+        ' and ride ' +
+        streetEdge.absoluteDirection.toLowerCase() +
+        streetSuffix
+      step.icon = {
+        name: 'cabi'
+      }
+    } else if (streetEdge.bikeRentalOffStation) {
+      step.description = 'Park bike at ' + streetEdge.bikeRentalOffStation.name
+      step.icon = {
+        name: 'cabi'
+      }
+    } else if (streetEdge.mode) {
+      step.description = MODE_TO_ACTION[streetEdge.mode] +
+        ' ' +
+        streetEdge.absoluteDirection.toLowerCase() +
+        streetSuffix
+      step.icon = {
+        name: MODE_TO_ICON[streetEdge.mode]
+      }
+    } else {
+      step.description = toSentenceCase(streetEdge.relativeDirection) + streetSuffix
+      step.icon = {
+        fontAwesome: true,
+        name: DIRECTION_TO_CARDINALITY[streetEdge.relativeDirection],
+        transform: DIRECTION_TO_CARDINALITY_TRANSFORM[streetEdge.relativeDirection]
+      }
+    }
+
+    setRowStyle(step)
+
+    narrative.push(step)
+  })
+
+  return narrative
 }
 
 function patternFilter (by) {
@@ -155,6 +422,14 @@ function setModeString (option) {
   }
 
   option.modeDescriptor = modeStr
+}
+
+function setRowStyle (step: Object) {
+  step.rowStyle = {
+    backgroundColor: segmentRowIdx % 2 ? '#edeff0' : '#fff'
+  }
+  segmentRowIdx++
+  return step
 }
 
 function setSegments (option, segmentOptions) {

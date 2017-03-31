@@ -9,3 +9,9 @@ export type GeocodeResult = {
     label: string
   }
 }
+
+export type Location = {
+  lat: number;
+  lon: number;
+  name: string;
+}

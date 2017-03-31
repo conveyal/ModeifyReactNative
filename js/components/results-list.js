@@ -1,5 +1,6 @@
 // @flow
 
+import isEqual from 'lodash.isequal'
 import React, { Component } from 'react'
 import {
   ListView,
@@ -9,11 +10,12 @@ import {
   TouchableOpacity,
   View
 } from 'react-native'
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
+import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome'
+import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons'
 
 import RouteResult from '../util/route-result'
 
-const routeResult = new RouteResult()
+import type {Location} from '../types'
 
 type SearchResult = {
   pending: boolean;
@@ -22,30 +24,41 @@ type SearchResult = {
 
 type Props = {
   activeSearch: number;
+  fromLocation: Location;
   searches: Array<SearchResult>;
+  toLocation: Location;
 }
 
 type State = {
   isPending: boolean;
   options?: ListView.DataSource;
   resultIndex?: number;
+  rowDetailToggle?: Object;
 }
 
 export default class ResultsList extends Component {
+  routeResult: Object
   state: State
 
   constructor(props: Props) {
     super(props)
+    this.routeResult = new RouteResult()
   }
 
   state = {
     isPending: true,
     options: new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2}),
-    resultIndex: 0
+    resultIndex: 0,
+    rowDetailToggle: {}
+  }
+
+  componentWillMount () {
+
   }
 
   componentWillReceiveProps (nextProps: Props) {
-    const {options} = this.state
+    console.log('componentWillReceiveProps')
+    const {rowDetailToggle} = this.state
     let {resultIndex} = this.state
     const {searches} = nextProps
     const currentSearch = searches[searches.length - 1]
@@ -54,26 +67,199 @@ export default class ResultsList extends Component {
       isPending: currentSearch.pending
     }
 
-    let resultChanged = false
+    this.routeResult.setLocation('from', nextProps.fromLocation)
+    this.routeResult.setLocation('to', nextProps.toLocation)
+    this.routeResult.parseResponse(currentSearch.planResponse)
 
-    resultChanged = resultChanged ||
-      routeResult.parseResponse(currentSearch.planResponse)
-
-    if (resultChanged) {
-      nextState.options = options.cloneWithRows(routeResult.results)
+    if (this.routeResult.hasChanged) {
+      nextState.options = this._getRows({})
       nextState.resultIndex = resultIndex + 1
+      nextState.rowDetailToggle = {}
     }
+
+    this.routeResult.hasChanged = false
 
     this.setState(nextState)
   }
 
   shouldComponentUpdate (nextProps: Props, nextState: State) {
     return nextState.isPending !== this.state.isPending ||
-      nextState.resultIndex !== this.state.resultIndex
+      nextState.resultIndex !== this.state.resultIndex ||
+      !isEqual(nextState.rowDetailToggle, this.state.rowDetailToggle)
   }
 
-  _onResultTitlePress = (option) => {
+  _getOptionDetailListviewDatasource (option) {
+    if (option.dataSource) return option.dataSource
+    option.dataSource = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2})
+    option.dataSource =
+      option.dataSource.cloneWithRows(
+        this.routeResult.getSegmentDetailsForOption(option)
+      )
+    return option.dataSource
+  }
 
+  _getRows (nextRowDetailToggle) {
+    const {results} = this.routeResult
+    let rows = results && results.length > 0
+      ? this.routeResult.results.map((result, idx) => {
+          if (nextRowDetailToggle[idx]) {
+            return Object.assign({}, result) // return a new object so ListView re-renders
+          }
+          return result
+        })
+      : []
+    return this.state.options.cloneWithRows(rows)
+  }
+
+  // ------------------------------------------------------------------------
+  // handlers
+  // ------------------------------------------------------------------------
+
+  _toggleDetails = (rowId) => {
+    const nextRowDetailToggle = Object.assign({}, this.state.rowDetailToggle)
+    nextRowDetailToggle[rowId] = !nextRowDetailToggle[rowId]
+    this.setState({
+      options: this._getRows(nextRowDetailToggle),
+      rowDetailToggle: nextRowDetailToggle
+    })
+  }
+
+  // ------------------------------------------------------------------------
+  // renderers
+  // ------------------------------------------------------------------------
+
+  _renderOptionDetails = (optionDetail, listSectionID, listRowID) => {
+    return (
+      <View style={[styles.optionDetailsRow, optionDetail.rowStyle]}>
+        <View style={styles.optionDetailIcon}>
+          {optionDetail.icon && !optionDetail.icon.fontAwesome &&
+            <MaterialIcon
+              color={optionDetail.iconColor}
+              name={optionDetail.icon.name}
+              size={30}
+              />
+          }
+          {optionDetail.icon && optionDetail.icon.fontAwesome &&
+            <FontAwesomeIcon
+              name={optionDetail.icon.name}
+              size={30}
+              />
+          }
+        </View>
+        <Text
+          style={[
+            styles.optionDetailDescription,
+            optionDetail.textStyle
+          ]}
+          >
+          {optionDetail.description}
+        </Text>
+      </View>
+    )
+  }
+
+  _renderOption = (option, listSectionID, listRowID) => {
+    const {rowDetailToggle} = this.state
+
+    return (
+      <View style={styles.optionCard}>
+        <View style={styles.optionHeader}>
+          <Text style={styles.optionTitle}>
+            {option.modeDescriptor}
+          </Text>
+          {option.costPerTrip &&
+            <Text style={styles.cost}>
+              $ {option.costPerTrip}
+            </Text>
+          }
+        </View>
+        <View style={styles.optionContent}>
+          <View style={styles.segments} >
+            {option.segments.map((segment, idx) =>
+              <View style={styles.segmentRow}>
+                <View>
+                  <MaterialIcon
+                    name={segment.mode}
+                    size={30}
+                    style={styles.modeIcon}
+                    />
+                  {idx < option.segments.length - 1 &&
+                    <MaterialIcon
+                      name='menu-down'
+                      size={20}
+                      style={styles.transferIcon}
+                      />
+                  }
+                </View>
+                <View
+                  style={styles.segmentShortNameContainer}
+                  >
+                  {segment.background &&
+                    segment.background.map((color) =>
+                      <View style={[
+                          styles.segmentRouteBackground,
+                          {
+                            backgroundColor: color
+                          }
+                        ]} />
+                  )}
+                  <Text
+                    style={styles.segmentShortNameStroke}
+                    >
+                    {segment.shortName}
+                  </Text>
+                  <Text
+                    style={styles.segmentShortName}
+                    >
+                    {segment.shortName}
+                  </Text>
+                </View>
+              </View>
+            )}
+          </View>
+          <View style={styles.summary} >
+            <View style={styles.timeContainer}>
+              <Text style={styles.time}>
+                {option.averageTime}
+              </Text>
+              <Text style={styles.timeMinutes}>mins</Text>
+            </View>
+            <View style={styles.walkBikeTimeContainer}>
+              {option.freeflowTime &&
+                <WalkBikeText>{option.freeflowTime} without traffic</WalkBikeText>
+              }
+              {option.hasTransit && option.bikeDistances &&
+                <WalkBikeText>{option.bikeTim} min biking</WalkBikeText>
+              }
+              {option.hasTransit && option.walkDistances &&
+                <WalkBikeText>{option.walkTime} min walking</WalkBikeText>
+              }
+              {!option.hasTransit && option.bikeDistances &&
+                <WalkBikeText>{option.bikeDistances} mi biking</WalkBikeText>
+              }
+              {!option.hasTransit && option.walkDistances &&
+                <WalkBikeText>{option.walkDistances} mi walking</WalkBikeText>
+              }
+            </View>
+            <View style={styles.detailsButton}>
+              <MaterialIcon.Button
+                backgroundColor='#455a71'
+                name='plus-circle'
+                onPress={() => this._toggleDetails(listRowID)}
+                >
+                details
+              </MaterialIcon.Button>
+            </View>
+          </View>
+        </View>
+        {rowDetailToggle[listRowID] &&
+          <ListView
+            dataSource={this._getOptionDetailListviewDatasource(option)}
+            renderRow={this._renderOptionDetails}
+          />
+        }
+      </View>
+    )
   }
 
   render () {
@@ -92,96 +278,13 @@ export default class ResultsList extends Component {
         {!isPending && !hasResults &&
           <Text style={styles.infoText}>No results found between these locations!</Text>
         }
-        {routeResult.hasError &&
+        {this.routeResult.hasError &&
           <Text style={styles.infoText}>An error occurred.  Please try again!</Text>
         }
         {!isPending && hasResults &&
           <ListView
             dataSource={options}
-            renderRow={(option) => (
-              <View style={styles.optionCard}>
-                <View style={styles.optionHeader}>
-                  <Text style={styles.optionTitle}>
-                    {option.modeDescriptor}
-                  </Text>
-                  {option.costPerTrip &&
-                    <Text style={styles.cost}>
-                      $ {option.costPerTrip}
-                    </Text>
-                  }
-                </View>
-                <View style={styles.optionContent}>
-                  <View style={styles.segments} >
-                    {option.segments.map((segment, idx) =>
-                      <View style={styles.segmentRow}>
-                        <View>
-                          <Icon
-                            name={segment.mode}
-                            size={30}
-                            style={styles.modeIcon}
-                            />
-                          {idx < option.segments.length - 1 &&
-                            <Icon
-                              name='menu-down'
-                              size={20}
-                              style={styles.transferIcon}
-                              />
-                          }
-                        </View>
-                        <View
-                          style={styles.segmentShortNameContainer}
-                          >
-                          {segment.background &&
-                            segment.background.map((color) =>
-                              <View style={[
-                                  styles.segmentRouteBackground,
-                                  {
-                                    backgroundColor: color
-                                  }
-                                ]} />
-                          )}
-                          <Text
-                            style={styles.segmentShortNameStroke}
-                            >
-                            {segment.shortName}
-                          </Text>
-                          <Text
-                            style={styles.segmentShortName}
-                            >
-                            {segment.shortName}
-                          </Text>
-                        </View>
-                      </View>
-                    )}
-                  </View>
-                  <View style={styles.summary} >
-                    <View style={styles.timeContainer}>
-                      <Text style={styles.time}>
-                        {option.averageTime}
-                      </Text>
-                      <Text style={styles.timeMinutes}>mins</Text>
-                    </View>
-                    <View style={styles.walkBikeTimeContainer}>
-                      {option.freeflowTime &&
-                        <WalkBikeText>{option.freeflowTime} without traffic</WalkBikeText>
-                      }
-                      {option.hasTransit && option.bikeDistances &&
-                        <WalkBikeText>{option.bikeTim} min biking</WalkBikeText>
-                      }
-                      {option.hasTransit && option.walkDistances &&
-                        <WalkBikeText>{option.walkTime} min walking</WalkBikeText>
-                      }
-                      {!option.hasTransit && option.bikeDistances &&
-                        <WalkBikeText>{option.bikeDistances} mi biking</WalkBikeText>
-                      }
-                      {!option.hasTransit && option.walkDistances &&
-                        <WalkBikeText>{option.walkDistances} mi walking</WalkBikeText>
-                      }
-                    </View>
-                  </View>
-                </View>
-              </View>
-            )}
+            renderRow={this._renderOption}
           />
         }
       </ScrollView>
@@ -210,6 +313,12 @@ const styles = StyleSheet.create({
     top: 3,
     width: 70
   },
+  detailsButton: {
+    bottom: 5,
+    position: 'absolute',
+    right: 5,
+    width: 100
+  },
   infoText: {
     fontSize: 16
   },
@@ -221,7 +330,20 @@ const styles = StyleSheet.create({
     marginVertical: 5
   },
   optionContent: {
-    flexDirection: 'row'
+    flexDirection: 'row',
+    minHeight: 90
+  },
+  optionDetailDescription: {
+    paddingTop: 11
+  },
+  optionDetailsRow: {
+    flexDirection: 'row',
+    minHeight: 40
+  },
+  optionDetailIcon: {
+    paddingLeft: 10,
+    paddingVertical: 5,
+    width: 50
   },
   optionHeader: {
     backgroundColor: '#455a71',
