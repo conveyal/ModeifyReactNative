@@ -23,6 +23,8 @@ export function back (currentAppState: string) {
   switch (currentAppState) {
     case 'location-selection':
       return close()
+    case 'results-list':
+      return appStateChange('location-selection')
     default:
       break
   }

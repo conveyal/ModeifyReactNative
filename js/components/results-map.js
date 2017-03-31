@@ -2,7 +2,7 @@
 
 import polyline from 'polyline'
 import React, { Component } from 'react'
-import { StyleSheet, Text, View } from 'react-native'
+import { Platform, StyleSheet, Text, View } from 'react-native'
 import MapView from 'react-native-maps'
 
 const config = require('../../config.json')
@@ -104,7 +104,10 @@ const styles = StyleSheet.create({
   },
   mapContainer: {
     ...StyleSheet.absoluteFillObject,
-    top: 120,
+    ...Platform.select({
+      android: {top: 100},
+      ios: {top: 120}
+    })
   },
   mapContainerWithLocationFocus: {
     top: 300

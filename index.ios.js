@@ -1,8 +1,6 @@
 // @flow
 
 import { AppRegistry } from 'react-native';
-// import Main from './js/main';
-import Temp from './js/temp-results'
+import Main from './js/main';
 
-// AppRegistry.registerComponent('ModeifyReactNative', () => Main);
-AppRegistry.registerComponent('ModeifyReactNative', () => Temp);
+AppRegistry.registerComponent('ModeifyReactNative', () => Main);

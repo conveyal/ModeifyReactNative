@@ -4,6 +4,7 @@ import isEqual from 'lodash.isequal'
 import React, { Component } from 'react'
 import {
   ListView,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -360,6 +361,7 @@ const styles = StyleSheet.create({
     bottom: 3,
     color: '#394e1d',
     fontWeight: 'bold',
+    paddingRight: 4,
     paddingTop: 3,
     position: 'absolute',
     right: 0,
@@ -376,9 +378,14 @@ const styles = StyleSheet.create({
   infoText: {
     fontSize: 16
   },
-  modeIcon: {
-    height: 27
-  },
+  modeIcon: {...Platform.select({
+    android: {
+      height: 29
+    },
+    ios: {
+      height: 27
+    }
+  })},
   optionCard: {
     borderRadius: 5,
     marginVertical: 5
@@ -410,7 +417,9 @@ const styles = StyleSheet.create({
   resultListContainer: {
     backgroundColor: '#5a7491',
     flex: 1,
-    padding: 10
+    paddingHorizontal: 10,
+    paddingBottom: 50,
+    paddingTop: 10
   },
   segmentRow: {
     flexDirection: 'row'
