@@ -14,7 +14,7 @@ import {
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome'
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons'
 
-import ModeifyIcon from './ModeifyIcon'
+import ModeifyIcon from './modeify-icon'
 import RouteResult from '../util/route-result'
 
 import type {Location} from '../types'
@@ -284,7 +284,7 @@ export default class ResultsList extends Component {
                 <WalkBikeText>{option.freeflowTime} without traffic</WalkBikeText>
               }
               {option.hasTransit && option.bikeDistances &&
-                <WalkBikeText>{option.bikeTim} min biking</WalkBikeText>
+                <WalkBikeText>{option.bikeTime} min biking</WalkBikeText>
               }
               {option.hasTransit && option.walkDistances &&
                 <WalkBikeText>{option.walkTime} min walking</WalkBikeText>

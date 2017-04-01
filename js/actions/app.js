@@ -45,7 +45,8 @@ export function close () {
         currentLocation: true
       }
     }),
-    clearLocation('to'),
+    clearLocation({ type: 'to' }),
+    blurLocationField(),
     appStateChange('home')
   ]
 }

@@ -40,6 +40,7 @@ type MarkerLocation = {
 }
 
 type Props = {
+  appState: string;
   currentQuery: {
     from?: LocationType;
     to?: LocationType;
@@ -87,16 +88,33 @@ export default class LocationSelection extends Component {
   componentWillReceiveProps (nextProps: Props) {
     const updatedState = {}
     const locationTypes = ['from', 'to']
-    locationTypes.forEach((locationType) => {
+    // update location text
+    locationTypes.forEach((locationType: string) => {
+      const nextLocation: LocationType = nextProps.currentQuery[locationType]
       if (!isEqual(
-        nextProps.currentQuery[locationType],
+        nextLocation,
         this.props.currentQuery[locationType]
       )) {
+        // location has changed
         updatedState[`${locationType}Value`] = parseLocation(
-          nextProps.currentQuery[locationType]
+          nextLocation
         )
+
+        // redo geolocation if necessary
+        if (nextLocation.name === 'Current Location') {
+          this._geolocateLocation(locationType)
+        }
       }
     })
+
+    // blur location selection upon navigating away from location-selection
+    const {currentFocus} = this.state
+    if (!isEqual(nextProps.appState, this.props.appState) &&
+      nextProps.appState !== 'location-selection' &&
+      currentFocus !== 'none') {
+      this.refs[`${currentFocus}Input`].refs.input.clear()
+      this.refs[`${currentFocus}Input`].refs.input.blur()
+    }
     if (Object.keys(updatedState).length > 0) {
       this.setState(updatedState)
     }
