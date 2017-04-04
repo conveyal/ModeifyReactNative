@@ -55,11 +55,20 @@ export default class ResultsList extends Component {
   }
 
   componentWillMount () {
-
+    this.state = this._calculateState(this.props, true)
   }
 
   componentWillReceiveProps (nextProps: Props) {
-    console.log('componentWillReceiveProps')
+    this.setState(this._calculateState(nextProps))
+  }
+
+  shouldComponentUpdate (nextProps: Props, nextState: State) {
+    return nextState.isPending !== this.state.isPending ||
+      nextState.resultIndex !== this.state.resultIndex ||
+      !isEqual(nextState.rowDetailToggle, this.state.rowDetailToggle)
+  }
+
+  _calculateState (nextProps: Props, returnFullState?: boolean) {
     const {rowDetailToggle} = this.state
     let {resultIndex} = this.state
     const {searches} = nextProps
@@ -81,13 +90,11 @@ export default class ResultsList extends Component {
 
     this.routeResult.hasChanged = false
 
-    this.setState(nextState)
-  }
-
-  shouldComponentUpdate (nextProps: Props, nextState: State) {
-    return nextState.isPending !== this.state.isPending ||
-      nextState.resultIndex !== this.state.resultIndex ||
-      !isEqual(nextState.rowDetailToggle, this.state.rowDetailToggle)
+    if (returnFullState) {
+      return Object.assign(this.state, nextState)
+    } else {
+      return nextState
+    }
   }
 
   _getOptionDetailListviewDatasource (option) {
@@ -116,6 +123,10 @@ export default class ResultsList extends Component {
   // ------------------------------------------------------------------------
   // handlers
   // ------------------------------------------------------------------------
+
+  _onSettingsPress = () => {
+    this.props.appStateChange('settings')
+  }
 
   _toggleDetails = (rowId) => {
     const nextRowDetailToggle = Object.assign({}, this.state.rowDetailToggle)
@@ -327,6 +338,15 @@ export default class ResultsList extends Component {
       <ScrollView
         style={styles.resultListContainer}
         >
+        <View style={styles.settingsButtonContainer}>
+          <MaterialIcon.Button
+            backgroundColor='#90C450'
+            name='settings'
+            onPress={this._onSettingsPress}
+            >
+            Settings
+          </MaterialIcon.Button>
+        </View>
         {isPending &&
           <Text style={styles.infoText}>Calculating...</Text>
         }
@@ -463,6 +483,9 @@ const styles = StyleSheet.create({
     marginLeft: 5,
     overflow: 'hidden',
     width: 45
+  },
+  settingsButtonContainer: {
+    marginBottom: 10
   },
   summary: {
     backgroundColor: '#fff',

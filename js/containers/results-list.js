@@ -2,6 +2,7 @@
 
 import { connect } from 'react-redux'
 
+import {appStateChange} from '../actions/app'
 import ResultsList from '../components/results-list'
 
 const mapStateToProps = (state, ownProps) => {
@@ -14,8 +15,8 @@ const mapStateToProps = (state, ownProps) => {
   }
 }
 
-const mapDispatchToProps = (dispatch, ownProps) => {
-  return {}
+const mapDispatchToProps = {
+  appStateChange
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(ResultsList)

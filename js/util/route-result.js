@@ -27,6 +27,8 @@ export default class RouteResult {
 
   }
 
+  lastResponse = null
+
   getSegmentDetailsForOption (option: Object) {
     if (option.segmentDetails) {
       return option.segmentDetails

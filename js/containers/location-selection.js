@@ -12,15 +12,12 @@ const mapStateToProps = (state, ownProps) => {
   }
 }
 
-const mapDispatchToProps = (dispatch, ownProps) => {
-  const type = ownProps.type
-  return {
-    blurLocationSelection: () => { dispatch(blurLocationField()) },
-    clearLocation: (opts) => { dispatch(clearLocation(opts)) },
-    focusToLocationSelection: () => { dispatch(focusToLocationSelection()) },
-    setLocation: (opts) => { dispatch(setLocation(opts)) },
-    switchLocations: () => { dispatch(switchLocations()) }
-  }
+const mapDispatchToProps = {
+  blurLocationField,
+  clearLocation,
+  focusToLocationSelection,
+  setLocation,
+  switchLocations
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(LocationSelection)

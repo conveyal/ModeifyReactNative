@@ -36,6 +36,9 @@ export const reducers = {
   // OTP-RR handlers
   // ------------------------------------------------
   'PLAN_REQUEST' (state: appReducerState, action: reduxAction) {
+    if (state.appState === 'settings') {
+      return state
+    }
     return update(state, {
       appState: {
         $set: 'results-list'
@@ -44,7 +47,12 @@ export const reducers = {
   }
 }
 
+// export const initialState = {
+//   appState: 'home',
+//   locationFieldHasFocus: false
+// }
+
 export const initialState = {
-  appState: 'home',
+  appState: 'settings',
   locationFieldHasFocus: false
 }

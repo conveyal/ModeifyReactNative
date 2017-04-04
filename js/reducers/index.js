@@ -38,14 +38,48 @@ otpConfig.customOtpQueryBuilder = (api, query) => {
   return url
 }
 
+// const initialOtpQuery = {
+//   from: {
+//     currentLocation: true,
+//     name: 'Current Location',
+//   },
+//   mode: {
+//     bike: true,
+//     bus: true,
+//     cabi: true,
+//     car: true,
+//     rail: true,
+//     walk: true
+//   },
+//   time: {
+//     end: '9:00',
+//     start: '7:00'
+//   }
+// }
+
 const initialOtpQuery = {
   from: {
+    currentLocation: true,
+    lat: 38.88709,
+    lon: -77.095229,
     name: 'Current Location',
-    currentLocation: true
+  },
+  mode: {
+    bike: true,
+    bus: true,
+    cabi: true,
+    car: true,
+    rail: true,
+    walk: true
   },
   time: {
     end: '9:00',
     start: '7:00'
+  },
+  to: {
+    lat: 38.894757,
+    lon: -77.071506,
+    name: '1200 Wilson Blvd, Arlington, VA, USA'
   }
 }
 

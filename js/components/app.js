@@ -6,6 +6,7 @@ import { StyleSheet, Text, View } from 'react-native'
 import LocationSelection from '../containers/location-selection'
 import ResultsList from '../containers/results-list'
 import ResultsMap from '../containers/results-map'
+import Settings from '../containers/settings'
 import Navbar from '../containers/navbar'
 
 export default class App extends Component {
@@ -37,6 +38,12 @@ export default class App extends Component {
     }
   }
 
+  _renderSettings () {
+    if (this.props.appState === 'settings') {
+      return <Settings />
+    }
+  }
+
   render () {
     const {appState} = this.props
     return (
@@ -45,6 +52,7 @@ export default class App extends Component {
         {this._renderLocationSelection()}
         {this._renderResultsMap()}
         {this._renderResultsList()}
+        {this._renderSettings()}
       </View>
     )
   }

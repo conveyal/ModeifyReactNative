@@ -5,7 +5,8 @@ import { Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react
 
 const titleTextLookup = {
   'location-selection': 'PLAN YOUR TRIP DETAILS',
-  'results-list': 'RESULTS'
+  'results-list': 'RESULTS',
+  'settings': 'SETTINGS'
 }
 
 export default class Navbar extends Component {

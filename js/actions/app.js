@@ -25,6 +25,8 @@ export function back (currentAppState: string) {
       return close()
     case 'results-list':
       return appStateChange('location-selection')
+    case 'settings':
+      return appStateChange('results-list')
     default:
       break
   }

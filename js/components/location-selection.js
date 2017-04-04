@@ -100,8 +100,12 @@ export default class LocationSelection extends Component {
           nextLocation
         )
 
+        if (updatedState[`${locationType}Value`] === undefined) {
+          this.refs[`${locationType}Input`].refs.input.clear()
+        }
+
         // redo geolocation if necessary
-        if (nextLocation.name === 'Current Location') {
+        if (nextLocation && nextLocation.name === 'Current Location') {
           this._geolocateLocation(locationType)
         }
       }
@@ -199,7 +203,7 @@ export default class LocationSelection extends Component {
       currentFocus: 'none',
       geocodeResults: this.state.geocodeResults.cloneWithRows([])
     })
-    this.props.blurLocationSelection()
+    this.props.blurLocationField()
   }
 
   _onConfirmMapLocation = () => {
@@ -315,7 +319,7 @@ export default class LocationSelection extends Component {
     } else {
       // other value set, blur field
       this.refs[`${currentFocus}Input`].refs.input.blur()
-      this.props.blurLocationSelection()
+      this.props.blurLocationField()
       nextState.currentFocus = 'none'
     }
     this.setState(nextState)
@@ -356,7 +360,7 @@ export default class LocationSelection extends Component {
               placeholder='Enter starting location'
               ref='fromInput'
               underlined
-              value={fromValue}
+              value={fromValue || ''}
               widgetStyles={this._getInputStyles('from')}
               />
           }
@@ -370,7 +374,7 @@ export default class LocationSelection extends Component {
             placeholder='Where do you want to go?'
             ref='toInput'
             underlined
-            value={toValue}
+            value={toValue || ''}
             widgetStyles={this._getInputStyles('to')}
             />
         </GiftedForm>
