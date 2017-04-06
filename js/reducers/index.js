@@ -6,32 +6,74 @@ import {handleActions} from 'redux-actions'
 
 import * as app from './app'
 import * as user from './user'
+import {mphToMps} from '../util/convert'
+
+function safeParseInt (value, defaultValue) {
+  try {
+    return parseInt(value, 10)
+  } catch (e) {
+    return defaultValue
+  }
+}
 
 const otpConfig = require('../../config.json')
 otpConfig.customOtpQueryBuilder = (api, query) => {
   const planEndpoint = `${api.host}${api.path}`
   const {date, from, mode, time, to} = query
-  // TODO: handle mode
+  // calculate modes
+  const accessModes = ['WALK']
+  const directModes = []
+  const egressModes = ['WALK']
+  const transitModes = []
+
+  if (mode.bike) {
+    accessModes.push('BICYCLE')
+    directModes.push('BICYCLE')
+  }
+
+  if (mode.bus) {
+    transitModes.push('BUS')
+  }
+
+  if (mode.cabi) {
+    accessModes.push('BICYCLE_RENT')
+    directModes.push('BICYCLE_RENT')
+    egressModes.push('BICYCLE_RENT')
+  }
+
+  if (mode.car) {
+    accessModes.push('CAR_PARK')
+    directModes.push('CAR')
+  }
+
+  if (mode.rail) {
+    transitModes.push('TRAINISH')
+  }
+
+  if (mode.walk) {
+    directModes.push('WALK')
+  }
+
   const params = {
-    accessModes: 'WALK,BICYCLE,BICYCLE_RENT,CAR_PARK',
+    accessModes: accessModes.join(','),
     bikeSafe: 1000,
-    bikeSpeed: 3.57632,
-    bikeTrafficStress: 4,
+    bikeSpeed: mphToMps(mode.settings.bikeSpeed),
+    bikeTrafficStress: mode.settings.bikeTrafficStress,
     date,
-    directModes: 'WALK,BICYCLE,BICYCLE_RENT,CAR',
-    egressModes: 'WALK,BICYCLE_RENT',
+    directModes: directModes.join(','),
+    egressModes: egressModes.join(','),
     endTime: time.end,
     from,
     limit: 5,
-    maxBikeTime: 20,
-    maxWalkTime: 15,
+    maxBikeTime: safeParseInt(mode.settings.maxBikeTime, 20),
+    maxWalkTime: safeParseInt(mode.settings.maxWalkTime, 15),
     maxCarTime: 45,
     queryOtp: false,
     queryR5: true,
     startTime: time.start,
     to,
-    transitModes: 'BUS,TRAINISH',
-    walkSpeed: 1.34112
+    transitModes: transitModes.join(','),
+    walkSpeed: mphToMps(mode.settings.walkSpeed)
   }
   const url = `${planEndpoint}?${qs.stringify(params)}`
   console.log(url)
@@ -49,6 +91,14 @@ otpConfig.customOtpQueryBuilder = (api, query) => {
 //     cabi: true,
 //     car: true,
 //     rail: true,
+//     settings: {
+//       bikeSpeed: 8,
+//       bikeTrafficStress: 4,
+//       maxBikeTime: 20,
+//       maxWalkTime: 15,
+//       maxCarTime: 45,
+//       walkSpeed: 3
+//     },
 //     walk: true
 //   },
 //   time: {
@@ -70,6 +120,14 @@ const initialOtpQuery = {
     cabi: true,
     car: true,
     rail: true,
+    settings: {
+      bikeSpeed: 8,
+      bikeTrafficStress: 4,
+      maxBikeTime: 20,
+      maxWalkTime: 15,
+      maxCarTime: 45,
+      walkSpeed: 3
+    },
     walk: true
   },
   time: {

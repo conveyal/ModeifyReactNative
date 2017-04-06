@@ -3448,9 +3448,9 @@ otp-profile-score@^0.6.3:
   dependencies:
     component-clone "0"
 
-otp-react-redux@^0.5.0:
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/otp-react-redux/-/otp-react-redux-0.5.0.tgz#79442ac0a41b3d925533160c70f0ad98f32c5c3e"
+otp-react-redux@^0.6.0:
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/otp-react-redux/-/otp-react-redux-0.6.0.tgz#ba405345f5126be325281a74fcd1d1ff0d9749d3"
   dependencies:
     "@conveyal/lonlat" "^1.1.0"
     "@mapbox/polyline" "^0.2.0"
@@ -3461,6 +3461,7 @@ otp-react-redux@^0.5.0:
     immutability-helper "^2.1.1"
     isomorphic-fetch "^2.2.1"
     leaflet "^1.0.3"
+    lodash.debounce "^4.0.8"
     moment "^2.17.1"
     object-path "^0.11.3"
     qs "^6.3.0"
@@ -3813,6 +3814,10 @@ react-native-google-places-autocomplete@^1.2.0:
 "react-native-maps@https://github.com/airbnb/react-native-maps.git":
   version "0.13.1"
   resolved "https://github.com/airbnb/react-native-maps.git#e8bc08fd8e7e614174e2395a597d3b1727d65308"
+
+react-native-modal-dropdown@evansiroky/react-native-modal-dropdown:
+  version "0.4.2"
+  resolved "https://codeload.github.com/evansiroky/react-native-modal-dropdown/tar.gz/d07e30d108903d3c2c5504437c740c95485ff123"
 
 react-native-vector-icons@^4.0.0:
   version "4.0.0"

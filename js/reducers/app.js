@@ -18,6 +18,15 @@ export const reducers = {
       }
     })
   },
+  'CHANGE_PLAN_POSTPROCESS_SETTING' (state: appReducerState, action: reduxAction) {
+    return update(state, {
+      planPostprocessSettings: {
+        [action.payload.setting]: {
+          $set: action.payload.value
+        }
+      }
+    })
+  },
   'LOCATION_FIELD_FOCUS' (state: appReducerState, action: reduxAction) {
     return update(state, {
       locationFieldHasFocus: {
@@ -54,5 +63,9 @@ export const reducers = {
 
 export const initialState = {
   appState: 'settings',
-  locationFieldHasFocus: false
+  locationFieldHasFocus: false,
+  planPostprocessSettings: {
+    parkingCost: 10,
+    drivingCostPerMile: 0.56
+  }
 }

@@ -10,6 +10,8 @@ const mapStateToProps = (state, ownProps) => {
   return {
     activeSearch,
     fromLocation: currentQuery.from,
+    modeSettings: currentQuery.mode.settings,
+    planPostprocessSettings: state.app.planPostprocessSettings,
     searches,
     toLocation: currentQuery.to
   }

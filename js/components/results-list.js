@@ -27,15 +27,17 @@ type SearchResult = {
 type Props = {
   activeSearch: number;
   fromLocation: Location;
+  modeSettings: Object;
+  planPostprocessSettings: Object;
   searches: Array<SearchResult>;
   toLocation: Location;
 }
 
 type State = {
   isPending: boolean;
-  options?: ListView.DataSource;
+  options: ListView.DataSource;
   resultIndex?: number;
-  rowDetailToggle?: Object;
+  rowDetailToggle: Object;
 }
 
 export default class ResultsList extends Component {
@@ -68,18 +70,36 @@ export default class ResultsList extends Component {
       !isEqual(nextState.rowDetailToggle, this.state.rowDetailToggle)
   }
 
-  _calculateState (nextProps: Props, returnFullState?: boolean) {
-    const {rowDetailToggle} = this.state
+  _calculateState (nextProps: Props, returnFullState?: boolean): State {
+    const {options, rowDetailToggle} = this.state
     let {resultIndex} = this.state
     const {searches} = nextProps
     const currentSearch = searches[searches.length - 1]
 
     const nextState: State = {
-      isPending: currentSearch.pending
+      isPending: currentSearch.pending,
+      options,
+      rowDetailToggle
     }
 
     this.routeResult.setLocation('from', nextProps.fromLocation)
     this.routeResult.setLocation('to', nextProps.toLocation)
+    this.routeResult.setScorerRate(
+      'bikeSpeed',
+      nextProps.modeSettings.bikeSpeed
+    )
+    this.routeResult.setScorerRate(
+      'walkSpeed',
+      nextProps.modeSettings.walkSpeed
+    )
+    this.routeResult.setScorerRate(
+      'carParkingCost',
+      nextProps.planPostprocessSettings.parkingCost
+    )
+    this.routeResult.setScorerRate(
+      'mileageRate',
+      nextProps.planPostprocessSettings.drivingCostPerMile
+    )
     this.routeResult.parseResponse(currentSearch.planResponse)
 
     if (this.routeResult.hasChanged) {
@@ -108,11 +128,12 @@ export default class ResultsList extends Component {
   }
 
   _getRows (nextRowDetailToggle) {
-    const {results} = this.routeResult
+    const results = this.routeResult.getResults()
     let rows = results && results.length > 0
-      ? this.routeResult.results.map((result, idx) => {
+      ? results.map((result, idx) => {
           if (nextRowDetailToggle[idx]) {
-            return Object.assign({}, result) // return a new object so ListView re-renders
+            // return a new object so ListView re-renders
+            return Object.assign({}, result)
           }
           return result
         })

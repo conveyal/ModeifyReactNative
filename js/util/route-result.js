@@ -16,18 +16,25 @@ type RouteResultConfig = {
 
 export default class RouteResult {
   fromLocation: Object;
-  hasError: boolean;
-  lastResponse: TripPlanResult;
+  lastResponse: Object;
   results: TripPlanResult;
   toLocation: Object;
 
   hasChanged = false
+  hasError = false
 
   constructor (config?: RouteResultConfig) {
 
   }
 
-  lastResponse = null
+  lastResponse = {}
+
+  getResults () {
+    if (this.hasError) return []
+
+    return scorer.processOptions(this.lastResponse.r5.profile)
+      .map((option) => addModeifyData(option))
+  }
 
   getSegmentDetailsForOption (option: Object) {
     if (option.segmentDetails) {
@@ -188,15 +195,12 @@ export default class RouteResult {
 
     this.hasChanged = true
     this.lastResponse = response
+
     if (response.error) {
       this.hasError = true
-      this.results = []
-      return
+    } else {
+      this.hasError = false
     }
-    this.results = scorer.processOptions(response.r5.profile)
-      .map((option) => addModeifyData(option))
-
-    console.log(this.results)
   }
 
   setLocation (type: 'from' | 'to', location: Object) {
@@ -207,6 +211,13 @@ export default class RouteResult {
       if (this.toLocation !== location) this.hasChanged = true
       this.toLocation = location
     }
+  }
+
+  setScorerRate (setting: string, value: any) {
+    value = parseFloat(value)
+    if (scorer.rates[setting] === value) return
+    scorer.rates[setting] = value
+    this.hasChanged = true
   }
 }
 

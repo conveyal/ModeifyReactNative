@@ -1,29 +1,64 @@
 // @flow
 
 import React, { Component } from 'react'
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from 'react-native'
+import ModalDropdown from 'react-native-modal-dropdown'
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons'
 
 import ModeifyIcon from './modeify-icon'
 
+const bikeSpeedOptions = ['4 mph', '6 mph', '8 mph', '10 mph']
+const bikeSpeedValues = [4, 6, 8, 10]
+const bikeTrafficStressOptions = ['Level 1', 'Level 2', 'Level 3', 'Level 4']
+const bikeTrafficStressValues = [1, 2, 3, 4]
+const walkSpeedOptions = ['2 mph', '3 mph', '4 mph']
+const walkSpeedValues = [2, 3, 4]
+
+type Props = Object
+
+type State = {
+  activeTab: string;
+}
+
 export default class Settings extends Component {
-  state = {
-    activeTab: 'modes'
+  state: State
+
+  constructor (props: Props) {
+    super(props)
+
+    this.state = {
+      activeTab: 'modes'
+    }
   }
 
   // ------------------------------------------------------------------------
   // handlers
   // ------------------------------------------------------------------------
 
-  _toggleMode (mode) {
-    const {currentQuery, setMode} = this.props
-    const newMode = Object.assign({}, currentQuery.mode)
-    newMode[mode] = !newMode[mode]
-    setMode({ mode: newMode })
-  }
-
   _onBikePress = () => {
     this._toggleMode('bike')
+  }
+
+  _onBikeSpeedChange = (idx) => {
+    this._setModeSetting('bikeSpeed', bikeSpeedValues[idx])
+  }
+
+  _onBikeMaxTimeChange = (text) => {
+    if (!isValidNumericText(text)) {
+      return
+    }
+    this._setModeSetting('maxBikeTime', text)
+  }
+
+  _onBikeTrafficStressChange = (idx) => {
+    this._setModeSetting('bikeTrafficStress', bikeTrafficStressValues[idx])
   }
 
   _onBusPress = () => {
@@ -38,12 +73,60 @@ export default class Settings extends Component {
     this._toggleMode('car')
   }
 
+  _onDrivingCostPerMileChange = (text) => {
+    if (!isValidDecimal(text)) {
+      return
+    }
+    this._setPostprocessSetting('drivingCostPerMile', text)
+  }
+
+  _onParkingCostChange = (text) => {
+    if (!isValidDecimal(text)) {
+      return
+    }
+    this._setPostprocessSetting('parkingCost', text)
+  }
+
   _onRailPress = () => {
     this._toggleMode('rail')
   }
 
+  _onWalkMaxTimeChange = (text) => {
+    if (!isValidNumericText(text)) {
+      return
+    }
+    this._setModeSetting('maxWalkTime', text)
+  }
+
   _onWalkPress = () => {
     this._toggleMode('walk')
+  }
+
+  _onWalkSpeedChange = (idx) => {
+    this._setModeSetting('walkSpeed', walkSpeedValues[idx])
+  }
+
+  _setModeSetting (key: string, value: string) {
+    const {currentQuery, setMode} = this.props
+    const newModeSettings = Object.assign({}, currentQuery.mode.settings)
+    newModeSettings[key] = value
+    const newMode = Object.assign({}, currentQuery.mode, { settings: newModeSettings })
+    setMode({ mode: newMode })
+  }
+
+  _setPostprocessSetting (key: string, value: string) {
+    const {changePlanPostpressSetting} = this.props
+    changePlanPostpressSetting({
+      setting: key,
+      value
+    })
+  }
+
+  _toggleMode (mode) {
+    const {currentQuery, setMode} = this.props
+    const newMode = Object.assign({}, currentQuery.mode)
+    newMode[mode] = !newMode[mode]
+    setMode({ mode: newMode })
   }
 
   _toggleTab = () => {
@@ -62,10 +145,17 @@ export default class Settings extends Component {
 
   _renderModesContent () {
     const {mode} = this.props.currentQuery
-    console.log(this.props.currentQuery)
+    const {
+      bikeSpeed,
+      bikeTrafficStress,
+      maxBikeTime,
+      maxWalkTime,
+      walkSpeed
+    } = mode.settings
+    const {planPostprocessSettings} = this.props
 
     return (
-      <View style={styles.content}>
+      <ScrollView style={styles.content}>
         <View style={styles.modeGrouping}>
           <Text style={styles.modeGroupingTitleText}>TRANSIT</Text>
           <TouchableOpacity
@@ -171,7 +261,111 @@ export default class Settings extends Component {
             }
           </TouchableOpacity>
         </View>
-      </View>
+        <View style={styles.modeSettingsSection}>
+          <ModeifyIcon
+            name='bike'
+            size={40}
+            style={styles.modeSettingsIcon}
+            />
+          <Text
+            style={styles.modeSettingsText}
+            >
+            speed:
+          </Text>
+          <ModalDropdown
+            defaultValue={`${bikeSpeed} mph`}
+            dropdownTextStyle={styles.dropdownText}
+            onSelect={this._onBikeSpeedChange}
+            options={bikeSpeedOptions}
+            style={styles.dropdown}
+            textStyle={styles.dropdownText}
+            />
+          <Text
+            style={styles.modeSettingsText}
+            >
+            max time:
+          </Text>
+          <TextInput
+            keyboardType='numeric'
+            onChangeText={this._onBikeMaxTimeChange}
+            style={styles.numericInput}
+            value={'' + maxBikeTime}
+            />
+          <Text
+            style={styles.modeSettingsText}
+            >
+            traffic stress tolerance:
+          </Text>
+          <ModalDropdown
+            defaultValue={`Level ${bikeTrafficStress}`}
+            dropdownTextStyle={styles.dropdownText}
+            onSelect={this._onBikeTrafficStressChange}
+            options={bikeTrafficStressOptions}
+            style={styles.dropdown}
+            textStyle={styles.dropdownText}
+            />
+        </View>
+        <View style={styles.modeSettingsSection}>
+          <ModeifyIcon
+            name='walk'
+            size={40}
+            style={styles.modeSettingsIcon}
+            />
+          <Text
+            style={styles.modeSettingsText}
+            >
+            speed:
+          </Text>
+          <ModalDropdown
+            defaultValue={`${walkSpeed} mph`}
+            dropdownTextStyle={styles.dropdownText}
+            onSelect={this._onWalkSpeedChange}
+            options={walkSpeedOptions}
+            style={styles.dropdown}
+            textStyle={styles.dropdownText}
+            />
+          <Text
+            style={styles.modeSettingsText}
+            >
+            max time:
+          </Text>
+          <TextInput
+            keyboardType='numeric'
+            onChangeText={this._onWalkMaxTimeChange}
+            style={styles.numericInput}
+            value={'' + maxWalkTime}
+            />
+        </View>
+        <View style={styles.modeSettingsSection}>
+          <ModeifyIcon
+            name='car'
+            size={40}
+            style={styles.modeSettingsIcon}
+            />
+          <Text
+            style={styles.modeSettingsText}
+            >
+            parking $:
+          </Text>
+          <TextInput
+            keyboardType='numeric'
+            onChangeText={this._onParkingCostChange}
+            style={styles.numericInput}
+            value={'' + planPostprocessSettings.parkingCost}
+            />
+          <Text
+            style={styles.modeSettingsText}
+            >
+            per mile $:
+          </Text>
+          <TextInput
+            keyboardType='numeric'
+            onChangeText={this._onDrivingCostPerMileChange}
+            style={styles.numericInput}
+            value={'' + planPostprocessSettings.drivingCostPerMile}
+            />
+        </View>
+      </ScrollView>
     )
   }
 
@@ -218,6 +412,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 20
   },
+  dropdown: {
+    backgroundColor: '#c9c9c9',
+    height: 40,
+    padding: 10
+  },
+  dropdownText: {
+    fontSize: 16
+  },
   modeGrouping: {
     backgroundColor: '#90C450',
     borderColor: '#90C450',
@@ -250,6 +452,29 @@ const styles = StyleSheet.create({
     right: 5,
     top: 20
   },
+  modeSettingsIcon: {
+    height: 40,
+    marginBottom: 10
+  },
+  modeSettingsSection: {
+    borderRadius: 10,
+    borderWidth: 1,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 10,
+    padding: 10
+  },
+  modeSettingsText: {
+    height: 40,
+    paddingHorizontal: 5,
+    paddingVertical: 10
+  },
+  numericInput: {
+    backgroundColor: '#c9c9c9',
+    height: 40,
+    padding: 10,
+    width: 55
+  },
   tabBar: {
     flexDirection: 'row',
     height: 50
@@ -272,3 +497,11 @@ const styles = StyleSheet.create({
     textAlign: 'center'
   }
 })
+
+function isValidDecimal (number) {
+  return !!number.match(/^\d*(\.\d*)?$/)
+}
+
+function isValidNumericText (number) {
+  return !!number.match(/^\d*$/)
+}
