@@ -289,10 +289,6 @@ export default class LocationSelection extends Component {
       })
   }
 
-  _onSwitch = () => {
-    this.props.switchLocations()
-  }
-
   _onToFocus = () => {
     this.setState({
       currentFocus: 'to',
@@ -378,18 +374,6 @@ export default class LocationSelection extends Component {
             widgetStyles={this._getInputStyles('to')}
             />
         </GiftedForm>
-        {appState !== 'home' &&
-          <TouchableHighlight
-            onPress={this._onSwitch}
-            style={styles.switchButtonContainer}
-            underlayColor='#fff'
-            >
-            <Image
-              source={require('../../assets/switch.png')}
-              style={styles.switchButton}
-              />
-          </TouchableHighlight>
-        }
       </View>
     )
   }
@@ -603,13 +587,6 @@ const styles = StyleSheet.create({
     height: 30,
     resizeMode: 'contain',
     width: 30
-  },
-  switchButtonContainer: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    position: 'absolute',
-    right: 20,
-    top: 30
   }
 })
 

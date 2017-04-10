@@ -56,13 +56,8 @@ export const reducers = {
   }
 }
 
-// export const initialState = {
-//   appState: 'home',
-//   locationFieldHasFocus: false
-// }
-
 export const initialState = {
-  appState: 'settings',
+  appState: 'home',
   locationFieldHasFocus: false,
   planPostprocessSettings: {
     parkingCost: 10,

@@ -1,20 +1,61 @@
 // @flow
 
-import React, { Component } from 'react'
-import { StyleSheet, Text, View } from 'react-native'
+import React, {Component} from 'react'
+import {Image, StyleSheet, Text, View} from 'react-native'
 
-import LocationSelection from '../containers/location-selection'
+import LocationForm from '../containers/location-form'
 import ResultsList from '../containers/results-list'
 import ResultsMap from '../containers/results-map'
-import Settings from '../containers/settings'
-import Navbar from '../containers/navbar'
+import headerStyles from '../util/header-styles'
+
+type Props = {
+  appState: string;
+  navigation: any;
+}
+
+type State = {
+  appState: string;
+}
 
 export default class App extends Component {
+  props: Props
+  state: State
+
+  constructor (props: Props) {
+    super(props)
+    this.state = {
+      appState: props.appState
+    }
+  }
+
+  componentWillReceiveProps (nextProps: Props) {
+    this.setState({ appState: nextProps.appState })
+  }
+
+  static navigationOptions = {
+    header: ({ state, setParams }) => {
+      console.log(state)
+      return ({
+        style: headerStyles.nav,
+        title: state.appState === 'home'
+          ? <Image
+              source={require('../../assets/nav-logo.png')}
+              style={headerStyles.homeLogo}
+              />
+          : <Text style={headerStyles.title}>PLAN YOUR TRIP DETAILS</Text>
+      })
+    }
+  }
+
   _renderLocationSelection () {
     switch (this.props.appState) {
       case 'home':
       case 'location-selection':
-        return <LocationSelection />
+        return (
+          <LocationForm
+            navigation={this.props.navigation}
+            />
+        )
       default:
         return null
     }
@@ -23,7 +64,11 @@ export default class App extends Component {
   _renderResultsList () {
     switch (this.props.appState) {
       case 'results-list':
-        return <ResultsList />
+        return (
+          <ResultsList
+            navigation={this.props.navigation}
+            />
+        )
       default:
         return null
     }
@@ -32,15 +77,13 @@ export default class App extends Component {
   _renderResultsMap () {
     switch (this.props.appState) {
       case 'home':
-        return <ResultsMap />
+        return (
+          <ResultsMap
+            navigation={this.props.navigation}
+            />
+        )
       default:
         return null
-    }
-  }
-
-  _renderSettings () {
-    if (this.props.appState === 'settings') {
-      return <Settings />
     }
   }
 
@@ -48,11 +91,9 @@ export default class App extends Component {
     const {appState} = this.props
     return (
       <View style={styles.app}>
-        <Navbar />
         {this._renderLocationSelection()}
         {this._renderResultsMap()}
         {this._renderResultsList()}
-        {this._renderSettings()}
       </View>
     )
   }

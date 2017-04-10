@@ -1,86 +1,26 @@
+// @flow
+
 /**
- * Seconds to minutes
+ * Calories to pounds
  */
 
-exports.secondsToMinutes = function (s) {
-  var m = Math.floor(s / 60)
-  var sec = s % 60
-  sec = sec < 10 ? '0' + sec : sec
-  return m + ':' + sec
+exports.caloriesToPounds = function (cals: number) {
+  return cals / 3500
 }
 
 /**
  * Meters to miles
  */
 
-exports.metersToMiles = function (meters) {
+exports.metersToMiles = function (meters: number) {
   return milesToString(meters * 0.000621371)
 }
-
-/**
- * MPH to m/s
- */
-
-exports.mphToMps = function (mph) {
-  return mph * 0.44704
-}
-
-/**
- * Calories to pounds
- */
-
-exports.caloriesToPounds = function (cals) {
-  return cals / 3500
-}
-
-/**
- * Number to short string
- */
-
-exports.roundNumberToString = function (n) {
-  if (n > 1000) {
-    return toFixed(n, 0).toLocaleString()
-  } else if (n > 100) {
-    return Math.round(n)
-  } else if (n > 10) {
-    return toFixed(n, 1)
-  } else if (n > 1) {
-    return toFixed(n, 2)
-  }
-}
-
-/**
- * Miles to CO2 tonnage
- */
-
-exports.milesToCO2 = function (m) {}
-
-/**
- * Expose `toFixed`
- */
-
-exports.toFixed = toFixed
-
-/**
- * To fixed without trailing zero
- */
-
-function toFixed (n, f) {
-  var m = Math.pow(10, f)
-  return ((n * m) | 0) / m
-}
-
-/**
- * Expose `milesToString`
- */
-
-exports.milesToString = milesToString
 
 /**
  * Miles to string
  */
 
-function milesToString (miles) {
+const milesToString = exports.milesToString = function (miles: number) {
   if (miles > 10) {
     return miles.toFixed(0)
   } else if (miles > 1) {
@@ -91,13 +31,21 @@ function milesToString (miles) {
 }
 
 /**
+ * MPH to m/s
+ */
+
+exports.mphToMps = function (mph: number) {
+  return mph * 0.44704
+}
+
+/**
  * TODO: this should be aliased in CSS
  */
 
-exports.modeToIcon = function (m) {
-  m = m || ''
-  m = m.toLowerCase()
-  switch (m) {
+exports.modeToIcon = function (mode: string) {
+  mode = mode || ''
+  mode = mode.toLowerCase()
+  switch (mode) {
     case 'bicycle':
       return 'bike'
     case 'bicycle_rent':
@@ -111,7 +59,23 @@ exports.modeToIcon = function (m) {
     case 'subway':
       return 'subway-variant'
     default:
-      return m
+      return mode
+  }
+}
+
+/**
+ * Number to short string
+ */
+
+exports.roundNumberToString = function (number: number) {
+  if (number > 1000) {
+    return toFixed(number, 0).toLocaleString()
+  } else if (number > 100) {
+    return Math.round(number)
+  } else if (number > 10) {
+    return toFixed(number, 1)
+  } else if (number > 1) {
+    return toFixed(number, 2)
   }
 }
 
@@ -119,7 +83,12 @@ exports.modeToIcon = function (m) {
  * Route to color converter
  */
 
-exports.routeToColor = function (type, agency, line, color) {
+exports.routeToColor = function (
+  type: number,
+  agency: string,
+  line: string,
+  color: string
+) {
   if (color) {
     return `#${color}`
   }
@@ -134,6 +103,42 @@ exports.routeToColor = function (type, agency, line, color) {
   }
 
   return '#333'
+}
+
+exports.safeParseFloat = function (value: number | string, defaultValue: number) {
+  try {
+    return parseFloat(value)
+  } catch (e) {
+    return defaultValue
+  }
+}
+
+exports.safeParseInt = function (value: number | string, defaultValue: number) {
+  try {
+    return parseInt(value, 10)
+  } catch (e) {
+    return defaultValue
+  }
+}
+
+/**
+ * Seconds to minutes
+ */
+
+exports.secondsToMinutes = function (input: number) {
+  var minutes = Math.floor(input / 60)
+  var sec = input % 60
+  sec = sec < 10 ? '0' + sec : sec
+  return minutes + ':' + sec
+}
+
+/**
+ * To fixed without trailing zero
+ */
+
+const toFixed = exports.toFixed = function (number: number, decimalPlaces: number) {
+  const temp = Math.pow(10, decimalPlaces)
+  return ((number * temp) | 0) / temp
 }
 
 /**

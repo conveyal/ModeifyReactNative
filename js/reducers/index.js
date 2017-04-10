@@ -6,15 +6,7 @@ import {handleActions} from 'redux-actions'
 
 import * as app from './app'
 import * as user from './user'
-import {mphToMps} from '../util/convert'
-
-function safeParseInt (value, defaultValue) {
-  try {
-    return parseInt(value, 10)
-  } catch (e) {
-    return defaultValue
-  }
-}
+import {mphToMps, safeParseFloat, safeParseInt} from '../util/convert'
 
 const otpConfig = require('../../config.json')
 otpConfig.customOtpQueryBuilder = (api, query) => {
@@ -57,7 +49,7 @@ otpConfig.customOtpQueryBuilder = (api, query) => {
   const params = {
     accessModes: accessModes.join(','),
     bikeSafe: 1000,
-    bikeSpeed: mphToMps(mode.settings.bikeSpeed),
+    bikeSpeed: mphToMps(safeParseFloat(mode.settings.bikeSpeed, 8)),
     bikeTrafficStress: mode.settings.bikeTrafficStress,
     date,
     directModes: directModes.join(','),
@@ -73,45 +65,16 @@ otpConfig.customOtpQueryBuilder = (api, query) => {
     startTime: time.start,
     to,
     transitModes: transitModes.join(','),
-    walkSpeed: mphToMps(mode.settings.walkSpeed)
+    walkSpeed: mphToMps(safeParseFloat(mode.settings.walkSpeed, 3))
   }
   const url = `${planEndpoint}?${qs.stringify(params)}`
   console.log(url)
   return url
 }
 
-// const initialOtpQuery = {
-//   from: {
-//     currentLocation: true,
-//     name: 'Current Location',
-//   },
-//   mode: {
-//     bike: true,
-//     bus: true,
-//     cabi: true,
-//     car: true,
-//     rail: true,
-//     settings: {
-//       bikeSpeed: 8,
-//       bikeTrafficStress: 4,
-//       maxBikeTime: 20,
-//       maxWalkTime: 15,
-//       maxCarTime: 45,
-//       walkSpeed: 3
-//     },
-//     walk: true
-//   },
-//   time: {
-//     end: '9:00',
-//     start: '7:00'
-//   }
-// }
-
 const initialOtpQuery = {
   from: {
     currentLocation: true,
-    lat: 38.88709,
-    lon: -77.095229,
     name: 'Current Location',
   },
   mode: {
@@ -133,16 +96,12 @@ const initialOtpQuery = {
   time: {
     end: '9:00',
     start: '7:00'
-  },
-  to: {
-    lat: 38.894757,
-    lon: -77.071506,
-    name: '1200 Wilson Blvd, Arlington, VA, USA'
   }
 }
 
 export default {
   app: handleActions(app.reducers, app.initialState),
+  nav: {},
   otp: createOtpReducer(otpConfig, initialOtpQuery),
   user: handleActions(user.reducers, user.initialState)
 }

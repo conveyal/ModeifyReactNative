@@ -26,6 +26,7 @@
 		"react-native-maps": "https://github.com/airbnb/react-native-maps.git",
 		"react-native-modal-dropdown": "evansiroky/react-native-modal-dropdown",
 		"react-native-vector-icons": "^4.0.0",
+		"react-navigation": "^1.0.0-beta.7",
 		"react-redux": "^5.0.2",
 		"redux": "^3.6.0",
 		"redux-actions": "^2.0.1",
