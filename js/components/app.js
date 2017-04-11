@@ -21,7 +21,7 @@ export default class App extends Component {
 
   static navigationOptions = {
     header: ({ state, setParams }) => ({
-      style: headerStyles.homeNav,
+      style: headerStyles.nav,
       title: state.key === 'Init'
         ? <Image
             source={require('../../assets/nav-logo.png')}

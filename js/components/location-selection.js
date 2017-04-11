@@ -395,7 +395,7 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: '#fff',
     flex: 1,
-    paddingTop: 20
+    paddingTop: 10
   },
   currentLocationTextInput: {
     color: '#15b3ff',

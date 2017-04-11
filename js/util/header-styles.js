@@ -31,11 +31,6 @@ export default StyleSheet.create({
     height: 35,
     resizeMode: 'contain'
   },
-  homeNav: {
-    backgroundColor: '#455a71',
-    height: 55,
-    marginTop: 20
-  },
   homeTitle: {
     color: '#fff',
     fontSize: 17,

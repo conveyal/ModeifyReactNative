@@ -85,6 +85,7 @@ export default class ResultsList extends Component {
 
     const nextState: State = {
       isPending: currentSearch.pending,
+      noPlans: false,
       options,
       rowDetailToggle
     }
@@ -272,11 +273,18 @@ export default class ResultsList extends Component {
             {option.segments.map((segment, idx) =>
               <View style={styles.segmentRow}>
                 <View>
-                  <MaterialIcon
-                    name={segment.mode}
-                    size={30}
-                    style={styles.modeIcon}
-                    />
+                  {segment.mode === 'cabi'
+                    ? <ModeifyIcon
+                        name={segment.mode}
+                        size={30}
+                        style={styles.modeIcon}
+                        />
+                    : <MaterialIcon
+                        name={segment.mode}
+                        size={30}
+                        style={styles.modeIcon}
+                        />
+                  }
                   {idx < option.segments.length - 1 &&
                     <MaterialIcon
                       name='menu-down'
@@ -440,7 +448,7 @@ const styles = StyleSheet.create({
       height: 29
     },
     ios: {
-      height: 27
+      height: 28
     }
   })},
   optionCard: {

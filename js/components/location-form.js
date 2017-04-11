@@ -82,9 +82,10 @@ export default class LocationForm extends Component {
         <TouchableHighlight
           onPress={this._onSwitch}
           style={styles.switchButtonContainer}
-          underlayColor='#fff'
+          underlayColor='#dbdee0'
           >
           <ModeifyIcon
+            color='#fff'
             name='reverse'
             size={30}
             />
@@ -125,7 +126,7 @@ const styles = StyleSheet.create({
     borderColor: '#C8C8C8',
     borderBottomWidth: 1,
     flexDirection: 'row',
-    margin: 20
+    margin: 10
   },
   homeInputText: {
     height: 20,
@@ -135,7 +136,7 @@ const styles = StyleSheet.create({
   },
   locationContainer: {
     flexDirection: 'row',
-    marginHorizontal: 20,
+    marginHorizontal: 10,
     padding: 5
   },
   locationText: {
@@ -144,15 +145,13 @@ const styles = StyleSheet.create({
     paddingTop: 7
   },
   switchButtonContainer: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
+    backgroundColor: '#BCBEC0',
     position: 'absolute',
     right: 30,
-    top: 34
+    top: 24
   },
   topLocationContainer: {
     borderColor: '#C8C8C8',
-    borderBottomWidth: 1,
-    marginTop: 10
+    borderBottomWidth: 1
   }
 })

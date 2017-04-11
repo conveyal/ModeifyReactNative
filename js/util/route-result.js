@@ -360,11 +360,13 @@ function narrativeDirections (edges) {
         streetEdge.absoluteDirection.toLowerCase() +
         streetSuffix
       step.icon = {
+        modeifyIcon: true,
         name: 'cabi'
       }
     } else if (streetEdge.bikeRentalOffStation) {
       step.description = 'Park bike at ' + streetEdge.bikeRentalOffStation.name
       step.icon = {
+        modeifyIcon: true,
         name: 'cabi'
       }
     } else if (streetEdge.mode) {
