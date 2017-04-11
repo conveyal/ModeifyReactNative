@@ -26,7 +26,7 @@ export default class ResultsMap extends Component {
 
     const itemsToRender = []
 
-    searches[activeSearch].planResponse.profile.forEach((profile) => {
+    searches[activeSearch].planResponse.r5.profile.forEach((profile) => {
       if (profile.summary === 'Non-transit options') {
         // non-transit
         profile.access.forEach((accessMode) => {
@@ -103,11 +103,7 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
   },
   mapContainer: {
-    ...StyleSheet.absoluteFillObject,
-    ...Platform.select({
-      android: {top: 100},
-      ios: {top: 120}
-    })
+    height: 400
   },
   mapContainerWithLocationFocus: {
     top: 300

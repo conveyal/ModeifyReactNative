@@ -1,7 +1,7 @@
 // @flow
 
 import React, {Component} from 'react'
-import {Image, StyleSheet, Text, View} from 'react-native'
+import {Image, ScrollView, StyleSheet, Text} from 'react-native'
 
 import LocationForm from '../containers/location-form'
 import ResultsList from '../containers/results-list'
@@ -13,95 +13,44 @@ type Props = {
   navigation: any;
 }
 
-type State = {
-  appState: string;
-}
+type State = {}
 
 export default class App extends Component {
   props: Props
   state: State
 
-  constructor (props: Props) {
-    super(props)
-    this.state = {
-      appState: props.appState
-    }
-  }
-
-  componentWillReceiveProps (nextProps: Props) {
-    this.setState({ appState: nextProps.appState })
-  }
-
   static navigationOptions = {
-    header: ({ state, setParams }) => {
-      console.log(state)
-      return ({
-        style: headerStyles.nav,
-        title: state.appState === 'home'
-          ? <Image
-              source={require('../../assets/nav-logo.png')}
-              style={headerStyles.homeLogo}
-              />
-          : <Text style={headerStyles.title}>PLAN YOUR TRIP DETAILS</Text>
-      })
-    }
-  }
-
-  _renderLocationSelection () {
-    switch (this.props.appState) {
-      case 'home':
-      case 'location-selection':
-        return (
-          <LocationForm
-            navigation={this.props.navigation}
+    header: ({ state, setParams }) => ({
+      style: headerStyles.homeNav,
+      title: state.key === 'Init'
+        ? <Image
+            source={require('../../assets/nav-logo.png')}
+            style={headerStyles.homeLogo}
             />
-        )
-      default:
-        return null
-    }
-  }
-
-  _renderResultsList () {
-    switch (this.props.appState) {
-      case 'results-list':
-        return (
-          <ResultsList
-            navigation={this.props.navigation}
-            />
-        )
-      default:
-        return null
-    }
-  }
-
-  _renderResultsMap () {
-    switch (this.props.appState) {
-      case 'home':
-        return (
-          <ResultsMap
-            navigation={this.props.navigation}
-            />
-        )
-      default:
-        return null
-    }
+          : <Text style={headerStyles.title}>PLAN YOUR TRIP DETAILS</Text>,
+          tintColor: '#fff'
+    })
   }
 
   render () {
-    const {appState} = this.props
     return (
-      <View style={styles.app}>
-        {this._renderLocationSelection()}
-        {this._renderResultsMap()}
-        {this._renderResultsList()}
-      </View>
+      <ScrollView style={styles.app}>
+        <LocationForm
+          navigation={this.props.navigation}
+          />
+        <ResultsMap
+          navigation={this.props.navigation}
+          />
+        <ResultsList
+          navigation={this.props.navigation}
+          />
+      </ScrollView>
     )
   }
 }
 
 const styles = StyleSheet.create({
   app: {
-    backgroundColor: '#fff',
-    flex: 1
+    backgroundColor: '#fff'
   }
 })

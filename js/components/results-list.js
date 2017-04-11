@@ -35,6 +35,7 @@ type Props = {
 
 type State = {
   isPending: boolean;
+  noPlans?: boolean;
   options: ListView.DataSource;
   resultIndex?: number;
   rowDetailToggle: Object;
@@ -51,6 +52,7 @@ export default class ResultsList extends Component {
 
   state = {
     isPending: true,
+    noPlans: true,
     options: new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2}),
     resultIndex: 0,
     rowDetailToggle: {}
@@ -74,6 +76,11 @@ export default class ResultsList extends Component {
     const {options, rowDetailToggle} = this.state
     let {resultIndex} = this.state
     const {searches} = nextProps
+
+    if (searches.length === 0) {
+      return this.state
+    }
+
     const currentSearch = searches[searches.length - 1]
 
     const nextState: State = {
@@ -349,25 +356,15 @@ export default class ResultsList extends Component {
     )
   }
 
-  render () {
-    const {fromLocation, toLocation} = this.props
-    const {isPending, options} = this.state
+  _renderResult () {
+    const {noPlans, isPending, options} = this.state
 
     const hasResults = options.getRowCount() > 0
 
+    if (noPlans) return null
+
     return (
-      <ScrollView
-        style={styles.resultListContainer}
-        >
-        <View style={styles.settingsButtonContainer}>
-          <MaterialIcon.Button
-            backgroundColor='#90C450'
-            name='settings'
-            onPress={this._onSettingsPress}
-            >
-            Settings
-          </MaterialIcon.Button>
-        </View>
+      <View>
         {isPending &&
           <Text style={styles.infoText}>Calculating...</Text>
         }
@@ -383,7 +380,26 @@ export default class ResultsList extends Component {
             renderRow={this._renderOption}
           />
         }
-      </ScrollView>
+      </View>
+    )
+  }
+
+  render () {
+    return (
+      <View
+        style={styles.resultListContainer}
+        >
+        <View style={styles.settingsButtonContainer}>
+          <MaterialIcon.Button
+            backgroundColor='#90C450'
+            name='settings'
+            onPress={this._onSettingsPress}
+            >
+            Settings
+          </MaterialIcon.Button>
+        </View>
+        {this._renderResult()}
+      </View>
     )
   }
 }

@@ -110,7 +110,7 @@ export default class LocationForm extends Component {
   }
 
   render () {
-    return this.props.appState === 'home'
+    return this.props.navigation.state.key === 'Init'
       ? this._renderHomeLocation()
       : this._renderBothLocations()
   }

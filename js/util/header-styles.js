@@ -31,10 +31,21 @@ export default StyleSheet.create({
     height: 35,
     resizeMode: 'contain'
   },
-  nav: {
+  homeNav: {
     backgroundColor: '#455a71',
     height: 55,
     marginTop: 20
+  },
+  homeTitle: {
+    color: '#fff',
+    fontSize: 17,
+    marginTop: 15
+  },
+  nav: {
+    backgroundColor: '#455a71',
+    height: 45,
+    marginTop: 20,
+    paddingBottom: 15
   },
   statusBarSpacer: {
     backgroundColor: '#5a7491',
@@ -42,7 +53,6 @@ export default StyleSheet.create({
   },
   title: {
     color: '#fff',
-    fontSize: 17,
-    marginTop: 15
+    fontSize: 17
   }
 })

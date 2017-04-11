@@ -5,7 +5,7 @@ import App from '../components/app'
 
 const mapStateToProps = (state, ownProps) => {
   return {
-    appState: state.app.appState
+    currentQuery: state.otp.currentQuery
   }
 }
 

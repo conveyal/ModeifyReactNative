@@ -30,7 +30,7 @@ export default class RouteResult {
   lastResponse = {}
 
   getResults () {
-    if (this.hasError) return []
+    if (this.hasError || !this.lastResponse) return []
 
     return scorer.processOptions(this.lastResponse.r5.profile)
       .map((option) => addModeifyData(option))
@@ -196,7 +196,7 @@ export default class RouteResult {
     this.hasChanged = true
     this.lastResponse = response
 
-    if (response.error) {
+    if (response && response.error) {
       this.hasError = true
     } else {
       this.hasError = false
