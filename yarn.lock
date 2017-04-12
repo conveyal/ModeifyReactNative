@@ -3800,9 +3800,9 @@ react-native-drawer-layout@1.3.0:
   dependencies:
     react-native-dismiss-keyboard "1.0.0"
 
-"react-native-maps@https://github.com/airbnb/react-native-maps.git":
-  version "0.13.1"
-  resolved "https://github.com/airbnb/react-native-maps.git#e8bc08fd8e7e614174e2395a597d3b1727d65308"
+react-native-maps@0.13.0:
+  version "0.13.0"
+  resolved "https://registry.yarnpkg.com/react-native-maps/-/react-native-maps-0.13.0.tgz#f3d791a06d36d553bcc177514ee52fdea45474c0"
 
 react-native-modal-dropdown@evansiroky/react-native-modal-dropdown:
   version "0.4.2"
