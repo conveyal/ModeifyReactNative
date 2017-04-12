@@ -326,16 +326,16 @@ export default class ResultsList extends Component {
               {option.freeflowTime &&
                 <WalkBikeText>{option.freeflowTime} without traffic</WalkBikeText>
               }
-              {option.hasTransit && option.bikeDistances &&
+              {option.hasTransit && option.bikeDistances > 0 &&
                 <WalkBikeText>{option.bikeTime} min biking</WalkBikeText>
               }
-              {option.hasTransit && option.walkDistances &&
+              {option.hasTransit && option.walkDistances > 0 &&
                 <WalkBikeText>{option.walkTime} min walking</WalkBikeText>
               }
-              {!option.hasTransit && option.bikeDistances &&
+              {!option.hasTransit && option.bikeDistances > 0 &&
                 <WalkBikeText>{option.bikeDistances} mi biking</WalkBikeText>
               }
-              {!option.hasTransit && option.walkDistances &&
+              {!option.hasTransit && option.walkDistances > 0 &&
                 <WalkBikeText>{option.walkDistances} mi walking</WalkBikeText>
               }
             </View>
@@ -350,7 +350,7 @@ export default class ResultsList extends Component {
             </View>
           </View>
         </View>
-        {rowDetailToggle[listRowID] &&
+        {rowDetailToggle && rowDetailToggle[listRowID] &&
           <ListView
             dataSource={this._getOptionDetailListviewDatasource(option)}
             renderRow={this._renderOptionDetails}
@@ -363,7 +363,8 @@ export default class ResultsList extends Component {
   _renderResult () {
     const {noPlans, isPending, options} = this.state
 
-    const hasResults = options.getRowCount() > 0
+    const numResults = options.getRowCount()
+    const hasResults = numResults > 0
 
     if (noPlans) {
       return (
@@ -388,10 +389,15 @@ export default class ResultsList extends Component {
           <Text style={styles.infoText}>An error occurred.  Please try again!</Text>
         }
         {!isPending && hasResults &&
-          <ListView
-            dataSource={options}
-            renderRow={this._renderOption}
-          />
+          <View>
+            <Text style={styles.infoText}>
+              {`Found ${numResults > 0 ? numResults : 'no'} options`}
+            </Text>
+            <ListView
+              dataSource={options}
+              renderRow={this._renderOption}
+            />
+          </View>
         }
       </View>
     )

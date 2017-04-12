@@ -10,7 +10,7 @@ import ResultsMap from '../containers/results-map'
 import headerStyles from '../util/header-styles'
 
 type Props = {
-  appState: string;
+  currentQuery: Object;
   navigation: any;
 }
 
@@ -44,7 +44,7 @@ export default class App extends Component {
         <LocationForm
           navigation={this.props.navigation}
           />
-        {this.props.navigation.state.key !== 'Init' &&
+        {this.props.currentQuery.to &&
           <View style={styles.settingsButtonContainer}>
             <MaterialIcon.Button
               backgroundColor='#90C450'

@@ -112,7 +112,7 @@ export default class LocationForm extends Component {
   }
 
   render () {
-    return this.props.navigation.state.key === 'Init'
+    return !this.props.currentQuery.to
       ? this._renderHomeLocation()
       : this._renderBothLocations()
   }

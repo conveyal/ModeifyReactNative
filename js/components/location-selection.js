@@ -163,7 +163,7 @@ export default class LocationSelection extends Component {
       }
     })
 
-    navigation.navigate('Home')
+    navigation.goBack()
   }
 
   _onGeocodeResultSelect = (value: GeocodeResult) => {
@@ -175,7 +175,7 @@ export default class LocationSelection extends Component {
         name: value.properties.label
       }
     })
-    navigation.navigate('Home')
+    navigation.goBack()
   }
 
   _onMapRegionChange = (region: MarkerLocation) => {
@@ -232,7 +232,7 @@ export default class LocationSelection extends Component {
       navigation.state.params.type,
       setLocation
     )
-    navigation.navigate('Home')
+    navigation.goBack()
   }
 
   // --------------------------------------------------

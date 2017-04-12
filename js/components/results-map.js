@@ -22,10 +22,17 @@ export default class ResultsMap extends Component {
     const {activeSearch, searches} = this.props
 
     if (searches.length === 0 || activeSearch === null) {
-      return
+      return null
     }
 
     const itemsToRender = []
+
+    if (!searches[activeSearch].planResponse ||
+      !searches[activeSearch].planResponse.r5 ||
+      !searches[activeSearch].planResponse.r5.profile) {
+      console.warn('Unparseable plan response', searches[activeSearch].planResponse)
+      return null
+    }
 
     searches[activeSearch].planResponse.r5.profile.forEach((profile) => {
       if (profile.summary === 'Non-transit options') {

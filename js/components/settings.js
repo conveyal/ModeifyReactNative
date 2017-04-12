@@ -151,7 +151,7 @@ export default class Settings extends Component {
   // ------------------------------------------------------------------------
 
   _renderGeneralContent () {
-
+    return null
   }
 
   _renderModesContent () {
