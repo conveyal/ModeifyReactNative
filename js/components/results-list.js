@@ -153,10 +153,6 @@ export default class ResultsList extends Component {
   // handlers
   // ------------------------------------------------------------------------
 
-  _onSettingsPress = () => {
-    this.props.appStateChange('settings')
-  }
-
   _toggleDetails = (rowId) => {
     const nextRowDetailToggle = Object.assign({}, this.state.rowDetailToggle)
     nextRowDetailToggle[rowId] = !nextRowDetailToggle[rowId]
@@ -369,7 +365,16 @@ export default class ResultsList extends Component {
 
     const hasResults = options.getRowCount() > 0
 
-    if (noPlans) return null
+    if (noPlans) {
+      return (
+        <View>
+          <Text style={styles.infoText}>No results yet!</Text>
+          <Text style={styles.infoText}>
+            Select your locations to view your commuting options
+          </Text>
+        </View>
+      )
+    }
 
     return (
       <View>
@@ -397,15 +402,6 @@ export default class ResultsList extends Component {
       <View
         style={styles.resultListContainer}
         >
-        <View style={styles.settingsButtonContainer}>
-          <MaterialIcon.Button
-            backgroundColor='#90C450'
-            name='settings'
-            onPress={this._onSettingsPress}
-            >
-            Settings
-          </MaterialIcon.Button>
-        </View>
         {this._renderResult()}
       </View>
     )
@@ -441,6 +437,7 @@ const styles = StyleSheet.create({
     width: 100
   },
   infoText: {
+    color: '#fff',
     fontSize: 16
   },
   modeIcon: {...Platform.select({
@@ -482,6 +479,7 @@ const styles = StyleSheet.create({
   resultListContainer: {
     backgroundColor: '#5a7491',
     flex: 1,
+    minHeight: 200,
     paddingHorizontal: 10,
     paddingBottom: 50,
     paddingTop: 10
@@ -528,9 +526,6 @@ const styles = StyleSheet.create({
     marginLeft: 5,
     overflow: 'hidden',
     width: 45
-  },
-  settingsButtonContainer: {
-    marginBottom: 10
   },
   summary: {
     backgroundColor: '#fff',

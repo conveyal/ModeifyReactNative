@@ -2,6 +2,7 @@
 
 import React, { Component } from 'react'
 import {
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -13,6 +14,7 @@ import ModalDropdown from 'react-native-modal-dropdown'
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons'
 
 import ModeifyIcon from './modeify-icon'
+import headerStyles from '../util/header-styles'
 
 const bikeSpeedOptions = ['4 mph', '6 mph', '8 mph', '10 mph']
 const bikeSpeedValues = [4, 6, 8, 10]
@@ -29,6 +31,15 @@ type State = {
 
 export default class Settings extends Component {
   state: State
+
+  static navigationOptions = {
+    header: ({ state, setParams }) => ({
+      style: headerStyles.nav,
+      tintColor: '#fff',
+      title: 'SETTINGS',
+      titleStyle: headerStyles.title
+    })
+  }
 
   constructor (props: Props) {
     super(props)
@@ -155,7 +166,7 @@ export default class Settings extends Component {
     const {planPostprocessSettings} = this.props
 
     return (
-      <ScrollView style={styles.content}>
+      <View style={styles.content}>
         <View style={styles.modeGrouping}>
           <Text style={styles.modeGroupingTitleText}>TRANSIT</Text>
           <TouchableOpacity
@@ -365,7 +376,7 @@ export default class Settings extends Component {
             value={'' + planPostprocessSettings.drivingCostPerMile}
             />
         </View>
-      </ScrollView>
+      </View>
     )
   }
 
@@ -373,7 +384,7 @@ export default class Settings extends Component {
     const {activeTab} = this.state
 
     return (
-      <View>
+      <ScrollView>
         <View style={styles.tabBar}>
           <TouchableOpacity
             onPress={this._toggleTab}
@@ -402,7 +413,7 @@ export default class Settings extends Component {
         {activeTab === 'modes'
           ? this._renderModesContent()
           : this._renderGeneralContent()}
-      </View>
+      </ScrollView>
     )
   }
 }
@@ -450,7 +461,10 @@ const styles = StyleSheet.create({
     color: '#D3E7B9',
     position: 'absolute',
     right: 5,
-    top: 20
+    ...Platform.select({
+      android: { top: 15 },
+      ios: { top: 20 }
+    })
   },
   modeSettingsIcon: {
     height: 40,

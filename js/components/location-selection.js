@@ -18,7 +18,6 @@ import {
 } from 'react-native'
 import MapView from 'react-native-maps'
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons'
-import {Navigator} from 'react-navigation'
 
 import type {GeocodeResult} from '../types'
 import {geolocateLocation} from '../util'

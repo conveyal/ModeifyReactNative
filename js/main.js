@@ -8,6 +8,7 @@ import {connect, Provider} from 'react-redux'
 
 import App from './containers/app.js'
 import LocationSelection from './containers/location-selection'
+import Settings from './containers/settings'
 import reducers from './reducers'
 import headerStyles from './util/header-styles'
 
@@ -16,7 +17,8 @@ const AppNavigator = StackNavigator({
   LocationSelection: {
     path: 'location-selection/:type',
     screen: LocationSelection
-  }
+  },
+  Settings: { screen: Settings }
 })
 
 const navReducer = (state, action) => {
