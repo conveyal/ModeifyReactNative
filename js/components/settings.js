@@ -1,5 +1,6 @@
 // @flow
 
+import moment from 'moment'
 import React, { Component } from 'react'
 import {
   Platform,
@@ -22,6 +23,39 @@ const bikeTrafficStressOptions = ['Level 1', 'Level 2', 'Level 3', 'Level 4']
 const bikeTrafficStressValues = [1, 2, 3, 4]
 const walkSpeedOptions = ['2 mph', '3 mph', '4 mph']
 const walkSpeedValues = [2, 3, 4]
+
+const dayOfWeekOptions = ['Mon-Fri', 'Saturday', 'Sunday']
+const endHourOptions = []
+const endHourValues = []
+const startHourOptions = ['Midnight']
+const startHourValues = ['0:00']
+
+for (let i = 1; i < 12; i++) {
+  const curHourOption = `${i}am`
+  const curHourValue = `${i}:00`
+  endHourOptions.push(curHourOption)
+  endHourValues.push(curHourValue)
+  startHourOptions.push(curHourOption)
+  startHourValues.push(curHourValue)
+}
+
+endHourOptions.push('Noon')
+endHourValues.push('12:00')
+startHourOptions.push('Noon')
+startHourValues.push('12:00')
+
+for (let i = 1; i < 12; i++) {
+  const curHourOption = `${i}pm`
+  const curHourValue = `${i + 12}:00`
+  endHourOptions.push(curHourOption)
+  endHourValues.push(curHourValue)
+  startHourOptions.push(curHourOption)
+  startHourValues.push(curHourValue)
+}
+
+endHourOptions.push('Midnight')
+endHourValues.push('23:59')
+
 
 type Props = Object
 
@@ -84,11 +118,50 @@ export default class Settings extends Component {
     this._toggleMode('car')
   }
 
+  _onDayOfWeekChange = (idx) => {
+    const planDate = moment()
+    function isRightDayOfWeek () {
+      const dayOfWeek = planDate.day()
+      switch (idx) {
+        case '0':
+          return dayOfWeek > 0 && dayOfWeek < 6
+        case '1':
+          return dayOfWeek === 6
+        case '2':
+          return dayOfWeek === 0
+        default:
+          // should not happen, but return true to prevent infinite loop
+          return true
+      }
+    }
+
+    while (!isRightDayOfWeek()) {
+      planDate.add(1, 'days')
+    }
+
+    this.props.setDate({ date: planDate.format('YYYY-MM-DD') })
+  }
+
   _onDrivingCostPerMileChange = (text) => {
     if (!isValidDecimal(text)) {
       return
     }
     this._setPostprocessSetting('drivingCostPerMile', text)
+  }
+
+  _onEndHourChange = (endIdx) => {
+    const {currentQuery, setTime} = this.props
+    const {time} = currentQuery
+
+    time.end = endHourValues[endIdx]
+
+    if(startHourValues.indexOf(time.start) > endIdx) {
+      // set start to 1 hour before end
+      time.start = startHourValues[endIdx]
+      this.refs.startTime.select(endIdx)
+    }
+
+    setTime({ time })
   }
 
   _onParkingCostChange = (text) => {
@@ -100,6 +173,21 @@ export default class Settings extends Component {
 
   _onRailPress = () => {
     this._toggleMode('rail')
+  }
+
+  _onStartHourChange = (startIdx) => {
+    const {currentQuery, setTime} = this.props
+    const {time} = currentQuery
+
+    time.start = startHourValues[startIdx]
+
+    if(endHourValues.indexOf(time.end) < startIdx) {
+      // set end to 1 hour after start
+      time.end = endHourValues[startIdx]
+      this.refs.endTime.select(startIdx)
+    }
+
+    setTime({ time })
   }
 
   _onWalkMaxTimeChange = (text) => {
@@ -147,11 +235,76 @@ export default class Settings extends Component {
   }
 
   // ------------------------------------------------------------------------
+  // helpers
+  // ------------------------------------------------------------------------
+
+  _getDefaultDateValue () {
+    const planDayOfWeek = moment(this.props.currentQuery.date).day()
+    switch (planDayOfWeek) {
+      case 0:
+        return 'Sunday'
+      case 6:
+        return 'Saturday'
+      default:
+        return 'Mon-Fri'
+    }
+  }
+
+  _getDefaultTimeValue (type: 'start' | 'end') {
+    const {time} = this.props.currentQuery
+    if (type === 'start') {
+      return startHourOptions[
+        startHourValues.indexOf(
+          time.start
+        )
+      ]
+    } else {
+      return endHourOptions[
+        endHourValues.indexOf(
+          time.end
+        )
+      ]
+    }
+  }
+
+  // ------------------------------------------------------------------------
   // renderers
   // ------------------------------------------------------------------------
 
   _renderGeneralContent () {
-    return null
+    return (
+      <View style={styles.content}>
+        <Text style={styles.timingHeader}>Day of Week</Text>
+        <ModalDropdown
+          defaultValue={this._getDefaultDateValue()}
+          dropdownTextStyle={styles.dropdownText}
+          onSelect={this._onDayOfWeekChange}
+          options={dayOfWeekOptions}
+          style={styles.dropdown}
+          textStyle={styles.dropdownText}
+          />
+        <Text style={styles.timingHeader}>From</Text>
+        <ModalDropdown
+          defaultValue={this._getDefaultTimeValue('start')}
+          dropdownTextStyle={styles.dropdownText}
+          onSelect={this._onStartHourChange}
+          options={startHourOptions}
+          ref='startTime'
+          style={styles.dropdown}
+          textStyle={styles.dropdownText}
+          />
+        <Text style={styles.timingHeader}>To</Text>
+        <ModalDropdown
+          defaultValue={this._getDefaultTimeValue('end')}
+          dropdownTextStyle={styles.dropdownText}
+          onSelect={this._onEndHourChange}
+          options={endHourOptions}
+          ref='endTime'
+          style={styles.dropdown}
+          textStyle={styles.dropdownText}
+          />
+      </View>
+    )
   }
 
   _renderModesContent () {
@@ -509,6 +662,12 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: 'bold',
     textAlign: 'center'
+  },
+  timingHeader: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 5,
+    marginTop: 15
   }
 })
 
