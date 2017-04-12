@@ -1,6 +1,6 @@
 // @flow
 
-import {StyleSheet} from 'react-native'
+import {Platform, StyleSheet} from 'react-native'
 
 export default StyleSheet.create({
   backContainer: {
@@ -29,18 +29,24 @@ export default StyleSheet.create({
   },
   homeLogo: {
     height: 35,
-    resizeMode: 'contain'
-  },
-  homeTitle: {
-    color: '#fff',
-    fontSize: 17,
-    marginTop: 15
+    resizeMode: 'contain',
+    ...Platform.select({
+      android: {
+        paddingTop: 10
+      },
+      ios: {}
+    })
   },
   nav: {
     backgroundColor: '#455a71',
     height: 45,
-    marginTop: 20,
-    paddingBottom: 15
+    ...Platform.select({
+      android: {},
+      ios: {
+        marginTop: 20,
+        paddingBottom: 15
+      }
+    })
   },
   statusBarSpacer: {
     backgroundColor: '#5a7491',
@@ -48,6 +54,18 @@ export default StyleSheet.create({
   },
   title: {
     color: '#fff',
-    fontSize: 17
+    fontSize: 17,
+    ...Platform.select({
+      android: {
+        marginRight: 60,
+        position: 'absolute',
+        bottom: 0,
+        top: 10,
+        right: 40,
+        left: 40,
+        textAlign: 'center'
+      },
+      ios: {}
+    })
   }
 })

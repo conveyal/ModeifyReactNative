@@ -2,6 +2,7 @@
 
 import React, {Component} from 'react'
 import {
+  Platform,
   StyleSheet,
   Text,
   TextInput,
@@ -129,10 +130,17 @@ const styles = StyleSheet.create({
     margin: 10
   },
   homeInputText: {
-    height: 20,
-    paddingLeft: 10,
-    paddingTop: 10,
-    width: 300
+    flex: 1,
+    ...Platform.select({
+      android: {
+        height: 40
+      },
+      ios: {
+        height: 20,
+        paddingLeft: 10,
+        paddingTop: 10
+      }
+    })
   },
   locationContainer: {
     flexDirection: 'row',

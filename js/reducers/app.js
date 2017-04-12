@@ -19,6 +19,14 @@ export const reducers = {
         }
       }
     })
+  },
+  'SEARCHING_ON_MAP' (state: appReducerState, action: reduxAction) {
+    // temp fix for https://github.com/airbnb/react-native-maps/issues/453
+    return update(state, {
+      searchingOnMap: {
+        $set: action.payload
+      }
+    })
   }
 }
 
@@ -26,5 +34,6 @@ export const initialState = {
   planPostprocessSettings: {
     parkingCost: 10,
     drivingCostPerMile: 0.56
-  }
+  },
+  searchingOnMap: false
 }

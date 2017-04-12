@@ -8,7 +8,8 @@ import MapView from 'react-native-maps'
 const config = require('../../config.json')
 
 type Props = {
-  activeSearch: number
+  activeSearch: number;
+  searchingOnMap: boolean;
 }
 
 export default class ResultsMap extends Component {
@@ -55,7 +56,8 @@ export default class ResultsMap extends Component {
   }
 
   render () {
-    const {fromLocation, locationFieldHasFocus, toLocation} = this.props
+    const {fromLocation, locationFieldHasFocus, searchingOnMap, toLocation} = this.props
+    if (searchingOnMap) return null  // temp fix for https://github.com/airbnb/react-native-maps/issues/453
     return (
       <View
         style={[

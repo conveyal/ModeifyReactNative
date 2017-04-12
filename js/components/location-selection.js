@@ -8,6 +8,7 @@ import React, {Component} from 'react'
 import {
   Image,
   ListView,
+  Platform,
   StyleSheet,
   Text,
   TextInput,
@@ -17,6 +18,7 @@ import {
 } from 'react-native'
 import MapView from 'react-native-maps'
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons'
+import {Navigator} from 'react-navigation'
 
 import type {GeocodeResult} from '../types'
 import {geolocateLocation} from '../util'
@@ -69,10 +71,9 @@ export default class LocationSelection extends Component {
   static navigationOptions = {
     header: ({ state, setParams }) => ({
       style: headerStyles.nav,
-      title: (
-        <Text style={headerStyles.title}>SELECT LOCATION</Text>
-      ),
-      tintColor: '#fff'
+      tintColor: '#fff',
+      title: 'SELECT LOCATION',
+      titleStyle: headerStyles.title
     })
   }
 
@@ -96,6 +97,10 @@ export default class LocationSelection extends Component {
 
   componentDidMount () {
     this.refs.input.focus()
+  }
+
+  componentWillUnmount () {
+    this.props.setSearchingOnMap(false)  // temp fix for https://github.com/airbnb/react-native-maps/issues/453
   }
 
   _autocompleteText = throttle((text) => {
@@ -147,9 +152,10 @@ export default class LocationSelection extends Component {
   }
 
   _onConfirmMapLocation = () => {
-    const {navigation, setLocation} = this.props
+    const {navigation, setLocation, setSearchingOnMap} = this.props
     const {inputValue, markerLocation} = this.state
 
+    setSearchingOnMap(false)  // temp fix for https://github.com/airbnb/react-native-maps/issues/453
     setLocation({
       type: navigation.state.params.type,
       location: {
@@ -216,6 +222,8 @@ export default class LocationSelection extends Component {
 
   _selectOnMap = () => {
     this.setState({ selectingOnMap: true })
+    this.refs.input.blur()
+    this.props.setSearchingOnMap(true)  // temp fix for https://github.com/airbnb/react-native-maps/issues/453
   }
 
   _setAsCurrentLocation = () => {
@@ -252,9 +260,10 @@ export default class LocationSelection extends Component {
   }
 
   _renderMapSelection () {
+    const {searchingOnMap} = this.props  // bug fix for https://github.com/airbnb/react-native-maps/issues/453
     const {markerLocation, selectingOnMap} = this.state
 
-    if (!selectingOnMap) return null
+    if (!searchingOnMap || !selectingOnMap) return null
 
     return (
       <View style={styles.mapSelectionContainer}>
@@ -271,18 +280,20 @@ export default class LocationSelection extends Component {
             </Text>
           </TouchableOpacity>
         </View>
-        <View style={styles.mapContainer}>
-          <MapView
-            initialRegion={config.map.initialRegion}
-            onRegionChange={this._onMapRegionChange}
-            onRegionChangeComplete={this._onMapRegionChangeComplete}
-            style={styles.map}
-            >
-            <MapView.Marker
-              coordinate={markerLocation}
-              />
-          </MapView>
-        </View>
+        {searchingOnMap &&
+          <View style={styles.mapContainer}>
+            <MapView
+              initialRegion={config.map.initialRegion}
+              onRegionChange={this._onMapRegionChange}
+              onRegionChangeComplete={this._onMapRegionChangeComplete}
+              style={styles.map}
+              >
+              <MapView.Marker
+                coordinate={markerLocation}
+                />
+            </MapView>
+          </View>
+        }
       </View>
     )
   }
@@ -416,7 +427,7 @@ const styles = StyleSheet.create({
   },
   mapContainer: {
     ...StyleSheet.absoluteFillObject,
-    top: 85,
+    top: 85
   },
   mapInstructions: {
     alignItems: 'center',
@@ -427,9 +438,15 @@ const styles = StyleSheet.create({
   },
   regularTextInput: {
     color: '#000',
+    flex: 1,
     fontWeight: 'normal',
     marginLeft: 10,
-    width: 300
+    ...Platform.select({
+      android: {
+        height: 40
+      },
+      ios: {}
+    })
   },
   resultContainer: {
     flex: 1,

@@ -14,8 +14,14 @@ export function geolocateLocation (locationType: string, setLocation: Function) 
         }
       })
     },
-    (error) => alert(`Your location could not be determined.
-      Please search for an address.`),
-    {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000}
+    (error) => {
+      setLocation({
+        type: locationType,
+        location: null
+      })
+      alert(`Your location could not be determined.
+        Please search for an address.`)
+    },
+    {enableHighAccuracy: true, timeout: 10000, maximumAge: 1000}
   )
 }

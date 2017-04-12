@@ -22,13 +22,14 @@ export default class App extends Component {
   static navigationOptions = {
     header: ({ state, setParams }) => ({
       style: headerStyles.nav,
-      title: state.key === 'Init'
+      tintColor: '#fff',
+      title: (state.key === 'Init'
         ? <Image
             source={require('../../assets/nav-logo.png')}
             style={headerStyles.homeLogo}
             />
-          : <Text style={headerStyles.title}>PLAN YOUR TRIP DETAILS</Text>,
-          tintColor: '#fff'
+          : 'PLAN YOUR TRIP DETAILS'),
+      titleStyle: headerStyles.title
     })
   }
 
