@@ -19,8 +19,8 @@ import {
 import MapView from 'react-native-maps'
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons'
 
-import type {GeocodeResult} from '../types'
-import {geolocateLocation} from '../util'
+import type {GeocodeResult, MapRegion} from '../types'
+import {constructMapboxUrl, geolocateLocation} from '../util'
 import headerStyles from '../util/header-styles'
 
 const config = require('../../config.json')
@@ -38,11 +38,6 @@ type LocationType = {
   name: string;
 }
 
-type MarkerLocation = {
-  latitude: number;
-  longitude: number;
-}
-
 type Props = {
   appState: string;
   currentQuery: {
@@ -53,14 +48,14 @@ type Props = {
 type State = {
   geocodeResults: ListView.DataSource;
   inputValue?: string;
-  markerLocation: MarkerLocation;
+  markerLocation: MapRegion;
   noGeocodeResultsFound?: boolean;
   selectingOnMap?: boolean;
 }
 
 export default class LocationSelection extends Component {
   currentAutocompleteQuery: string
-  currentReverseQuery: MarkerLocation
+  currentReverseQuery: MapRegion
   state: State
 
   constructor(props: Props) {
@@ -178,11 +173,11 @@ export default class LocationSelection extends Component {
     navigation.goBack()
   }
 
-  _onMapRegionChange = (region: MarkerLocation) => {
+  _onMapRegionChange = (region: MapRegion) => {
     this.setState({ markerLocation: region })
   }
 
-  _onMapRegionChangeComplete = (region: MarkerLocation) => {
+  _onMapRegionChangeComplete = (region: MapRegion) => {
     this.setState({
       inputValue: lonlat.print(region)
     })
@@ -287,6 +282,16 @@ export default class LocationSelection extends Component {
               onRegionChangeComplete={this._onMapRegionChangeComplete}
               style={styles.map}
               >
+              {config.map.showMapBoxTiles &&
+                <MapView.UrlTile
+                  urlTemplate={constructMapboxUrl(config.map.mapbox_base_style)}
+                  />
+              }
+              {config.map.showMapBoxTiles &&
+                <MapView.UrlTile
+                  urlTemplate={constructMapboxUrl(config.map.mapbox_label_style)}
+                  />
+              }
               <MapView.Marker
                 coordinate={markerLocation}
                 />

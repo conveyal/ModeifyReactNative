@@ -1,6 +1,16 @@
 // @flow
 
 import lonlat from '@conveyal/lonlat'
+import {PixelRatio} from 'react-native'
+
+const config = require('../../config.json')
+
+export function constructMapboxUrl (tileset: string) {
+  const mapboxAccessToken = config.map.mapbox_access_token
+  const isRetina = PixelRatio.get() > 1 ? '@2x' : ''
+  const template = `https://api.mapbox.com/styles/v1/${tileset}/tiles/{z}/{x}/{y}${isRetina}?access_token=${mapboxAccessToken}`
+  return template
+}
 
 export function geolocateLocation (locationType: string, setLocation: Function) {
   navigator.geolocation.getCurrentPosition(

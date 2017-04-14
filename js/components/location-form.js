@@ -38,6 +38,7 @@ export default class LocationForm extends Component {
       <View style={styles.bothLocationsContainer}>
         <View style={[styles.locationContainer, styles.topLocationContainer]}>
           <ModeifyIcon
+            color='#8ec449'
             name='start'
             size={30}
             />
@@ -60,6 +61,7 @@ export default class LocationForm extends Component {
         </View>
         <View style={styles.locationContainer}>
           <ModeifyIcon
+            color='#f5a81c'
             name='end'
             size={30}
             />

@@ -15,3 +15,10 @@ export type Location = {
   lon: number;
   name: string;
 }
+
+export type MapRegion = {
+  latitude: number;
+  latitudeDelta: number;
+  longitude: number;
+  longitudeDelta: number;
+}
