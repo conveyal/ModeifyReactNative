@@ -65,6 +65,7 @@ export default class ResultsMap extends Component {
           coordinate={toLatLng(station)}
           key={station.id}
           title={station.name}
+          zIndex={500}
           >
           <View
             style={styles.cabiMarkerContainer}
@@ -98,6 +99,7 @@ export default class ResultsMap extends Component {
             longitude: coord[1]
           }))}
           {...getPolylineStylesForMode(mode, polylineStyle)}
+          zIndex={400}
           />
       )
     }
@@ -114,6 +116,7 @@ export default class ResultsMap extends Component {
           image={require('../../assets/stop-dot.png')}
           key={stop.stop_id}
           title={stop.stop_name}
+          zIndex={500}
           />
       )
     }
@@ -208,6 +211,7 @@ export default class ResultsMap extends Component {
             <MapView.Marker
               coordinate={toLatLng(fromLocation)}
               title={fromLocation.name}
+              zIndex={500}
               >
               <ModeifyIcon
                 color='#8ec449'
@@ -220,6 +224,7 @@ export default class ResultsMap extends Component {
             <MapView.Marker
               coordinate={toLatLng(toLocation)}
               title={toLocation.name}
+              zIndex={500}
               >
               <ModeifyIcon
                 color='#f5a81c'
