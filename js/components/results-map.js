@@ -46,12 +46,38 @@ export default class ResultsMap extends Component {
 
     const itemsToRender = []
     const polylineKeys = {}
+    const stopKeys = {}
+    const cabiStationKeys = {}
 
     if (!searches[activeSearch].planResponse ||
       !searches[activeSearch].planResponse.r5 ||
       !searches[activeSearch].planResponse.r5.profile) {
       console.warn('Unparseable plan response', searches[activeSearch].planResponse)
       return null
+    }
+
+    function addCabiStationIfNeeded (station) {
+      if (!station || cabiStationKeys[station.id]) return
+      cabiStationKeys[station.id] = true
+
+      itemsToRender.push(
+        <MapView.Marker
+          coordinate={toLatLng(station)}
+          key={station.id}
+          title={station.name}
+          >
+          <View
+            style={styles.cabiMarkerContainer}
+            >
+            <ModeifyIcon
+              color='#FFCB00'
+              name='cabi'
+              size={12}
+              style={styles.cabiMarker}
+              />
+          </View>
+        </MapView.Marker>
+      )
     }
 
     function addPolylineIfNeeded (mode, polylineCoords, polylineStyle) {
@@ -74,6 +100,33 @@ export default class ResultsMap extends Component {
           {...getPolylineStylesForMode(mode, polylineStyle)}
           />
       )
+    }
+
+    function addStopMarkerIfNeeded (stop) {
+      if (stopKeys[stop.stop_id]) return
+      stopKeys[stop.stop_id] = true
+      itemsToRender.push(
+        <MapView.Marker
+          coordinate={{
+            latitude: stop.stop_lat,
+            longitude: stop.stop_lon
+          }}
+          image={require('../../assets/stop-dot.png')}
+          key={stop.stop_id}
+          title={stop.stop_name}
+          />
+      )
+    }
+
+    function streetEdgesToCoordinates (streetEdges) {
+      let combinedLineCoordinates = []
+      streetEdges.forEach((edge) => {
+        addCabiStationIfNeeded(edge.bikeRentalOffStation)
+        addCabiStationIfNeeded(edge.bikeRentalOnStation)
+        combinedLineCoordinates = combinedLineCoordinates
+          .concat(polyline.decode(edge.geometry.points))
+      })
+      return combinedLineCoordinates
     }
 
     const r5Response = searches[activeSearch].planResponse.r5
@@ -99,11 +152,17 @@ export default class ResultsMap extends Component {
           const patternData = r5Response.patterns.find((pattern) =>
             pattern.pattern_id === firstSegmentPattern.patternId
           )
+
+          // create polyline using stops
+          // also add markers for board and alight stops
           for (let i = firstSegmentPattern.fromIndex; i <= firstSegmentPattern.toIndex; i++) {
             const stop = r5Response.stops.find(
               (stop) => stop.stop_id === patternData.stops[i].stop_id
             )
             coords.push([stop.stop_lat, stop.stop_lon])
+            if (i === firstSegmentPattern.fromIndex || i === firstSegmentPattern.toIndex) {
+              addStopMarkerIfNeeded(stop)
+            }
           }
           addPolylineIfNeeded(
             transitOption.mode,
@@ -177,6 +236,20 @@ export default class ResultsMap extends Component {
 }
 
 const styles = StyleSheet.create({
+  cabiMarker: {
+    left: 2,
+    position: 'absolute',
+    top: 1
+  },
+  cabiMarkerContainer: {
+    backgroundColor: '#EF3026',
+    borderColor: '#FFCB00',
+    borderRadius: 15,
+    borderWidth: 2,
+    height: 20,
+    overflow: 'hidden',
+    width: 20
+  },
   map: {
     ...StyleSheet.absoluteFillObject,
   },
@@ -207,6 +280,11 @@ const polylineStyles = {
     strokeColor: '#888',
     strokeWidth: 3
   },
+  CAR_PARK: {
+    lineDashPattern: [10, 10],
+    strokeColor: '#888',
+    strokeWidth: 3
+  },
   SUBWAY: {
     strokeWidth: 8
   },
@@ -229,15 +307,6 @@ function getPolylineStylesForMode (mode, overrides={}) {
 function hasCoords(location) {
   return location && (location.lat || location.lat === 0) &&
     (location.lon || location.lon === 0)
-}
-
-function streetEdgesToCoordinates (streetEdges) {
-  let combinedLineCoordinates = []
-  streetEdges.forEach((edge) => {
-    combinedLineCoordinates = combinedLineCoordinates
-      .concat(polyline.decode(edge.geometry.points))
-  })
-  return combinedLineCoordinates
 }
 
 function toLatLng (location) {
