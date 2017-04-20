@@ -1,12 +1,24 @@
 {
   "api": {
-    "host": "http://trimet.dev.conveyal.com",
-    "path": "/otp/routers/default",
-    "port": 8001
+    "host": "https://example.com",
+    "path": "/api/plan"
   },
+  "auth0": {
+    "clientId": "",
+    "domain": ""
+  },
+  "debouncePlanTimeMs": 500,
   "map": {
-    "initLat": 45.52,
-    "initLon": -122.682
+    "initialRegion": {
+      "latitude": 38.887090,
+      "latitudeDelta": 0.0922,
+      "longitude": -77.095229,
+      "longitudeDelta": 0.0421
+    },
+    "mapbox_access_token": "",
+    "mapbox_base_style": "",
+    "mapbox_label_style": "",
+    "showMapBoxTiles": false
   },
   "geocoderSettings": {
     "boundary": {

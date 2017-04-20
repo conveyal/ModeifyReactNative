@@ -3800,6 +3800,10 @@ react-moment-proptypes@^1.2.1:
   dependencies:
     moment ">=1.6.0"
 
+react-native-auth0@^0.0.1:
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/react-native-auth0/-/react-native-auth0-0.0.1.tgz#6a712cc0f00740337396205bc3da453f52d25026"
+
 react-native-dismiss-keyboard@1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/react-native-dismiss-keyboard/-/react-native-dismiss-keyboard-1.0.0.tgz#32886242b3f2317e121f3aeb9b0a585e2b879b49"
@@ -3819,6 +3823,12 @@ react-native-drawer-layout@1.3.0:
 react-native-html-parser@^0.0.4:
   version "0.0.4"
   resolved "https://registry.yarnpkg.com/react-native-html-parser/-/react-native-html-parser-0.0.4.tgz#eb6f856d161ae46ef38d03a0ceb953397dd4e4fc"
+
+react-native-lock@^0.6.0:
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/react-native-lock/-/react-native-lock-0.6.0.tgz#2fc40caf74e60b7516b2faeee975271a71696c49"
+  dependencies:
+    react-native-auth0 "^0.0.1"
 
 react-native-maps@0.13.0:
   version "0.13.0"
