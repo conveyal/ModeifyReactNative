@@ -290,6 +290,9 @@ const polylineStyles = {
     strokeColor: '#888',
     strokeWidth: 3
   },
+  RAIL: {
+    strokeWidth: 8
+  },
   SUBWAY: {
     strokeWidth: 8
   },

@@ -50,8 +50,6 @@ exports.modeToIcon = function (mode: string) {
       return 'bike'
     case 'bicycle_rent':
       return 'cabi'
-    case 'carshare':
-      return 'car'
     case 'pedestrian':
       return 'walk'
     case 'rail':

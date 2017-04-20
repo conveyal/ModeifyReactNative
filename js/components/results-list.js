@@ -15,7 +15,7 @@ import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome'
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons'
 
 import ModeifyIcon from './modeify-icon'
-import RouteResult from '../util/route-result'
+import RouteResult, {getSegmentDetailsForOption} from '../util/route-result'
 
 import type {Location} from '../types'
 
@@ -127,11 +127,15 @@ export default class ResultsList extends Component {
 
   _getOptionDetailListviewDatasource (option) {
     if (option.dataSource) return option.dataSource
+
+    const {fromLocation, toLocation} = this.props
     option.dataSource = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2})
     option.dataSource =
       option.dataSource.cloneWithRows(
-        this.routeResult.getSegmentDetailsForOption(option)
-      )
+        getSegmentDetailsForOption(
+          option,
+          fromLocation,
+          toLocation))
     return option.dataSource
   }
 
@@ -160,6 +164,10 @@ export default class ResultsList extends Component {
       options: this._getRows(nextRowDetailToggle),
       rowDetailToggle: nextRowDetailToggle
     })
+  }
+
+  _handleSelectOption = (option) => {
+    this.props.navigation.navigate('OptionSelected', { option })
   }
 
   // ------------------------------------------------------------------------
@@ -269,7 +277,7 @@ export default class ResultsList extends Component {
             {option.segments.map((segment, idx) =>
               <View style={styles.segmentRow}>
                 <View>
-                  {segment.mode === 'cabi'
+                  {['cabi', 'carshare'].indexOf(segment.mode) > -1
                     ? <ModeifyIcon
                         name={segment.mode}
                         size={30}
@@ -338,6 +346,13 @@ export default class ResultsList extends Component {
               {!option.hasTransit && option.walkDistances > 0 &&
                 <WalkBikeText>{option.walkDistances} mi walking</WalkBikeText>
               }
+            </View>
+            <View style={styles.selectOptionButton}>
+              <TouchableOpacity
+                onPress={() => this._handleSelectOption(option)}
+                >
+                <Text>select</Text>
+              </TouchableOpacity>
             </View>
             <View style={styles.detailsButton}>
               <MaterialIcon.Button
@@ -532,6 +547,15 @@ const styles = StyleSheet.create({
     marginLeft: 5,
     overflow: 'hidden',
     width: 45
+  },
+  selectOptionButton: {
+    backgroundColor: '#DD9719',
+    borderRadius: 5,
+    padding: 10,
+    position: 'absolute',
+    right: 5,
+    top: 5,
+    width: 60
   },
   summary: {
     backgroundColor: '#fff',

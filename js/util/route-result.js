@@ -6,6 +6,7 @@ import toSentenceCase from 'to-sentence-case'
 
 import convert from './convert'
 
+import type {Location} from '../types'
 import type TripPlanResult from '../types/results'
 
 const scorer = new ProfileScorer()
@@ -32,155 +33,13 @@ export default class RouteResult {
   getResults () {
     if (this.hasError || !this.lastResponse) return []
 
-    return scorer.processOptions(this.lastResponse.r5.profile)
-      .map((option) => addModeifyData(option))
-  }
-
-  getSegmentDetailsForOption (option: Object) {
-    if (option.segmentDetails) {
-      return option.segmentDetails
-    }
-
-    let segments = []
-
-    // add from location
-    segments.push({
-      description: this.fromLocation.name,
-      icon: {
-        modeifyIcon: true,
-        name: 'start'
-      },
-      iconColor: '#8ec449',
-      rowStyle: {
-        backgroundColor: '#fff'
-      },
-      textStyle: {
-        fontWeight: 'bold'
-      }
-    })
-
-    segmentRowIdx = 1
-
-    segments = segments.concat(
-      narrativeDirections(option.access[0].streetEdges, segmentRowIdx)
-    )
-
-    // Add transit segments
-    let lastColor = ''
-    const transitSegments = option.transit || []
-    const length = transitSegments.length
-    for (let i = 0; i < length; i++) {
-      const segment = transitSegments[i]
-      const departureTimes = segment.departureTimes || []
-      const fromName = segment.fromName
-      const patterns = segment.segmentPatterns
-      const color = patterns[0].color
-      const routeAgencyNames = {}
-      segment.routes.forEach((route) => {
-        routeAgencyNames[route.id] = route.agencyName
-      })
-
-      // Check for a walking distance to see if you are boarding or transferring
-      if (segment.walkTime !== 0 || i === 0) {
-        if (i > 0) {
-          segments.push(setRowStyle({
-            description: 'Walk ' + (Math.ceil(segment.walkTime / 60) + 1) + ' min',
-            icon: {
-              materialIcon: true,
-              name: 'walk'
-            }
-          }))
-        }
-
-        // board
-        segments.push(setRowStyle({
-          description: fromName,
-          icon: {
-            materialIcon: true,
-            name: 'checkbox-blank-circle'
-          },
-          routeStyle: {
-            board: true,
-            color
-          },
-          textStyle: {
-            fontWeight: 'bold'
-          }
-        }))
-      } else {
-        // transfer at same stop
-        segments.push(setRowStyle({
-          description: fromName,
-          icon: {
-            materialIcon: true,
-            name: 'checkbox-blank-circle'
-          },
-          routeStyle: {
-            color,
-            lastColor,
-            transfer: true
-          },
-          textStyle: {
-            fontWeight: 'bold'
-          }
-        }))
-      }
-
-      segments.push(setRowStyle({
-        description: 'Take ' + getRouteNames(segment.routes),
-        routeStyle: {
-          take: true,
-          color
-        },
-        segment: true
-      }))
-
-      // Check if you are deboarding
-      if (i + 1 >= length || transitSegments[i + 1].walkTime > 0) {
-        segments.push(setRowStyle({
-          description: segment.toName,
-          icon: {
-            materialIcon: true,
-            name: 'checkbox-blank-circle'
-          },
-          routeStyle: {
-            alight: true,
-            lastColor: color
-          },
-          textStyle: {
-            fontWeight: 'bold'
-          }
-        }))
-      }
-
-      lastColor = color
-    }
-
-    if (option.egress && option.egress.length > 0) {
-      segments = segments.concat(
-        narrativeDirections(option.egress[0].streetEdges)
-      )
-    }
-
-    // add to location
-    segments.push({
-      description: this.toLocation.name,
-      icon: {
-        modeifyIcon: true,
-        name: 'end'
-      },
-      iconColor: '#f5a81c',
-      rowStyle: {
-        backgroundColor: '#fff'
-      },
-      textStyle: {
-        fontWeight: 'bold'
-      }
-    })
-
-    option.segmentDetails = segments
-
-    return option.segmentDetails
+    console.log(this.lastResponse.r5.profile)
+    const scoredOptions = scorer.processOptions(this.lastResponse.r5.profile)
+    console.log(scoredOptions)
+    const driveOption = addModeifyData(scoredOptions.find(option =>
+      option.access[0].mode === 'CAR' &&
+      (!option.transit || option.transit.length < 1)))
+    return scoredOptions.map((option) => addModeifyData(option, driveOption))
   }
 
   /**
@@ -241,8 +100,8 @@ const MODE_TO_ICON = {
     name: 'cabi'
   },
   CAR: {
-    materialIcon: true,
-    name: 'car'
+    modeifyIcon: true,
+    name: 'carshare'
   },
   CAR_PARK: {
     materialIcon: true,
@@ -274,13 +133,15 @@ const DIRECTION_TO_CARDINALITY_TRANSFORM = {
   UTURN_LEFT: 'fa-repeat fa-flip-horizontal'
 }
 
-function addModeifyData (option) {
+function addModeifyData (option, driveOption) {
+  if (!option) return  // might happen if results returned don't include driving
   setModePresence(option)
   setModeString(option)
   setSegments(option)
   setDistances(option)
   setCost(option)
   setTimes(option)
+  setCarComparisonData(option, driveOption)
 
   return option
 }
@@ -333,6 +194,195 @@ function getRouteNames (routes) {
     agencyStrings.push(displayName + ' ' + rtes.map(function (r) { return r.shortName }).join('/'))
   }
   return agencyStrings.join(', ')
+}
+
+export function getOptionTags (
+  option: Object,
+  fromLocation: Location,
+  toLocation: Location
+) {
+  let tags = []
+
+  // add the access mode tags
+  option.access.forEach(accessLeg => {
+    if (accessLeg.mode === 'bicycle_rent') {
+      tags.push('bicycle')
+    }
+    tags.push(accessLeg.mode)
+  })
+
+  // add a generic 'transit' tag and add tags for each transit leg
+  if (option.hasTransit) {
+    tags.push('transit')
+    option.transit.forEach(transitLeg => {
+      tags.push(transitLeg.mode) // add the transit mode tag
+      if (transitLeg.routes.length > 0) { // add the agency tag
+        tags.push(transitLeg.routes[0].id.split(':')[0])
+      }
+    })
+  }
+
+  // add tags for the from/to locations
+  tags = tags.concat(locationToTags(fromLocation)).concat(locationToTags(toLocation))
+
+  return tags.map(tag => tag.toLowerCase().trim())
+}
+
+export function getSegmentDetailsForOption (option: Object, fromLocation: Object, toLocation: Object) {
+  if (option.segmentDetails) {
+    return option.segmentDetails
+  }
+
+  let segments = []
+
+  // add from location
+  segments.push({
+    description: fromLocation.name,
+    icon: {
+      modeifyIcon: true,
+      name: 'start'
+    },
+    iconColor: '#8ec449',
+    rowStyle: {
+      backgroundColor: '#fff'
+    },
+    textStyle: {
+      fontWeight: 'bold'
+    }
+  })
+
+  segmentRowIdx = 1
+
+  segments = segments.concat(
+    narrativeDirections(option.access[0].streetEdges, segmentRowIdx)
+  )
+
+  // Add transit segments
+  let lastColor = ''
+  const transitSegments = option.transit || []
+  const length = transitSegments.length
+  for (let i = 0; i < length; i++) {
+    const segment = transitSegments[i]
+    const departureTimes = segment.departureTimes || []
+    const fromName = segment.fromName
+    const patterns = segment.segmentPatterns
+    const color = patterns[0].color
+    const routeAgencyNames = {}
+    segment.routes.forEach((route) => {
+      routeAgencyNames[route.id] = route.agencyName
+    })
+
+    // Check for a walking distance to see if you are boarding or transferring
+    if (segment.walkTime !== 0 || i === 0) {
+      if (i > 0) {
+        segments.push(setRowStyle({
+          description: 'Walk ' + (Math.ceil(segment.walkTime / 60) + 1) + ' min',
+          icon: {
+            materialIcon: true,
+            name: 'walk'
+          }
+        }))
+      }
+
+      // board
+      segments.push(setRowStyle({
+        description: fromName,
+        icon: {
+          materialIcon: true,
+          name: 'checkbox-blank-circle'
+        },
+        routeStyle: {
+          board: true,
+          color
+        },
+        textStyle: {
+          fontWeight: 'bold'
+        }
+      }))
+    } else {
+      // transfer at same stop
+      segments.push(setRowStyle({
+        description: fromName,
+        icon: {
+          materialIcon: true,
+          name: 'checkbox-blank-circle'
+        },
+        routeStyle: {
+          color,
+          lastColor,
+          transfer: true
+        },
+        textStyle: {
+          fontWeight: 'bold'
+        }
+      }))
+    }
+
+    segments.push(setRowStyle({
+      description: 'Take ' + getRouteNames(segment.routes),
+      routeStyle: {
+        take: true,
+        color
+      },
+      segment: true
+    }))
+
+    // Check if you are deboarding
+    if (i + 1 >= length || transitSegments[i + 1].walkTime > 0) {
+      segments.push(setRowStyle({
+        description: segment.toName,
+        icon: {
+          materialIcon: true,
+          name: 'checkbox-blank-circle'
+        },
+        routeStyle: {
+          alight: true,
+          lastColor: color
+        },
+        textStyle: {
+          fontWeight: 'bold'
+        }
+      }))
+    }
+
+    lastColor = color
+  }
+
+  if (option.egress && option.egress.length > 0) {
+    segments = segments.concat(
+      narrativeDirections(option.egress[0].streetEdges)
+    )
+  }
+
+  // add to location
+  segments.push({
+    description: toLocation.name,
+    icon: {
+      modeifyIcon: true,
+      name: 'end'
+    },
+    iconColor: '#f5a81c',
+    rowStyle: {
+      backgroundColor: '#fff'
+    },
+    textStyle: {
+      fontWeight: 'bold'
+    }
+  })
+
+  option.segmentDetails = segments
+
+  return option.segmentDetails
+}
+
+function locationToTags (location: Location) {
+  let locationName = location.name
+  // strip off the zip code, if present
+  var endsWithZip = /\d{5}$/
+  if (endsWithZip.test(locationName)) {
+    locationName = locationName.substring(0, locationName.length - 5)
+  }
+  return locationName.split(',').slice(1)
 }
 
 function narrativeDirections (edges) {
@@ -409,6 +459,37 @@ function patternFilter (by) {
   }
 }
 
+function setCarComparisonData (option, driveOption) {
+  let costDifference, emissions, timeSavings
+  if (driveOption) {
+    costDifference = driveOption.cost - option.cost
+    emissions = (driveOption.emissions - option.emissions) / driveOption.emissions * 100
+    timeSavings = (option.timeInTransit - (driveOption.time - option.time))
+
+    if (option.directCar) {
+      costDifference = driveOption.cost / 2
+      emissions = 50
+      timeSavings = option.averageTime / 2 // Assume split driving
+    }
+
+    if (costDifference > 0) {
+      option.costSavings = costDifference
+    }
+
+    if (timeSavings > 0) {
+      option.timeSavings = timeSavings / 60 / 60
+    }
+
+    if (emissions > 0) {
+      option.emissionsDifference = emissions
+    }
+  }
+
+  if (option.calories !== 0) {
+    option.weightLost = convert.caloriesToPounds(option.calories)
+  }
+}
+
 function setCost (option) {
   if (option.cost === 0) {
     return
@@ -438,6 +519,7 @@ function setDistances (option) {
 function setModePresence (option) {
   option.hasCar = option.modes.indexOf('car') !== -1
   option.hasTransit = option.transit ? option.transit.length > 0 : false
+  option.directCar = option.modes.length === 1 && option.hasCar
 }
 
 function setModeString (option) {
