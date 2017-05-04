@@ -14,7 +14,21 @@ import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons'
 
 import ModeifyIcon from './modeify-icon'
 
+import type {
+  NavigationAction,
+  NavigationRoute,
+  NavigationScreenProp
+} from 'react-navigation/src/TypeDefinition'
+
+type Props = {
+  currentQuery: Object,
+  navigation: NavigationScreenProp<NavigationRoute, NavigationAction>,
+  switchLocations: () => void
+}
+
 export default class LocationForm extends Component {
+  props: Props
+
   _onSwitch = () => {
     this.props.switchLocations()
   }
@@ -120,7 +134,17 @@ export default class LocationForm extends Component {
   }
 }
 
-const styles = StyleSheet.create({
+type LocationFormStyle = {
+  currentLocationText: Object,
+  homeInputContainer: Object,
+  homeInputText: Object,
+  locationContainer: Object,
+  locationText: Object,
+  switchButtonContainer: Object,
+  topLocationContainer: Object
+}
+
+const styles: LocationFormStyle = StyleSheet.create(({
   currentLocationText: {
     color: '#15b3ff',
     fontWeight: 'bold'
@@ -164,4 +188,4 @@ const styles = StyleSheet.create({
     borderColor: '#C8C8C8',
     borderBottomWidth: 1
   }
-})
+}: LocationFormStyle))

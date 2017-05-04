@@ -2,7 +2,7 @@
 
 export type GeocodeResult = {
   geometry: {
-    coordinates: Array<number>
+    coordinates: [number, number]
   },
   properties: {
     address: string;

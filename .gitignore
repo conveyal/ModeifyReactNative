@@ -59,3 +59,4 @@ config.json
 # testing
 tmp
 coverage
+coverage-flow

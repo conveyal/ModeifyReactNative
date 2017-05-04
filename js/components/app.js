@@ -9,9 +9,15 @@ import ResultsList from '../containers/results-list'
 import ResultsMap from '../containers/results-map'
 import headerStyles from '../util/header-styles'
 
+import type {
+  NavigationAction,
+  NavigationRoute,
+  NavigationScreenProp
+} from 'react-navigation/src/TypeDefinition'
+
 type Props = {
-  currentQuery: Object;
-  navigation: any;
+  currentQuery: Object,
+  navigation: NavigationScreenProp<NavigationRoute, NavigationAction>
 }
 
 type State = {}
@@ -21,7 +27,7 @@ export default class App extends Component {
   state: State
 
   static navigationOptions = {
-    header: ({ state, setParams }) => ({
+    header: ({ state }: { state: NavigationRoute }) => ({
       style: headerStyles.nav,
       tintColor: '#fff',
       title: (state.key === 'Init'
@@ -66,11 +72,18 @@ export default class App extends Component {
   }
 }
 
-const styles = StyleSheet.create({
+type AppStyle = {
+  app: { backgroundColor: string },
+  settingsButtonContainer: { margin: number }
+}
+
+const appStyle: AppStyle = {
   app: {
     backgroundColor: '#fff'
   },
   settingsButtonContainer: {
     margin: 10
   }
-})
+}
+
+const styles: AppStyle = StyleSheet.create(appStyle)

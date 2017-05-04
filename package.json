@@ -4,6 +4,7 @@
 	"private": true,
 	"scripts": {
 		"cover": "jest --coverage --collectCoverageFrom \"js/**/*.js\"",
+		"cover-flow": "flow-coverage-report -t html -t text -i 'js/**/*.js' -o coverage-flow",
 		"flow": "flow",
 		"start": "node node_modules/react-native/local-cli/cli.js start",
 		"test": "npm run flow && jest"
@@ -37,7 +38,8 @@
 	},
 	"devDependencies": {
 		"babel-preset-react-native": "1.9.1",
-		"flow-bin": "0.37.0",
+		"flow-bin": "^0.45.0",
+		"flow-coverage-report": "^0.3.0",
 		"jest": "19.0.0",
 		"react-test-renderer": "~15.4.0",
 		"redux-mock-store": "^1.2.2"
