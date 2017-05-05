@@ -5,20 +5,26 @@ export type GeocodeResult = {
     coordinates: [number, number]
   },
   properties: {
-    address: string;
+    address: string,
     label: string
   }
 }
 
 export type Location = {
-  lat: number;
-  lon: number;
-  name: string;
+  currentLocation?: boolean,
+  lat: number,
+  lon: number,
+  name: string
+}
+
+export type CurrentQuery = {
+  from?: Location,
+  to?: Location
 }
 
 export type MapRegion = {
-  latitude: number;
-  latitudeDelta: number;
-  longitude: number;
-  longitudeDelta: number;
+  latitude: number,
+  latitudeDelta: number,
+  longitude: number,
+  longitudeDelta: number
 }

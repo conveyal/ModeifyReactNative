@@ -20,8 +20,11 @@ import type {
   NavigationScreenProp
 } from 'react-navigation/src/TypeDefinition'
 
+import type {CurrentQuery} from '../types'
+import type {styleOptions} from '../types/rn-style-config'
+
 type Props = {
-  currentQuery: Object,
+  currentQuery: CurrentQuery,
   navigation: NavigationScreenProp<NavigationRoute, NavigationAction>,
   switchLocations: () => void
 }
@@ -49,7 +52,7 @@ export default class LocationForm extends Component {
     const {from, to} = this.props.currentQuery
 
     return (
-      <View style={styles.bothLocationsContainer}>
+      <View>
         <View style={[styles.locationContainer, styles.topLocationContainer]}>
           <ModeifyIcon
             color='#8ec449'
@@ -135,16 +138,16 @@ export default class LocationForm extends Component {
 }
 
 type LocationFormStyle = {
-  currentLocationText: Object,
-  homeInputContainer: Object,
-  homeInputText: Object,
-  locationContainer: Object,
-  locationText: Object,
-  switchButtonContainer: Object,
-  topLocationContainer: Object
+  currentLocationText: styleOptions,
+  homeInputContainer: styleOptions,
+  homeInputText: styleOptions,
+  locationContainer: styleOptions,
+  locationText: styleOptions,
+  switchButtonContainer: styleOptions,
+  topLocationContainer: styleOptions
 }
 
-const styles: LocationFormStyle = StyleSheet.create(({
+const locationFormStyle: LocationFormStyle = {
   currentLocationText: {
     color: '#15b3ff',
     fontWeight: 'bold'
@@ -188,4 +191,6 @@ const styles: LocationFormStyle = StyleSheet.create(({
     borderColor: '#C8C8C8',
     borderBottomWidth: 1
   }
-}: LocationFormStyle))
+}
+
+const styles: LocationFormStyle = StyleSheet.create(locationFormStyle)

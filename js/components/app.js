@@ -15,6 +15,8 @@ import type {
   NavigationScreenProp
 } from 'react-navigation/src/TypeDefinition'
 
+import type {styleOptions} from '../types/rn-style-config'
+
 type Props = {
   currentQuery: Object,
   navigation: NavigationScreenProp<NavigationRoute, NavigationAction>
@@ -73,8 +75,8 @@ export default class App extends Component {
 }
 
 type AppStyle = {
-  app: { backgroundColor: string },
-  settingsButtonContainer: { margin: number }
+  app: styleOptions,
+  settingsButtonContainer: styleOptions
 }
 
 const appStyle: AppStyle = {

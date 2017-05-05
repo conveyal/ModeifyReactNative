@@ -2,57 +2,17 @@
 
 import {Platform, StyleSheet} from 'react-native'
 
+import type {styleOptions} from '../types/rn-style-config'
+
 type stylesType = {
-  backContainer: {
-    position: string,
-    height: number,
-    left: number,
-    top: number,
-    width: number
-  },
-  backImage: {
-    height: number,
-    resizeMode: string,
-    width: number
-  },
-  closeContainer: {
-    position: string,
-    height: number,
-    right: number,
-    top: number,
-    width: number
-  },
-  closeImage: {
-    height: number,
-    resizeMode: string,
-    width: number
-  },
-  homeLogo: {
-    height: number,
-    resizeMode: string,
-    paddingTop?: number
-  },
-  nav: {
-    backgroundColor: string,
-    height: number,
-    marginTop?: number,
-    paddingBottom?: number
-  },
-  statusBarSpacer: {
-    backgroundColor: string,
-    height: number
-  },
-  title: {
-    color: string,
-    fontSize: number,
-    marginRight?: number,
-    position?: string,
-    bottom?: number,
-    top?: number,
-    right?: number,
-    left?: number,
-    textAlign?: string
-  }
+  backContainer: styleOptions,
+  backImage: styleOptions,
+  closeContainer: styleOptions,
+  closeImage: styleOptions,
+  homeLogo: styleOptions,
+  nav: styleOptions,
+  statusBarSpacer: styleOptions,
+  title: styleOptions
 }
 
 const styles: stylesType = StyleSheet.create({
