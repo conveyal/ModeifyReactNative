@@ -19,14 +19,27 @@ import {
 import MapView from 'react-native-maps'
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons'
 
-import type {GeocodeResult, MapRegion} from '../types'
+import type {
+  AutocompleteParams,
+  MapzenResult,
+  ReverseParams
+} from 'isomorphic-mapzen-search'
+import type {
+  NavigationAction,
+  NavigationRoute,
+  NavigationScreenProp
+} from 'react-navigation/src/TypeDefinition'
+
+import type {AppConfig, CurrentQuery, MapRegion} from '../types'
+import type {styleOptions} from '../types/rn-style-config'
+
 import {constructMapboxUrl, geolocateLocation} from '../util'
 import headerStyles from '../util/header-styles'
 
-const config = require('../../config.json')
+const config: AppConfig = require('../../config.json')
 
 type GeocodeQueryCache = {
-  [key: string]: GeocodeResult
+  [key: string]: Array<MapzenResult>
 }
 
 const geocodeQueries: GeocodeQueryCache = {}
@@ -39,12 +52,17 @@ type LocationType = {
 }
 
 type Props = {
-  appState: string;
-  currentQuery: {
-    from?: LocationType;
-    to?: LocationType;
-  }
+  clearLocation: () => void,
+  currentQuery: CurrentQuery,
+  // I really want to make the following have a type of
+  // NavigationScreenProp<NavigationRoute, NavigationAction>,
+  // but can't cause of https://github.com/facebook/flow/issues/2570
+  navigation: any,
+  searchingOnMap: boolean,
+  setLocation: () => void,
+  setSearchingOnMap: () => void
 }
+
 type State = {
   geocodeResults: ListView.DataSource;
   inputValue?: string;
@@ -56,14 +74,11 @@ type State = {
 export default class LocationSelection extends Component {
   currentAutocompleteQuery: string
   currentReverseQuery: MapRegion
+  props: Props
   state: State
 
-  constructor(props: Props) {
-    super(props)
-  }
-
   static navigationOptions = {
-    header: ({ state, setParams }) => ({
+    header: ({ state }: { state: NavigationRoute }) => ({
       style: headerStyles.nav,
       tintColor: '#fff',
       title: 'SELECT LOCATION',
@@ -97,7 +112,7 @@ export default class LocationSelection extends Component {
     this.props.setSearchingOnMap(false)  // temp fix for https://github.com/airbnb/react-native-maps/issues/453
   }
 
-  _autocompleteText = throttle((text) => {
+  _autocompleteText = throttle((text: string) => {
     if (!text) return
 
     const {geocodeResults, selectingOnMap} = this.state
@@ -118,20 +133,32 @@ export default class LocationSelection extends Component {
     // going to geocode, set current query
     this.currentAutocompleteQuery = text
 
-    autocomplete(Object.assign(config.geocoderSettings, {
-      text
-    }))
+    const autocompleteQuery: AutocompleteParams = (Object.assign(
+      {},
+      config.geocoderSettings,
+      {
+        text
+      }
+    ): any)
+
+    autocomplete(autocompleteQuery)
       .then((geojson) => {
         if (geojson.isomorphicMapzenSearchQuery.text !==
           this.currentAutocompleteQuery) return
 
-        if (!geojson.features) throw geojson
-        // console.log(`successful geocode for ${text}`)
-        geocodeQueries[text] = geojson.features
-        this.setState({
-          geocodeResults: geocodeResults.cloneWithRows(geojson.features),
-          noGeocodeResultsFound: geojson.features.length === 0
-        })
+
+        const {features} = geojson
+
+        if (features) {
+          // console.log(`successful geocode for ${text}`)
+          geocodeQueries[text] = features
+          this.setState({
+            geocodeResults: geocodeResults.cloneWithRows(features),
+            noGeocodeResultsFound: features.length === 0
+          })
+        } else {
+          throw geojson
+        }
       })
       .catch((err) => {
         this.setState({
@@ -161,7 +188,7 @@ export default class LocationSelection extends Component {
     navigation.goBack()
   }
 
-  _onGeocodeResultSelect = (value: GeocodeResult) => {
+  _onGeocodeResultSelect = (value: MapzenResult) => {
     const {navigation, setLocation} = this.props
     setLocation({
       type: navigation.state.params.type,
@@ -184,11 +211,15 @@ export default class LocationSelection extends Component {
 
     this.currentReverseQuery = region
 
-    reverse(Object.assign(
+    const reverseQuery: ReverseParams = Object.assign(
+      {},
       config.geocoderSettings,
       { point: region }
-    ))
+    )
+
+    reverse(reverseQuery)
       .then((geojson) => {
+        const {features} = geojson
         if (
           lonlat.isEqual(
             this.currentReverseQuery,
@@ -197,10 +228,11 @@ export default class LocationSelection extends Component {
               lon: geojson.isomorphicMapzenSearchQuery['point.lon']
             }
           ) &&
-          geojson.features.length > 0
+          features &&
+          features.length > 0
         ) {
           this.setState({
-            inputValue: geojson.features[0].properties.label
+            inputValue: features[0].properties.label
           })
         }
       })
@@ -209,7 +241,7 @@ export default class LocationSelection extends Component {
       })
   }
 
-  _onTextChange = (text) => {
+  _onTextChange = (text: string) => {
     this.setState({ inputValue: text})
     this._autocompleteText(text)
   }
@@ -359,7 +391,7 @@ export default class LocationSelection extends Component {
             {(geocodeResults.getRowCount() > 0
               ? <ListView
                   dataSource={geocodeResults}
-                  renderRow={(geocodeResult: GeocodeResult) => (
+                  renderRow={(geocodeResult: MapzenResult) => (
                     <TouchableOpacity
                       onPress={() => this._onGeocodeResultSelect(geocodeResult)}
                       >
@@ -395,7 +427,27 @@ export default class LocationSelection extends Component {
   }
 }
 
-const styles = StyleSheet.create({
+type LocationSelectionStyle = {
+  confirmMapLocationButton: styleOptions,
+  confirmMapLocationButtonText: styleOptions,
+  container: styleOptions,
+  currentLocationTextInput: styleOptions,
+  geocodeResult: styleOptions,
+  inputContainer: styleOptions,
+  map: styleOptions,
+  mapContainer: styleOptions,
+  mapInstructions: styleOptions,
+  mapSelectionContainer: styleOptions,
+  regularTextInput: styleOptions,
+  resultContainer: styleOptions,
+  resultDividerContainer: styleOptions,
+  resultDividerText: styleOptions,
+  resultSelectionButton: styleOptions,
+  resultSelectionButtonImage: styleOptions,
+  resultSelectionButtonText: styleOptions
+}
+
+const locationSelectionStyle: LocationSelectionStyle = {
   confirmMapLocationButton: {
     backgroundColor: '#63cc81',
     marginTop: 10,
@@ -480,12 +532,9 @@ const styles = StyleSheet.create({
     marginTop: 4,
     marginLeft: 10
   }
-})
-
-function isCurrentLocation (query, type) {
-  const location = query[type]
-  return location && location.currentLocation
 }
+
+const styles: LocationSelectionStyle = StyleSheet.create(locationSelectionStyle)
 
 function parseLocation (location): any {
   return location ? location.name : undefined

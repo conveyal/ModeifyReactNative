@@ -1,13 +1,39 @@
 // @flow
 
-export type GeocodeResult = {
-  geometry: {
-    coordinates: [number, number]
+export type AppConfig = {
+  api: {
+    host: string,
+    path: string
   },
-  properties: {
-    address: string,
-    label: string
-  }
+  auth0: {
+    clientId: string,
+    domain: string
+  },
+  debouncePlanTimeMs: number,
+  map: {
+    initialRegion: {
+      latitude: number,
+      latitudeDelta: number,
+      longitude: number,
+      longitudeDelta: number
+    },
+    mapbox_access_token: string,
+    mapbox_base_style: string,
+    mapbox_label_style: string,
+    showMapBoxTiles: boolean
+  },
+  geocoderSettings: {
+    boundary: {
+      rect: {
+        minLon: number,
+        minLat: number,
+        maxLon: number,
+        maxLat: number
+      }
+    },
+    apiKey: string
+  },
+  modes: Array<string>
 }
 
 export type Location = {

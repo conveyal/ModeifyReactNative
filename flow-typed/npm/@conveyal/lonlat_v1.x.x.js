@@ -30,4 +30,7 @@ declare module '@conveyal/lonlat' {
   }
 
   declare export default function normalize(mixed): standardizedLonLat
+
+  declare export function print(mixed): string
+  declare export function isEqual(mixed, mixed): boolean
 }
