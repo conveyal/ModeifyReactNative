@@ -3,11 +3,21 @@
 import parser from 'react-native-html-parser'
 import qs from 'qs'
 
-const config = require('../../config.json')
+import type {AppConfig, Resource} from '../types'
 
-const resourcesLookup = {}
+const config: AppConfig = require('../../config.json')
 
-export async function getResourcesByTag (tags: Array<string>, callback: Function) {
+type ResourceAPIResponse = {
+  description: string,
+  parsedNodes: Array<Object>
+}
+
+const resourcesLookup: { [key: string]: Array<Resource> } = {}
+
+export async function getResourcesByTag (
+  tags: Array<string>,
+  callback: (err: ?Error, resources?: Array<Resource>) => void
+) {
   const tagsKey = tags.join(',')
   if (resourcesLookup[tagsKey]) {
     return callback(null, resourcesLookup[tagsKey])
@@ -19,12 +29,12 @@ export async function getResourcesByTag (tags: Array<string>, callback: Function
 
   const url = `${config.api.host}/api/route-resources?${qs.stringify(params)}`
 
-  let results
+  let results: Array<ResourceAPIResponse>
   try {
     const response = await fetch(url)
     results = await response.json()
 
-    results.forEach(result => {
+    results.forEach((result: ResourceAPIResponse) => {
       const doc = new parser.DOMParser().parseFromString(result.description, 'text/html')
       result.parsedNodes = []
       for (let i = 0; i < doc.childNodes.length; i++) {

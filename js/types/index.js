@@ -54,3 +54,14 @@ export type MapRegion = {
   longitude: number,
   longitudeDelta: number
 }
+
+export type Node = {
+  link?: string,
+  text: string,
+  type: string
+}
+
+export type Resource = {
+  parsedNodes: Array<Node>,
+  title: string
+}

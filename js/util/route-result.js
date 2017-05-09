@@ -11,10 +11,6 @@ import type TripPlanResult from '../types/results'
 
 const scorer = new ProfileScorer()
 
-type RouteResultConfig = {
-
-}
-
 export default class RouteResult {
   fromLocation: Object;
   lastResponse: Object;
@@ -23,11 +19,6 @@ export default class RouteResult {
 
   hasChanged = false
   hasError = false
-
-  constructor (config?: RouteResultConfig) {
-
-  }
-
   lastResponse = {}
 
   getResults () {

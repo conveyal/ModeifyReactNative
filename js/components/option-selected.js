@@ -17,20 +17,35 @@ import headerStyles from '../util/header-styles'
 import {getResourcesByTag} from '../util/route-option-resource'
 import {getOptionTags} from '../util/route-result'
 
-import type {Location} from '../types'
+import type {Location, Resource} from '../types'
+import type {NonTransitProfile, TransitProfile} from '../types/results'
+import type {styleOptions} from '../types/rn-style-config'
 
 
 const workTripsPerYear = 235
 
 type Props = {
   fromLocation: Location,
+  // I really want to make the following have a type of
+  // NavigationScreenProp<NavigationRoute, NavigationAction>,
+  // but can't cause of https://github.com/facebook/flow/issues/2570
+  navigation: any,
   toLocation: Location
 }
 
+type State = {
+  expandedResources: {
+    [key: number]: boolean
+  },
+  resources: Array<Resource>
+}
+
 export default class OptionSelected extends Component {
+  props: Props
+  state: State
 
   static navigationOptions = {
-    header: ({ state, setParams }) => ({
+    header: () => ({
       style: headerStyles.nav,
       tintColor: '#fff',
       title: 'YOUR SELECTION',
@@ -38,9 +53,12 @@ export default class OptionSelected extends Component {
     })
   }
 
-  state = {
-    expandedResources: {},
-    resources: []
+  constructor (props: Props) {
+    super(props)
+    this.state = {
+      expandedResources: {},
+      resources: []
+    }
   }
 
   componentWillMount () {
@@ -55,6 +73,10 @@ export default class OptionSelected extends Component {
     )
   }
 
+  _getOption (): TransitProfile | NonTransitProfile {
+    return this.props.navigation.state.params.option
+  }
+
   _onLoginPress = () => {
 
   }
@@ -65,9 +87,9 @@ export default class OptionSelected extends Component {
 
   _onTapUrl = (url) => {
     Linking.canOpenURL(url)
-      .then(supported => {
+      .then((supported: boolean) => {
         if (!supported) {
-          console.log('Can\'t handle url: ' + url)
+          console.log('Can\'t handle url: ', url)
         } else {
           return Linking.openURL(url)
         }
@@ -75,14 +97,14 @@ export default class OptionSelected extends Component {
       .catch(err => console.error('An error occurred', err))
   }
 
-  _toggleResource = (idx) => {
+  _toggleResource = (idx: number) => {
     const {expandedResources} = this.state
     expandedResources[idx] = !expandedResources[idx]
     this.setState({ expandedResources })
   }
 
   _renderAccountContent () {
-    const {option} = this.props.navigation.state.params
+    const option = this._getOption()
     if (option.directCar) {
       return (
         <View style={styles.carpoolContainer}>
@@ -134,7 +156,7 @@ export default class OptionSelected extends Component {
   }
 
   _renderCarComparison () {
-    const {option} = this.props.navigation.state.params
+    const option = this._getOption()
     const weightLost = Math.round(option.weightLost * workTripsPerYear)
     const emissionsDifference = Math.floor(option.emissionsDifference)
     const timeSavings = Math.floor(option.timeSavings * workTripsPerYear)
@@ -205,9 +227,7 @@ export default class OptionSelected extends Component {
               <Text style={styles.resourceText}>
                 {resource.parsedNodes.map(node => (
                   <Text
-                    onPress={node.type === 'link'
-                      ? () => this._onTapUrl(node.link)
-                      : undefined}
+                    onPress={this._onTapUrl(node.link)}
                     style={node.type === 'link' ? styles.resourceLink : {}}
                     >
                     {node.text}
@@ -222,7 +242,7 @@ export default class OptionSelected extends Component {
   }
 
   _renderSegments () {
-    const {option} = this.props.navigation.state.params
+    const option = this._getOption()
 
     const segmentRows = []
     let curSegmentRow = []
@@ -340,7 +360,41 @@ const ComparisonRow = (props) => (
   </View>
 )
 
-const styles = StyleSheet.create({
+type OptionSelectedStyle = {
+  bold: {
+    fontWeight: 'bold'
+  },
+  carpoolContainer: styleOptions,
+  carpoolHeader: styleOptions,
+  comparisonIcon: styleOptions,
+  comparisonRow: styleOptions,
+  comparisonText: styleOptions,
+  congrats: styleOptions,
+  container: styleOptions,
+  footnote: styleOptions,
+  loginContainer: styleOptions,
+  loginText: styleOptions,
+  loginTextContainer: styleOptions,
+  loginTouchableText: styleOptions,
+  resourceButton: styleOptions,
+  resourceContainer: styleOptions,
+  resourceLink: styleOptions,
+  resourceText: styleOptions,
+  segmentRouteBackground: styleOptions,
+  segments: styleOptions,
+  segmentsContainer: styleOptions,
+  segmentShortName: styleOptions,
+  segmentShortNameStroke: styleOptions,
+  segmentShortNameContainer: styleOptions,
+  selectionTitle: styleOptions,
+  selectionTitleText: styleOptions,
+  signUpButtonText: styleOptions,
+  signUpContainer: styleOptions,
+  signUpText: styleOptions,
+  signUpTitle: styleOptions
+}
+
+const optionSelectedStyle: OptionSelectedStyle = {
   bold: {
     fontWeight: 'bold'
   },
@@ -481,4 +535,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     paddingVertical: 10
   }
-})
+}
+
+const styles = StyleSheet.create(optionSelectedStyle)

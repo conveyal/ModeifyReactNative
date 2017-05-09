@@ -44,13 +44,13 @@ type Fare = {
   type: string;
 }
 
-type NonTransitProfile = {
+export type NonTransitProfile = {
   access: Array<NonTransitModeDetails>;
   stats: Stats;
   summary: string;
 }
 
-type TransitProfile = {
+export type TransitProfile = {
   access: Array<NonTransitModeDetails>;
   egress: Array<NonTransitModeDetails>;
   fares: Array<Fare>;
