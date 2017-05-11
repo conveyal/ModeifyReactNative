@@ -7,15 +7,23 @@ import toSentenceCase from 'to-sentence-case'
 import convert from './convert'
 
 import type {Location} from '../types'
-import type TripPlanResult from '../types/results'
+import type {
+  NonTransitModeDetails,
+  NonTransitProfile,
+  Route,
+  SegmentDetail,
+  TransitModeDetails,
+  TripPlanResult,
+  TransitProfile
+} from '../types/results'
 
 const scorer = new ProfileScorer()
 
 export default class RouteResult {
-  fromLocation: Object;
-  lastResponse: Object;
-  results: TripPlanResult;
-  toLocation: Object;
+  fromLocation: Object
+  lastResponse: Object
+  results: TripPlanResult
+  toLocation: Object
 
   hasChanged = false
   hasError = false
@@ -124,7 +132,10 @@ const DIRECTION_TO_CARDINALITY_TRANSFORM = {
   UTURN_LEFT: 'fa-repeat fa-flip-horizontal'
 }
 
-function addModeifyData (option, driveOption) {
+function addModeifyData (
+  option: NonTransitProfile | TransitProfile,
+  driveOption: NonTransitProfile
+) {
   if (!option) return  // might happen if results returned don't include driving
   setModePresence(option)
   setModeString(option)
@@ -137,7 +148,11 @@ function addModeifyData (option, driveOption) {
   return option
 }
 
-function distances (option, mode, val) {
+function distances (
+  option: NonTransitProfile | TransitProfile,
+  mode: string,
+  val: string
+) {
   if (option.modes.indexOf(mode) === -1) {
     return false
   } else {
@@ -145,7 +160,7 @@ function distances (option, mode, val) {
   }
 }
 
-function getAgencyName (internalName) {
+function getAgencyName (internalName: string) {
   switch (internalName) {
     case 'MET': return 'Metro'
     case 'Arlington Transit': return 'ART'
@@ -158,10 +173,12 @@ function getAgencyName (internalName) {
   return internalName
 }
 
-function getRouteNames (routes) {
-  var agencyRoutes = {} // maps agency name to array of routes
-  routes.forEach(function (r) {
-    var agencyName = r.agencyName
+function getRouteNames (routes: Array<Route>) {
+  var agencyRoutes: {
+    [key: string]: Array<string>
+  } = {} // maps agency name to array of routes
+  routes.forEach((r: Route) => {
+    let agencyName: string = r.agencyName
     // FIXME: fix this in the R5 response
     if (!agencyName || agencyName === 'UNKNOWN') {
       agencyName = r.id.split(':')[0]
@@ -172,30 +189,31 @@ function getRouteNames (routes) {
     }
     agencyRoutes[agencyName].push(r)
   })
-  var agencyStrings = []
-  for (var agencyName in agencyRoutes) {
-    var rtes = agencyRoutes[agencyName]
+
+  const agencyStrings = []
+  for (const agencyName in agencyRoutes) {
+    const rtes = agencyRoutes[agencyName]
     // TODO: handle DC-specific behavior via config
-    var displayName = (agencyName === 'MET' || agencyName === 'WMATA')
+    let displayName = (agencyName === 'MET' || agencyName === 'WMATA')
       ? rtes[0].mode === 'SUBWAY'
         ? 'Metrorail'
         : 'Metrobus'
       : getAgencyName(agencyName)
     displayName = displayName.replace('_', ' ') // FIXME: shouldn't be necessary after R5 API fix
-    agencyStrings.push(displayName + ' ' + rtes.map(function (r) { return r.shortName }).join('/'))
+    agencyStrings.push(displayName + ' ' + rtes.map((r: Route) => r.shortName).join('/'))
   }
   return agencyStrings.join(', ')
 }
 
 export function getOptionTags (
-  option: Object,
+  option: NonTransitProfile | TransitProfile,
   fromLocation: Location,
   toLocation: Location
 ) {
-  let tags = []
+  let tags: Array<string> = []
 
   // add the access mode tags
-  option.access.forEach(accessLeg => {
+  option.access.forEach((accessLeg: NonTransitModeDetails) => {
     if (accessLeg.mode === 'bicycle_rent') {
       tags.push('bicycle')
     }
@@ -205,7 +223,7 @@ export function getOptionTags (
   // add a generic 'transit' tag and add tags for each transit leg
   if (option.hasTransit) {
     tags.push('transit')
-    option.transit.forEach(transitLeg => {
+    option.transit.forEach((transitLeg: TransitModeDetails) => {
       tags.push(transitLeg.mode) // add the transit mode tag
       if (transitLeg.routes.length > 0) { // add the agency tag
         tags.push(transitLeg.routes[0].id.split(':')[0])
@@ -219,12 +237,16 @@ export function getOptionTags (
   return tags.map(tag => tag.toLowerCase().trim())
 }
 
-export function getSegmentDetailsForOption (option: Object, fromLocation: Object, toLocation: Object) {
+export function getSegmentDetailsForOption (
+  option: NonTransitProfile | TransitProfile,
+  fromLocation: Location,
+  toLocation: Location
+) {
   if (option.segmentDetails) {
     return option.segmentDetails
   }
 
-  let segments = []
+  let segments: Array<SegmentDetail> = []
 
   // add from location
   segments.push({
@@ -250,7 +272,7 @@ export function getSegmentDetailsForOption (option: Object, fromLocation: Object
 
   // Add transit segments
   let lastColor = ''
-  const transitSegments = option.transit || []
+  const transitSegments: Array<SegmentDetail> = option.transit || []
   const length = transitSegments.length
   for (let i = 0; i < length; i++) {
     const segment = transitSegments[i]
@@ -366,7 +388,8 @@ export function getSegmentDetailsForOption (option: Object, fromLocation: Object
   return option.segmentDetails
 }
 
-function locationToTags (location: Location) {
+function locationToTags (location: ?Location): Array<string> {
+  if (!location) return []
   let locationName = location.name
   // strip off the zip code, if present
   var endsWithZip = /\d{5}$/
@@ -507,13 +530,13 @@ function setDistances (option) {
   option.walkDistances = distances(option, 'walk', 'walkDistance')
 }
 
-function setModePresence (option) {
+function setModePresence (option: NonTransitProfile | TransitProfile) {
   option.hasCar = option.modes.indexOf('car') !== -1
   option.hasTransit = option.transit ? option.transit.length > 0 : false
   option.directCar = option.modes.length === 1 && option.hasCar
 }
 
-function setModeString (option) {
+function setModeString (option: NonTransitProfile | TransitProfile) {
   let modeStr = ''
   const accessMode = option.access[0].mode.toLowerCase()
   const egressMode = option.egress ? option.egress[0].mode.toLowerCase() : false
@@ -626,7 +649,7 @@ function setSegments (option, segmentOptions) {
   option.segments = segments
 }
 
-function setTimes (option) {
+function setTimes (option: NonTransitProfile | TransitProfile) {
   let averageTime
   if (option.hasTransit || !option.hasCar) {
     averageTime = Math.round(option.time / 60)

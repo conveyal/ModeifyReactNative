@@ -85,7 +85,8 @@ export default class OptionSelected extends Component {
 
   }
 
-  _onTapUrl = (url) => {
+  _onTapUrl = (url?: string) => {
+    if (!url) return
     Linking.canOpenURL(url)
       .then((supported: boolean) => {
         if (!supported) {
@@ -223,11 +224,11 @@ export default class OptionSelected extends Component {
               >
               {resource.title}
             </MaterialIcon.Button>
-            {!!expandedResources[idx] &&
+            {expandedResources[idx] &&
               <Text style={styles.resourceText}>
                 {resource.parsedNodes.map(node => (
                   <Text
-                    onPress={this._onTapUrl(node.link)}
+                    onPress={() => this._onTapUrl(node.link)}
                     style={node.type === 'link' ? styles.resourceLink : {}}
                     >
                     {node.text}
