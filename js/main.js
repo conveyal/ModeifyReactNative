@@ -3,17 +3,17 @@
 import createStore from '@conveyal/woonerf/store'
 import createOtpReducer from 'otp-react-redux/lib/reducers/create-otp-reducer'
 import React from 'react'
-import {addNavigationHelpers, StackNavigator} from 'react-navigation'
+import {addNavigationHelpers, DrawerNavigator} from 'react-navigation'
 import {connect, Provider} from 'react-redux'
 
+import DrawerContent from './components/drawer-content'
 import App from './containers/app.js'
 import LocationSelection from './containers/location-selection'
 import OptionSelected from './containers/option-selected'
 import Settings from './containers/settings'
 import reducers from './reducers'
-import headerStyles from './util/header-styles'
 
-const AppNavigator = StackNavigator({
+const AppNavigator = DrawerNavigator({
   Home: { screen: App },
   LocationSelection: {
     path: 'location-selection/:type',
@@ -24,6 +24,8 @@ const AppNavigator = StackNavigator({
     screen: OptionSelected
   },
   Settings: { screen: Settings }
+}, {
+  contentComponent: DrawerContent
 })
 
 const navReducer = (state, action) => {
@@ -44,15 +46,13 @@ class AppWithNavigationState extends React.Component {
           dispatch: this.props.dispatch,
           state: this.props.nav,
         })}
-        style={headerStyles.statusBarSpacer}
         />
     );
   }
 }
 
 const ConnectedAppWithNavigationState = connect(
-  state => ({ nav: state.nav }),
-  dispatch => ({ dispatch })
+  state => ({ nav: state.nav })
 )(AppWithNavigationState)
 
 const Main = () => {
