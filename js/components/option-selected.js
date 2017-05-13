@@ -12,6 +12,7 @@ import {
 } from 'react-native'
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons'
 
+import Header from './header'
 import ModeifyIcon from './modeify-icon'
 import headerStyles from '../util/header-styles'
 import {getResourcesByTag} from '../util/route-option-resource'
@@ -43,15 +44,6 @@ type State = {
 export default class OptionSelected extends Component {
   props: Props
   state: State
-
-  static navigationOptions = {
-    header: () => ({
-      style: headerStyles.nav,
-      tintColor: '#fff',
-      title: 'YOUR SELECTION',
-      titleStyle: headerStyles.title
-    })
-  }
 
   constructor (props: Props) {
     super(props)
@@ -325,14 +317,22 @@ export default class OptionSelected extends Component {
 
   render () {
     return (
-      <ScrollView
-        style={styles.container}
-        >
-        {this._renderSegments()}
-        {this._renderCarComparison()}
-        {this._renderAccountContent()}
-        {this._renderResources()}
-      </ScrollView>
+      <View>
+        <Header
+          left={{back: true}}
+          navigation={this.props.navigation}
+          right={{close: true}}
+          title='YOUR SELECTION'
+          />
+        <ScrollView
+          style={styles.container}
+          >
+          {this._renderSegments()}
+          {this._renderCarComparison()}
+          {this._renderAccountContent()}
+          {this._renderResources()}
+        </ScrollView>
+      </View>
     )
   }
 }
@@ -362,9 +362,7 @@ const ComparisonRow = (props) => (
 )
 
 type OptionSelectedStyle = {
-  bold: {
-    fontWeight: 'bold'
-  },
+  bold: styleOptions,
   carpoolContainer: styleOptions,
   carpoolHeader: styleOptions,
   comparisonIcon: styleOptions,

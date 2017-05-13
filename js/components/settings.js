@@ -14,6 +14,7 @@ import {
 import ModalDropdown from 'react-native-modal-dropdown'
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons'
 
+import Header from './header'
 import ModeifyIcon from './modeify-icon'
 import headerStyles from '../util/header-styles'
 
@@ -67,12 +68,14 @@ export default class Settings extends Component {
   state: State
 
   static navigationOptions = {
-    header: ({ state, setParams }) => ({
-      style: headerStyles.nav,
-      tintColor: '#fff',
-      title: 'SETTINGS',
-      titleStyle: headerStyles.title
-    })
+    drawerLabel: 'SETTINGS',
+    drawerIcon: ({ tintColor }) => (
+      <MaterialIcon
+        name='settings'
+        size={24}
+        style={{ color: tintColor }}
+        />
+    )
   }
 
   constructor (props: Props) {
@@ -537,36 +540,44 @@ export default class Settings extends Component {
     const {activeTab} = this.state
 
     return (
-      <ScrollView>
-        <View style={styles.tabBar}>
-          <TouchableOpacity
-            onPress={this._toggleTab}
-            style={[
-              styles.tabTitle,
-              activeTab === 'modes' ? styles.tabBarActive : {}
-            ]}
-            >
-            <Text style={styles.tabTitleText}>
-              MODES
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={this._toggleTab}
-            style={[
-              styles.tabTitle,
-              styles.tabBorderLeft,
-              activeTab === 'general' ? styles.tabBarActive : {}
-            ]}
-            >
-            <Text style={styles.tabTitleText}>
-              GENERAL
-            </Text>
-          </TouchableOpacity>
-        </View>
-        {activeTab === 'modes'
-          ? this._renderModesContent()
-          : this._renderGeneralContent()}
-      </ScrollView>
+      <View>
+        <Header
+          left={{back: true}}
+          navigation={this.props.navigation}
+          right={{close: true}}
+          title='Home'
+          />
+        <ScrollView>
+          <View style={styles.tabBar}>
+            <TouchableOpacity
+              onPress={this._toggleTab}
+              style={[
+                styles.tabTitle,
+                activeTab === 'modes' ? styles.tabBarActive : {}
+              ]}
+              >
+              <Text style={styles.tabTitleText}>
+                MODES
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={this._toggleTab}
+              style={[
+                styles.tabTitle,
+                styles.tabBorderLeft,
+                activeTab === 'general' ? styles.tabBarActive : {}
+              ]}
+              >
+              <Text style={styles.tabTitleText}>
+                GENERAL
+              </Text>
+            </TouchableOpacity>
+          </View>
+          {activeTab === 'modes'
+            ? this._renderModesContent()
+            : this._renderGeneralContent()}
+        </ScrollView>
+      </View>
     )
   }
 }

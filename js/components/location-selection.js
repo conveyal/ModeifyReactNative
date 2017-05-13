@@ -33,6 +33,7 @@ import type {
 import type {AppConfig, CurrentQuery, MapRegion} from '../types'
 import type {styleOptions} from '../types/rn-style-config'
 
+import Header from './header'
 import {constructMapboxUrl, geolocateLocation} from '../util'
 import headerStyles from '../util/header-styles'
 
@@ -76,15 +77,6 @@ export default class LocationSelection extends Component {
   currentReverseQuery: MapRegion
   props: Props
   state: State
-
-  static navigationOptions = {
-    header: ({ state }: { state: NavigationRoute }) => ({
-      style: headerStyles.nav,
-      tintColor: '#fff',
-      title: 'SELECT LOCATION',
-      titleStyle: headerStyles.title
-    })
-  }
 
   componentWillMount () {
     const {currentQuery} = this.props
@@ -419,9 +411,17 @@ export default class LocationSelection extends Component {
   render () {
     return (
       <View style={styles.container}>
-        {this._renderInput()}
-        {this._renderResults()}
-        {this._renderMapSelection()}
+        <Header
+          left={{back: true}}
+          navigation={this.props.navigation}
+          right={{close: true}}
+          title='SELECT LOCATION'
+          />
+        <View style={styles.contentContainer}>
+          {this._renderInput()}
+          {this._renderResults()}
+          {this._renderMapSelection()}
+        </View>
       </View>
     )
   }
@@ -431,6 +431,7 @@ type LocationSelectionStyle = {
   confirmMapLocationButton: styleOptions,
   confirmMapLocationButtonText: styleOptions,
   container: styleOptions,
+  contentContainer: styleOptions,
   currentLocationTextInput: styleOptions,
   geocodeResult: styleOptions,
   inputContainer: styleOptions,
@@ -461,6 +462,9 @@ const locationSelectionStyle: LocationSelectionStyle = {
   },
   container: {
     backgroundColor: '#fff',
+    flex: 1
+  },
+  contentContainer: {
     flex: 1,
     paddingTop: 10
   },

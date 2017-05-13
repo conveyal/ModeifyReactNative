@@ -8,6 +8,7 @@ import {connect, Provider} from 'react-redux'
 
 import DrawerContent from './components/drawer-content'
 import App from './containers/app.js'
+import {About, Legal} from './containers/info-screens'
 import LocationSelection from './containers/location-selection'
 import OptionSelected from './containers/option-selected'
 import Settings from './containers/settings'
@@ -23,7 +24,9 @@ const AppNavigator = DrawerNavigator({
     path: 'option-selected/:option',
     screen: OptionSelected
   },
-  Settings: { screen: Settings }
+  Settings: { screen: Settings },
+  About: { screen: About },
+  Legal: { screen: Legal }
 }, {
   contentComponent: DrawerContent
 })

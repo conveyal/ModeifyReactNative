@@ -8,7 +8,7 @@ import {
   Text,
   TouchableOpacity,
   View
-} from 'react-native';
+} from 'react-native'
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons'
 import HeaderBackButton from 'react-navigation/src/views/HeaderBackButton'
 
@@ -19,10 +19,12 @@ export default class Header extends Component {
     if (left) {
       if (left.back) {
         return (
-          <HeaderBackButton
-            onPress={() => navigation.goBack(null)}
-            tintColor='#fff'
-            />
+          <View style={styles.leftBackButton}>
+            <HeaderBackButton
+              onPress={() => navigation.goBack(null)}
+              tintColor='#fff'
+              />
+          </View>
         )
       } else if (left.menu) {
         return (
@@ -85,6 +87,7 @@ type stylesType = {
   closeContainer: Object,
   closeImage: Object,
   homeLogo: Object,
+  leftBackButton: Object,
   menuButton: Object,
   nav: Object,
   rightCloseButton: Object,
@@ -125,6 +128,15 @@ const styles: stylesType = StyleSheet.create({
         paddingTop: 10
       },
       ios: {}
+    })
+  },
+  leftBackButton: {
+    ...Platform.select({
+      android: {},
+      ios: {
+        marginLeft: 10,
+        marginTop: 6
+      }
     })
   },
   menuButton: {
