@@ -1,3 +1,5 @@
+import {ListView} from 'react-native'
+
 import type {styleOptions} from './rn-style-config'
 
 type Stats = {
@@ -42,10 +44,25 @@ export type SegmentDetail = {
   },
   iconColor: string,
   routes: Array<Route>,
+  routeStyle?: {
+    alight?: boolean,
+    board?: boolean,
+    color: string,
+    lastColor?: string,
+    take?: boolean,
+    transfer?: boolean
+  },
   rowStyle: styleOptions,
   segmentPatterns: Array<Pattern>,
   textStyle: styleOptions,
   walkTime: number
+}
+
+export type SegmentDisplay = {
+  background?: Array<string>,
+  mode: string,
+  shortName?: string,
+  longName?: string
 }
 
 export type NonTransitModeDetails = {
@@ -101,6 +118,23 @@ export type TripPlanResult = {
   profile: Array<TransitProfile | NonTransitProfile>
 }
 
-export type ModeifyResults = {
-
+export type ModeifyResult = {
+  access: Array<NonTransitModeDetails>,
+  averageTime: number,
+  bikeDistances: boolean | string,
+  bikeTime: string,
+  costPerTrip: string,
+  dataSource: ListView.DataSource,
+  directCar: boolean,
+  driveDistances: boolean | string,
+  freeflowTime: number,
+  hasCar: boolean,
+  hasTransit: boolean,
+  modeDescriptor: string,
+  modes: Array<string>,
+  segments: Array<SegmentDisplay>,
+  stats: Stats,
+  summary: string,
+  walkDistances: boolean | string,
+  walkTime: string
 }

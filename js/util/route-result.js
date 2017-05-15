@@ -8,24 +8,19 @@ import convert from './convert'
 
 import type {Location} from '../types'
 import type {
+  ModeifyResult,
   NonTransitModeDetails,
   NonTransitProfile,
   Pattern,
   Route,
   SegmentDetail,
+  SegmentDisplay,
   StreetEdge,
   TransitModeDetails,
   TripPlanResult,
   TransitProfile
 } from '../types/results'
 import type {styleOptions} from '../types/rn-style-config'
-
-type SegmentDisplay = {
-  background?: Array<string>,
-  mode: string,
-  shortName?: string,
-  longName?: string
-}
 
 type Step = {
   description: string,
@@ -43,16 +38,16 @@ type StringLookup = {[key: string]: string}
 const scorer = new ProfileScorer()
 
 export default class RouteResult {
-  fromLocation: Object
+  fromLocation: Location
   lastResponse: Object
   results: TripPlanResult
-  toLocation: Object
+  toLocation: Location
 
   hasChanged = false
   hasError = false
   lastResponse = {}
 
-  getResults () {
+  getResults (): Array<ModeifyResult> {
     if (this.hasError || !this.lastResponse) return []
 
     console.log(this.lastResponse.r5.profile)
@@ -82,7 +77,7 @@ export default class RouteResult {
     }
   }
 
-  setLocation (type: 'from' | 'to', location: Object) {
+  setLocation (type: 'from' | 'to', location: Location) {
     if (type === 'from') {
       if (this.fromLocation !== location) this.hasChanged = true
       this.fromLocation = location

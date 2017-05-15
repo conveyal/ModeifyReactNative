@@ -17,32 +17,56 @@ import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons'
 import ModeifyIcon from './modeify-icon'
 import RouteResult, {getSegmentDetailsForOption} from '../util/route-result'
 
+import type {
+  NavigationAction,
+  NavigationRoute,
+  NavigationScreenProp
+} from 'react-navigation/src/TypeDefinition'
+
 import type {Location} from '../types'
+import type {
+  ModeifyResult,
+  SegmentDetail,
+  SegmentDisplay
+} from '../types/results'
+import type {styleOptions} from '../types/rn-style-config'
 
 type SearchResult = {
-  pending: boolean;
-  planResponse: RouteResult;
+  pending: boolean,
+  planResponse: RouteResult
 }
 
 type Props = {
-  activeSearch: number;
-  fromLocation: Location;
-  modeSettings: Object;
-  planPostprocessSettings: Object;
-  searches: Array<SearchResult>;
-  toLocation: Location;
+  activeSearch: number,
+  fromLocation: Location,
+  modeSettings: {
+    bikeSpeed: number,
+    walkSpeed: number
+  },
+  navigation: NavigationScreenProp<NavigationRoute, NavigationAction>,
+  planPostprocessSettings: {
+    drivingCostPerMile: number,
+    parkingCost: number
+  },
+  searches: Array<SearchResult>,
+  toLocation: Location
+}
+
+type RowDetailToggle = {
+  [key: number]: boolean
 }
 
 type State = {
-  isPending: boolean;
-  noPlans?: boolean;
-  options: ListView.DataSource;
-  resultIndex?: number;
-  rowDetailToggle: Object;
+  isPending: boolean,
+  noPlans?: boolean,
+  options: ListView.DataSource,
+  resultIndex?: number,
+  rowDetailToggle: RowDetailToggle
 }
 
 export default class ResultsList extends Component {
-  routeResult: Object
+  props: Props
+  routeResult: RouteResult
   state: State
 
   constructor(props: Props) {
@@ -53,7 +77,7 @@ export default class ResultsList extends Component {
   state = {
     isPending: true,
     noPlans: true,
-    options: new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2}),
+    options: makeNewDatasourceListview(),
     resultIndex: 0,
     rowDetailToggle: {}
   }
@@ -125,11 +149,13 @@ export default class ResultsList extends Component {
     }
   }
 
-  _getOptionDetailListviewDatasource (option) {
+  _getOptionDetailListviewDatasource (
+    option: ModeifyResult
+  ): ListView.DataSource {
     if (option.dataSource) return option.dataSource
 
     const {fromLocation, toLocation} = this.props
-    option.dataSource = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2})
+    option.dataSource = makeNewDatasourceListview()
     option.dataSource =
       option.dataSource.cloneWithRows(
         getSegmentDetailsForOption(
@@ -139,7 +165,7 @@ export default class ResultsList extends Component {
     return option.dataSource
   }
 
-  _getRows (nextRowDetailToggle) {
+  _getRows (nextRowDetailToggle: RowDetailToggle): ListView.DataSource {
     const results = this.routeResult.getResults()
     let rows = results && results.length > 0
       ? results.map((result, idx) => {
@@ -157,8 +183,11 @@ export default class ResultsList extends Component {
   // handlers
   // ------------------------------------------------------------------------
 
-  _toggleDetails = (rowId) => {
-    const nextRowDetailToggle = Object.assign({}, this.state.rowDetailToggle)
+  _toggleDetails = (rowId: number) => {
+    const nextRowDetailToggle: RowDetailToggle = Object.assign(
+      {},
+      this.state.rowDetailToggle
+    )
     nextRowDetailToggle[rowId] = !nextRowDetailToggle[rowId]
     this.setState({
       options: this._getRows(nextRowDetailToggle),
@@ -166,7 +195,7 @@ export default class ResultsList extends Component {
     })
   }
 
-  _handleSelectOption = (option) => {
+  _handleSelectOption = (option: ModeifyResult) => {
     this.props.navigation.navigate('OptionSelected', { option })
   }
 
@@ -174,34 +203,34 @@ export default class ResultsList extends Component {
   // renderers
   // ------------------------------------------------------------------------
 
-  _renderOptionDetails = (optionDetail, listSectionID, listRowID) => {
+  _renderOptionDetails = (
+    optionDetail: SegmentDetail,
+    listSectionID: string,
+    listRowID: number
+  ): React.Element<*> => {
     return (
       <View style={[styles.optionDetailsRow, optionDetail.rowStyle]}>
         <View style={styles.optionDetailIcon}>
           {optionDetail.routeStyle && (
             optionDetail.routeStyle.alight ||
             optionDetail.routeStyle.transfer) &&
-            <View style={{
-                backgroundColor: optionDetail.routeStyle.lastColor,
-                height: 20,
-                left: 13,
-                position: 'absolute',
-                top: 0,
-                width: 24
-              }}
+            <View style={[
+                styles.routeStyleAlight,
+                {
+                  backgroundColor: optionDetail.routeStyle.lastColor,
+                }
+              ]}
               >
               <Text>&nbsp;</Text>
             </View>
           }
           {optionDetail.routeStyle && optionDetail.routeStyle.take &&
-            <View style={{
-                backgroundColor: optionDetail.routeStyle.color,
-                bottom: 0,
-                left: 13,
-                position: 'absolute',
-                top: 0,
-                width: 24
-              }}
+            <View style={[
+                styles.routeStyleTake,
+                {
+                  backgroundColor: optionDetail.routeStyle.color,
+                }
+              ]}
               >
               <Text>&nbsp;</Text>
             </View>
@@ -209,14 +238,12 @@ export default class ResultsList extends Component {
           {optionDetail.routeStyle && (
             optionDetail.routeStyle.board ||
             optionDetail.routeStyle.transfer) &&
-            <View style={{
-                backgroundColor: optionDetail.routeStyle.color,
-                height: 30,
-                left: 13,
-                position: 'absolute',
-                top: 17,
-                width: 24
-              }}
+            <View style={[
+                styles.routeStyleBoard,
+                {
+                  backgroundColor: optionDetail.routeStyle.color,
+                }
+              ]}
               >
               <Text>&nbsp;</Text>
             </View>
@@ -257,7 +284,11 @@ export default class ResultsList extends Component {
     )
   }
 
-  _renderOption = (option, listSectionID, listRowID) => {
+  _renderOption = (
+    option: ModeifyResult,
+    listSectionID: string,
+    listRowID: number
+  ): React.Element<*> => {
     const {rowDetailToggle} = this.state
 
     return (
@@ -274,7 +305,10 @@ export default class ResultsList extends Component {
         </View>
         <View style={styles.optionContent}>
           <View style={styles.segments} >
-            {option.segments.map((segment, idx) =>
+            {option.segments.map((
+              segment: SegmentDisplay,
+              idx: number
+            ): React.Element<*> =>
               <View style={styles.segmentRow}>
                 <View>
                   {['cabi', 'carshare'].indexOf(segment.mode) > -1
@@ -300,8 +334,10 @@ export default class ResultsList extends Component {
                 <View
                   style={styles.segmentShortNameContainer}
                   >
-                  {segment.background &&
-                    segment.background.map((color) =>
+                  {segment.background.length > 0 &&
+                    segment.background.map((
+                      color: string
+                    ): React.Element<*> =>
                       <View style={[
                           styles.segmentRouteBackground,
                           {
@@ -332,19 +368,29 @@ export default class ResultsList extends Component {
             </View>
             <View style={styles.walkBikeTimeContainer}>
               {option.freeflowTime &&
-                <WalkBikeText>{option.freeflowTime} without traffic</WalkBikeText>
+                <WalkBikeText
+                  text={`${option.freeflowTime} without traffic`}
+                  />
               }
               {option.hasTransit && option.bikeDistances > 0 &&
-                <WalkBikeText>{option.bikeTime} min biking</WalkBikeText>
+                <WalkBikeText
+                  text={`${option.bikeTime} min biking`}
+                  />
               }
               {option.hasTransit && option.walkDistances > 0 &&
-                <WalkBikeText>{option.walkTime} min walking</WalkBikeText>
+                <WalkBikeText
+                  text={`${option.walkTime} min walking`}
+                  />
               }
               {!option.hasTransit && option.bikeDistances > 0 &&
-                <WalkBikeText>{option.bikeDistances} mi biking</WalkBikeText>
+                <WalkBikeText
+                  text={`${option.bikeDistances} mi biking`}
+                  />
               }
               {!option.hasTransit && option.walkDistances > 0 &&
-                <WalkBikeText>{option.walkDistances} mi walking</WalkBikeText>
+                <WalkBikeText
+                  text={`${option.walkDistances} mi walking`}
+                  />
               }
             </View>
             <View style={styles.selectOptionButton}>
@@ -375,11 +421,11 @@ export default class ResultsList extends Component {
     )
   }
 
-  _renderResult () {
+  _renderResult (): React.Element<*> {
     const {noPlans, isPending, options} = this.state
 
-    const numResults = options.getRowCount()
-    const hasResults = numResults > 0
+    const numResults: number = options.getRowCount()
+    const hasResults: boolean = numResults > 0
 
     if (noPlans) {
       return (
@@ -418,7 +464,7 @@ export default class ResultsList extends Component {
     )
   }
 
-  render () {
+  render (): React.Element<*> {
     return (
       <View
         style={styles.resultListContainer}
@@ -429,15 +475,57 @@ export default class ResultsList extends Component {
   }
 }
 
-const WalkBikeText = (props) => (
+const WalkBikeText = (props: {text: string}): React.Element<*> => (
   <Text
     style={styles.walkBikeTimeText}
     >
-    {props.children}
+    {props.text}
   </Text>
 )
 
-const styles = StyleSheet.create({
+function makeNewDatasourceListview (): ListView.DataSource  {
+  return new ListView.DataSource({
+    rowHasChanged: (
+      row1: any,
+      row2: any
+    ): boolean => row1 !== row2
+  })
+}
+
+
+type ResultListStyle = {
+  cost: styleOptions,
+  detailsButton: styleOptions,
+  infoText: styleOptions,
+  modeIcon: styleOptions,
+  optionCard: styleOptions,
+  optionContent: styleOptions,
+  optionDetailDescription: styleOptions,
+  optionDetailsRow: styleOptions,
+  optionDetailIcon: styleOptions,
+  optionHeader: styleOptions,
+  optionTitle: styleOptions,
+  resultListContainer: styleOptions,
+  routeStyleAlight: styleOptions,
+  routeStyleBoard: styleOptions,
+  routeStyleTake: styleOptions,
+  segmentRow: styleOptions,
+  segmentRouteBackground: styleOptions,
+  segments: styleOptions,
+  segmentShortName: styleOptions,
+  segmentShortNameStroke: styleOptions,
+  segmentShortNameContainer: styleOptions,
+  selectOptionButton: styleOptions,
+  summary: styleOptions,
+  time: styleOptions,
+  timeContainer: styleOptions,
+  timeMinutes: styleOptions,
+  transferIcon: styleOptions,
+  walkBikeTimeText: styleOptions,
+  walkBikeTimeContainer: styleOptions
+}
+
+const resultListStyle: ResultListStyle = {
   cost: {
     backgroundColor: '#8ec449',
     bottom: 3,
@@ -504,6 +592,27 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingBottom: 50,
     paddingTop: 10
+  },
+  routeStyleAlight: {
+    height: 20,
+    left: 13,
+    position: 'absolute',
+    top: 0,
+    width: 24
+  },
+  routeStyleBoard: {
+    height: 30,
+    left: 13,
+    position: 'absolute',
+    top: 17,
+    width: 24
+  },
+  routeStyleTake: {
+    bottom: 0,
+    left: 13,
+    position: 'absolute',
+    top: 0,
+    width: 24
   },
   segmentRow: {
     flexDirection: 'row'
@@ -587,4 +696,6 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     marginTop: 36
   }
-})
+}
+
+const styles: ResultListStyle = StyleSheet.create(resultListStyle)

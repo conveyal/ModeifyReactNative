@@ -254,12 +254,10 @@ export default class OptionSelected extends Component {
                     ? <ModeifyIcon
                         name={segment.mode}
                         size={30}
-                        style={styles.modeIcon}
                         />
                     : <MaterialIcon
                         name={segment.mode}
                         size={30}
-                        style={styles.modeIcon}
                         />
                   }
                   {segment.shortName &&
@@ -291,7 +289,6 @@ export default class OptionSelected extends Component {
                     <MaterialIcon
                       name='menu-right'
                       size={30}
-                      style={styles.transferIcon}
                       />
                   }
                 </View>
@@ -531,4 +528,4 @@ const optionSelectedStyle: OptionSelectedStyle = {
   }
 }
 
-const styles = StyleSheet.create(optionSelectedStyle)
+const styles: OptionSelectedStyle = StyleSheet.create(optionSelectedStyle)
