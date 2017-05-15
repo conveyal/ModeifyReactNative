@@ -6,12 +6,22 @@ type Stats = {
   min: number
 }
 
-type StreetEdge = {
+type BikeRentalStation = {
+  name: string
+}
+
+export type StreetEdge = {
+  absoluteDirection: string,
+  bikeRentalOffStation?: BikeRentalStation,
+  bikeRentalOnStation?: BikeRentalStation,
   distance: number,
   geometry: {
     length: number,
     points: string
-  }
+  },
+  mode: string,
+  relativeDirection: string,
+  streetName?: string
 }
 
 export type Route = {
@@ -25,26 +35,38 @@ export type Route = {
 
 export type SegmentDetail = {
   description: string,
+  fromName: string,
   icon: {
     modeifyIcon: boolean,
     name: string
   },
   iconColor: string,
+  routes: Array<Route>,
   rowStyle: styleOptions,
-  textStyle: styleOptions
+  segmentPatterns: Array<Pattern>,
+  textStyle: styleOptions,
+  walkTime: number
 }
 
-type NonTransitModeDetails = {
+export type NonTransitModeDetails = {
   mode: string,
   streetEdges: Array<StreetEdge>,
   time: number
 }
 
-type TransitModeDetails = {
+export type Pattern = {
+  color: string,
+  longName: string,
+  shield: string,
+  shortName?: string
+}
+
+export type TransitModeDetails = {
   fromName: string,
   mode: string,
   rideStats: Stats,
   routes: Array<Route>,
+  segmentPatterns: Array<Pattern>,
   toName: string,
   waitStats: Stats,
   walkDistance: number,
@@ -60,6 +82,7 @@ type Fare = {
 
 export type NonTransitProfile = {
   access: Array<NonTransitModeDetails>,
+  modes: Array<string>,
   stats: Stats,
   summary: string
 }
@@ -68,6 +91,7 @@ export type TransitProfile = {
   access: Array<NonTransitModeDetails>,
   egress: Array<NonTransitModeDetails>,
   fares: Array<Fare>,
+  modes: Array<string>,
   stats: Stats,
   summary: string,
   transit: Array<TransitModeDetails>

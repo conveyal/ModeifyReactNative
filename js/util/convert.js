@@ -4,7 +4,7 @@
  * Calories to pounds
  */
 
-exports.caloriesToPounds = function (cals: number) {
+exports.caloriesToPounds = function (cals: number): number {
   return cals / 3500
 }
 
@@ -12,7 +12,7 @@ exports.caloriesToPounds = function (cals: number) {
  * Meters to miles
  */
 
-exports.metersToMiles = function (meters: number) {
+exports.metersToMiles = function (meters: number): string {
   return milesToString(meters * 0.000621371)
 }
 
@@ -20,13 +20,13 @@ exports.metersToMiles = function (meters: number) {
  * Miles to string
  */
 
-const milesToString = exports.milesToString = function (miles: number) {
+const milesToString = exports.milesToString = function (miles: number): string {
   if (miles > 10) {
     return miles.toFixed(0)
   } else if (miles > 1) {
-    return ((miles * 10) | 0) / 10
+    return '' + ((miles * 10) | 0) / 10
   } else {
-    return ((miles * 100) | 0) / 100
+    return '' + ((miles * 100) | 0) / 100
   }
 }
 
@@ -34,7 +34,7 @@ const milesToString = exports.milesToString = function (miles: number) {
  * MPH to m/s
  */
 
-exports.mphToMps = function (mph: number) {
+exports.mphToMps = function (mph: number): number {
   return mph * 0.44704
 }
 
@@ -42,7 +42,7 @@ exports.mphToMps = function (mph: number) {
  * TODO: this should be aliased in CSS
  */
 
-exports.modeToIcon = function (mode: string) {
+exports.modeToIcon = function (mode: string): string {
   mode = mode || ''
   mode = mode.toLowerCase()
   switch (mode) {
@@ -65,16 +65,17 @@ exports.modeToIcon = function (mode: string) {
  * Number to short string
  */
 
-exports.roundNumberToString = function (number: number) {
+exports.roundNumberToString = function (number: number): string {
   if (number > 1000) {
     return toFixed(number, 0).toLocaleString()
   } else if (number > 100) {
-    return Math.round(number)
+    return '' + Math.round(number)
   } else if (number > 10) {
     return toFixed(number, 1)
   } else if (number > 1) {
     return toFixed(number, 2)
   }
+  return ''
 }
 
 /**
@@ -86,7 +87,7 @@ exports.routeToColor = function (
   agency: string,
   line: string,
   color: string
-) {
+): string {
   if (color) {
     return `#${color}`
   }
@@ -103,7 +104,10 @@ exports.routeToColor = function (
   return '#333'
 }
 
-exports.safeParseFloat = function (value: number | string, defaultValue: number) {
+exports.safeParseFloat = function (
+  value: number | string,
+  defaultValue: number
+): number {
   try {
     return parseFloat(value)
   } catch (e) {
@@ -111,7 +115,10 @@ exports.safeParseFloat = function (value: number | string, defaultValue: number)
   }
 }
 
-exports.safeParseInt = function (value: number | string, defaultValue: number) {
+exports.safeParseInt = function (
+  value: number | string,
+  defaultValue: number
+): number {
   try {
     return parseInt(value, 10)
   } catch (e) {
@@ -123,7 +130,7 @@ exports.safeParseInt = function (value: number | string, defaultValue: number) {
  * Seconds to minutes
  */
 
-exports.secondsToMinutes = function (input: number) {
+exports.secondsToMinutes = function (input: number): string {
   var minutes = Math.floor(input / 60)
   var sec = input % 60
   sec = sec < 10 ? '0' + sec : sec
@@ -134,9 +141,12 @@ exports.secondsToMinutes = function (input: number) {
  * To fixed without trailing zero
  */
 
-const toFixed = exports.toFixed = function (number: number, decimalPlaces: number) {
+const toFixed = exports.toFixed = function(
+  number: number,
+  decimalPlaces: number
+): string {
   const temp = Math.pow(10, decimalPlaces)
-  return ((number * temp) | 0) / temp
+  return '' + (((number * temp) | 0) / temp)
 }
 
 /**

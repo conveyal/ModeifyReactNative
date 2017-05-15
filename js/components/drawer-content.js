@@ -14,11 +14,16 @@ import {
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons'
 import {addNavigationHelpers, DrawerItems, DrawerNavigator} from 'react-navigation'
 
+import type {
+  NavigationAction,
+  NavigationScreenProp,
+  NavigationState
+} from 'react-navigation/src/TypeDefinition'
 import type { DrawerScene } from 'react-navigation/src/views/Drawer/DrawerView'
 
 type Props = {
   getLabel: (scene: DrawerScene) => ?(React.Element<*> | string),
-  navigation: Object,
+  navigation: NavigationScreenProp<NavigationState, NavigationAction>,
   renderIcon: (scene: DrawerScene) => ?React.Element<*>,
 }
 

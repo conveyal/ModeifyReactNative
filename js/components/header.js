@@ -12,32 +12,55 @@ import {
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons'
 import HeaderBackButton from 'react-navigation/src/views/HeaderBackButton'
 
+import type {
+  NavigationAction,
+  NavigationRoute,
+  NavigationScreenProp
+} from 'react-navigation/src/TypeDefinition'
+
+import type {styleOptions} from '../types/rn-style-config'
+
+type Props = {
+  left?: {
+    back?: boolean,
+    menu?: boolean
+  },
+  navigation: NavigationScreenProp<NavigationRoute, NavigationAction>,
+  right?: {
+    close?: boolean
+  },
+  title: any
+}
 
 export default class Header extends Component {
-  _renderLeft () {
+  props: Props
+
+  _renderLeft (): ?React.Element<View> {
     const {left, navigation} = this.props
     if (left) {
       if (left.back) {
         return (
           <View style={styles.leftBackButton}>
             <HeaderBackButton
-              onPress={() => navigation.goBack(null)}
+              onPress={() => {navigation.goBack(null)}}
               tintColor='#fff'
               />
           </View>
         )
       } else if (left.menu) {
         return (
-          <TouchableOpacity
-            onPress={() => navigation.navigate('DrawerOpen')}
-            >
-            <MaterialIcon
-              color='#fff'
-              name='menu'
-              size={24}
-              style={styles.menuButton}
-              />
-          </TouchableOpacity>
+          <View>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('DrawerOpen')}
+              >
+              <MaterialIcon
+                color='#fff'
+                name='menu'
+                size={24}
+                style={styles.menuButton}
+                />
+            </TouchableOpacity>
+          </View>
         )
       }
     }
@@ -81,55 +104,15 @@ export default class Header extends Component {
   }
 }
 
-type stylesType = {
-  backContainer: Object,
-  backImage: Object,
-  closeContainer: Object,
-  closeImage: Object,
-  homeLogo: Object,
-  leftBackButton: Object,
-  menuButton: Object,
-  nav: Object,
-  rightCloseButton: Object,
-  statusBarSpacer: Object,
-  title: Object
+type HeaderStyles = {
+  leftBackButton: styleOptions,
+  menuButton: styleOptions,
+  nav: styleOptions,
+  rightCloseButton: styleOptions,
+  title: styleOptions
 }
 
-const styles: stylesType = StyleSheet.create({
-  backContainer: {
-    position: 'absolute',
-    height: 34,
-    left: 10,
-    top: 10,
-    width: 34
-  },
-  backImage: {
-    height: 34,
-    resizeMode: 'contain',
-    width: 34
-  },
-  closeContainer: {
-    position: 'absolute',
-    height: 34,
-    right: 10,
-    top: 10,
-    width: 34
-  },
-  closeImage: {
-    height: 34,
-    resizeMode: 'contain',
-    width: 34
-  },
-  homeLogo: {
-    height: 35,
-    resizeMode: 'contain',
-    ...Platform.select({
-      android: {
-        paddingTop: 10
-      },
-      ios: {}
-    })
-  },
+const headerStyles: HeaderStyles = {
   leftBackButton: {
     ...Platform.select({
       android: {},
@@ -158,10 +141,6 @@ const styles: stylesType = StyleSheet.create({
     right: 16,
     top: 16
   },
-  statusBarSpacer: {
-    backgroundColor: '#5a7491',
-    height: 20
-  },
   title: {
     bottom: 0,
     color: '#fff',
@@ -172,4 +151,6 @@ const styles: stylesType = StyleSheet.create({
     textAlign: 'center',
     top: 16
   }
-})
+}
+
+const styles: HeaderStyles = StyleSheet.create(headerStyles)

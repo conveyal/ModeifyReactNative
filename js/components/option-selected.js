@@ -13,10 +13,17 @@ import {
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons'
 
 import Header from './header'
+import HyperLink from './hyperlink'
 import ModeifyIcon from './modeify-icon'
 import headerStyles from '../util/header-styles'
 import {getResourcesByTag} from '../util/route-option-resource'
 import {getOptionTags} from '../util/route-result'
+
+import type {
+  NavigationAction,
+  NavigationRoute,
+  NavigationScreenProp
+} from 'react-navigation/src/TypeDefinition'
 
 import type {Location, Resource} from '../types'
 import type {NonTransitProfile, TransitProfile} from '../types/results'
@@ -27,10 +34,7 @@ const workTripsPerYear = 235
 
 type Props = {
   fromLocation: Location,
-  // I really want to make the following have a type of
-  // NavigationScreenProp<NavigationRoute, NavigationAction>,
-  // but can't cause of https://github.com/facebook/flow/issues/2570
-  navigation: any,
+  navigation: NavigationScreenProp<NavigationRoute, NavigationAction>,
   toLocation: Location
 }
 
@@ -55,7 +59,9 @@ export default class OptionSelected extends Component {
 
   componentWillMount () {
     const {fromLocation, navigation, toLocation} = this.props
-    const {option} = navigation.state.params
+    const {params} = navigation.state
+    if (!params) throw new Error('Navigation params not set')
+    const {option} = params
 
     getResourcesByTag(
       getOptionTags(option, fromLocation, toLocation),
@@ -66,7 +72,9 @@ export default class OptionSelected extends Component {
   }
 
   _getOption (): TransitProfile | NonTransitProfile {
-    return this.props.navigation.state.params.option
+    const {params} = this.props.navigation.state
+    if (!params) throw new Error('Navigation params not set')
+    return params.option
   }
 
   _onLoginPress = () => {
@@ -75,19 +83,6 @@ export default class OptionSelected extends Component {
 
   _onSignUpPress = () => {
 
-  }
-
-  _onTapUrl = (url?: string) => {
-    if (!url) return
-    Linking.canOpenURL(url)
-      .then((supported: boolean) => {
-        if (!supported) {
-          console.log('Can\'t handle url: ', url)
-        } else {
-          return Linking.openURL(url)
-        }
-      })
-      .catch(err => console.error('An error occurred', err))
   }
 
   _toggleResource = (idx: number) => {
@@ -219,12 +214,12 @@ export default class OptionSelected extends Component {
             {expandedResources[idx] &&
               <Text style={styles.resourceText}>
                 {resource.parsedNodes.map(node => (
-                  <Text
-                    onPress={() => this._onTapUrl(node.link)}
-                    style={node.type === 'link' ? styles.resourceLink : {}}
-                    >
-                    {node.text}
-                  </Text>
+                  node.type === 'link'
+                    ? <HyperLink
+                        text={node.text}
+                        url={node.link}
+                        />
+                    : <Text>{node.text}</Text>
                 ))}
               </Text>
             }

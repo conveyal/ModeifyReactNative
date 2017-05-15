@@ -1,10 +1,12 @@
+import React from 'react'
+
 /**
  * ModeifyIcon icon set component.
  * Usage: <ModeifyIcon name="icon-name" size={20} color="#4F8EF7" />
  */
 
 import createIconSet from 'react-native-vector-icons/lib/create-icon-set';
-const glyphMap = {
+const glyphMap: {[key: string]: number} = {
   "book": 58895,
   "money": 58896,
   "scale": 58897,
@@ -24,14 +26,14 @@ const glyphMap = {
   "carshare": 58893,
   "train": 58894,
   "walk": 58898
-};
+}
 
-const iconSet = createIconSet(glyphMap, 'icomoon', 'ModeifyIcons.ttf');
+const iconSet: React.Element = createIconSet(glyphMap, 'icomoon', 'ModeifyIcons.ttf');
 
 export default iconSet;
 
-export const Button = iconSet.Button;
-export const TabBarItem = iconSet.TabBarItem;
-export const TabBarItemIOS = iconSet.TabBarItemIOS;
-export const ToolbarAndroid = iconSet.ToolbarAndroid;
-export const getImageSource = iconSet.getImageSource;
+export const Button: React.Element = iconSet.Button;
+export const TabBarItem: React.Element = iconSet.TabBarItem;
+export const TabBarItemIOS: React.Element = iconSet.TabBarItemIOS;
+export const ToolbarAndroid: React.Element = iconSet.ToolbarAndroid;
+export const getImageSource: React.Element = iconSet.getImageSource;

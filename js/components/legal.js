@@ -5,9 +5,21 @@ import {View, StyleSheet, Text} from 'react-native'
 
 import Header from './header'
 
+import type {
+  NavigationAction,
+  NavigationRoute,
+  NavigationScreenProp
+} from 'react-navigation/src/TypeDefinition'
+
 import type {styleOptions} from '../types/rn-style-config'
 
+type Props = {
+  navigation: NavigationScreenProp<NavigationRoute, NavigationAction>
+}
+
 export default class Legal extends Component {
+  props: Props
+
   static navigationOptions = {
     drawerLabel: 'LEGAL'
   }
@@ -33,8 +45,10 @@ type AboutStyle = {
   content: styleOptions
 }
 
-const styles: AboutStyle = StyleSheet.create(({
+const aboutStyle: AboutStyle = {
   content: {
     padding: 10
   }
-}: AboutStyle))
+}
+
+const styles: AboutStyle = StyleSheet.create(aboutStyle)

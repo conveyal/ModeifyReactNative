@@ -10,12 +10,35 @@ import type {Location} from '../types'
 import type {
   NonTransitModeDetails,
   NonTransitProfile,
+  Pattern,
   Route,
   SegmentDetail,
+  StreetEdge,
   TransitModeDetails,
   TripPlanResult,
   TransitProfile
 } from '../types/results'
+import type {styleOptions} from '../types/rn-style-config'
+
+type SegmentDisplay = {
+  background?: Array<string>,
+  mode: string,
+  shortName?: string,
+  longName?: string
+}
+
+type Step = {
+  description: string,
+  icon?: {
+    fontAwesome?: boolean,
+    modeifyIcon?: boolean,
+    name: string,
+    transform?: string
+  },
+  rowStyle?: styleOptions
+}
+
+type StringLookup = {[key: string]: string}
 
 const scorer = new ProfileScorer()
 
@@ -47,9 +70,7 @@ export default class RouteResult {
    * @return {boolean}         True if the response should cause an update
    */
   parseResponse (response: TripPlanResult) {
-    if (isEqual(response, this.lastResponse)) {
-      return
-    }
+    if (isEqual(response, this.lastResponse)) return
 
     this.hasChanged = true
     this.lastResponse = response
@@ -81,7 +102,7 @@ export default class RouteResult {
 
 let segmentRowIdx
 
-const MODE_TO_ACTION = {
+const MODE_TO_ACTION: StringLookup = {
   BICYCLE: 'Bike',
   BICYCLE_RENT: 'Bike',
   CAR: 'Drive',
@@ -89,7 +110,13 @@ const MODE_TO_ACTION = {
   WALK: 'Walk'
 }
 
-const MODE_TO_ICON = {
+const MODE_TO_ICON: {
+  [key: string]: {
+    materialIcon?: boolean,
+    modeifyIcon?: boolean,
+    name: string
+  }
+} = {
   BICYCLE: {
     materialIcon: true,
     name: 'bike'
@@ -112,7 +139,7 @@ const MODE_TO_ICON = {
   }
 }
 
-const DIRECTION_TO_CARDINALITY = {
+const DIRECTION_TO_CARDINALITY: StringLookup = {
   CIRCLE_COUNTERCLOCKWISE: 'repeat',
   HARD_LEFT: 'arrow-left',
   HARD_RIGHT: 'arrow-right',
@@ -125,7 +152,7 @@ const DIRECTION_TO_CARDINALITY = {
   UTURN_RIGHT: 'repeat'
 }
 
-const DIRECTION_TO_CARDINALITY_TRANSFORM = {
+const DIRECTION_TO_CARDINALITY_TRANSFORM: StringLookup = {
   CIRCLE_COUNTERCLOCKWISE: 'fa-repeat fa-flip-horizontal',
   SLIGHTLY_RIGHT: 'fa-arrow-right fa-northeast',
   SLIGHTLY_LEFT: 'fa-arrow-right fa-northwest',
@@ -152,7 +179,7 @@ function distances (
   option: NonTransitProfile | TransitProfile,
   mode: string,
   val: string
-) {
+): boolean | string {
   if (option.modes.indexOf(mode) === -1) {
     return false
   } else {
@@ -160,7 +187,7 @@ function distances (
   }
 }
 
-function getAgencyName (internalName: string) {
+function getAgencyName (internalName: string): string {
   switch (internalName) {
     case 'MET': return 'Metro'
     case 'Arlington Transit': return 'ART'
@@ -173,7 +200,7 @@ function getAgencyName (internalName: string) {
   return internalName
 }
 
-function getRouteNames (routes: Array<Route>) {
+function getRouteNames (routes: Array<Route>): string {
   var agencyRoutes: {
     [key: string]: Array<string>
   } = {} // maps agency name to array of routes
@@ -209,7 +236,7 @@ export function getOptionTags (
   option: NonTransitProfile | TransitProfile,
   fromLocation: Location,
   toLocation: Location
-) {
+): Array<string> {
   let tags: Array<string> = []
 
   // add the access mode tags
@@ -241,7 +268,7 @@ export function getSegmentDetailsForOption (
   option: NonTransitProfile | TransitProfile,
   fromLocation: Location,
   toLocation: Location
-) {
+): Array<SegmentDetail> {
   if (option.segmentDetails) {
     return option.segmentDetails
   }
@@ -275,13 +302,12 @@ export function getSegmentDetailsForOption (
   const transitSegments: Array<SegmentDetail> = option.transit || []
   const length = transitSegments.length
   for (let i = 0; i < length; i++) {
-    const segment = transitSegments[i]
-    const departureTimes = segment.departureTimes || []
-    const fromName = segment.fromName
-    const patterns = segment.segmentPatterns
-    const color = patterns[0].color
+    const segment: SegmentDetail = transitSegments[i]
+    const fromName: string = segment.fromName
+    const patterns: Array<Pattern> = segment.segmentPatterns
+    const color: string = patterns[0].color
     const routeAgencyNames = {}
-    segment.routes.forEach((route) => {
+    segment.routes.forEach((route: Route) => {
       routeAgencyNames[route.id] = route.agencyName
     })
 
@@ -399,45 +425,51 @@ function locationToTags (location: ?Location): Array<string> {
   return locationName.split(',').slice(1)
 }
 
-function narrativeDirections (edges) {
+function narrativeDirections (edges: Array<StreetEdge>): Array<Step> {
   if (!edges) return []
 
-  const narrative = []
+  const narrative: Array<Step> = []
 
-  edges.forEach((streetEdge) => {
-    if (!streetEdge.streetName && !streetEdge.bikeRentalOffStation) {
+  edges.forEach((streetEdge: StreetEdge) => {
+
+    let linkOrPath: boolean = false
+    let streetSuffix: string = ''
+    if (streetEdge.streetName) {
+      linkOrPath = streetEdge.streetName === 'Link' ||
+        streetEdge.streetName === 'Path'
+      streetSuffix = ` on ${streetEdge.streetName}`
+    } else if (!streetEdge.bikeRentalOnStation && !streetEdge.bikeRentalOffStation) {
       return
     }
 
-    const linkOrPath = streetEdge.streetName === 'Link' ||
-      streetEdge.streetName === 'Path'
     if (linkOrPath || streetEdge.relativeDirection === 'CONTINUE') {
       return
     }
 
-    const streetSuffix = ' on ' + streetEdge.streetName
-    const step = {}
+    const step: Step = {
+      description: ''
+    }
     if (streetEdge.bikeRentalOnStation) {
-      step.description = 'Rent bike from ' +
-        streetEdge.bikeRentalOnStation.name +
-        ' and ride ' +
-        streetEdge.absoluteDirection.toLowerCase() +
-        streetSuffix
+      step.description = ['Rent bike from ',
+        streetEdge.bikeRentalOnStation.name,
+        ' and ride ',
+        streetEdge.absoluteDirection.toLowerCase(),
+        streetSuffix].join('')
       step.icon = {
         modeifyIcon: true,
         name: 'cabi'
       }
     } else if (streetEdge.bikeRentalOffStation) {
-      step.description = 'Park bike at ' + streetEdge.bikeRentalOffStation.name
+      step.description = `Park bike at ${streetEdge.bikeRentalOffStation.name}`
       step.icon = {
         modeifyIcon: true,
         name: 'cabi'
       }
     } else if (streetEdge.mode) {
-      step.description = MODE_TO_ACTION[streetEdge.mode] +
-        ' ' +
-        streetEdge.absoluteDirection.toLowerCase() +
-        streetSuffix
+      step.description = [MODE_TO_ACTION[streetEdge.mode],
+        ' ',
+        streetEdge.absoluteDirection.toLowerCase(),
+        streetSuffix].join('')
       step.icon = MODE_TO_ICON[streetEdge.mode]
     } else {
       step.description = toSentenceCase(streetEdge.relativeDirection) + streetSuffix
@@ -456,16 +488,18 @@ function narrativeDirections (edges) {
   return narrative
 }
 
-function patternFilter (by) {
+function patternFilter (
+  by?: 'color' | 'longName' | 'shield' | 'shortName'
+): (Pattern) => boolean {
   by = by || 'shortName'
   const names = []
-  return function (p) {
+  return (pattern: Pattern): boolean => {
     if (by === 'shortName') {
-      p.shortName = p.shortName || p.longName
+      pattern.shortName = pattern.shortName || pattern.longName
     }
 
-    if (names.indexOf(p[by]) === -1) {
-      names.push(p[by])
+    if (names.indexOf(pattern[by]) === -1) {
+      names.push(pattern[by])
       return true
     } else {
       return false
@@ -473,7 +507,10 @@ function patternFilter (by) {
   }
 }
 
-function setCarComparisonData (option, driveOption) {
+function setCarComparisonData (
+  option: NonTransitProfile | TransitProfile,
+  driveOption?: NonTransitProfile
+) {
   let costDifference, emissions, timeSavings
   if (driveOption) {
     costDifference = driveOption.cost - option.cost
@@ -504,7 +541,7 @@ function setCarComparisonData (option, driveOption) {
   }
 }
 
-function setCost (option) {
+function setCost (option: NonTransitProfile | TransitProfile) {
   if (option.cost === 0) {
     return
   }
@@ -521,7 +558,7 @@ function setCost (option) {
   option.costPerTrip = cost.toFixed(2)
 }
 
-function setDistances (option) {
+function setDistances (option: NonTransitProfile | TransitProfile) {
   option.driveDistances = distances(option, 'car', 'driveDistance')
 
   option.bikeDistances = distances(option, 'bicycle', 'bikeDistance') ||
@@ -537,9 +574,11 @@ function setModePresence (option: NonTransitProfile | TransitProfile) {
 }
 
 function setModeString (option: NonTransitProfile | TransitProfile) {
-  let modeStr = ''
-  const accessMode = option.access[0].mode.toLowerCase()
-  const egressMode = option.egress ? option.egress[0].mode.toLowerCase() : false
+  let modeStr: string = ''
+  const accessMode: string = option.access[0].mode.toLowerCase()
+  const egressMode: string | boolean = option.egress
+    ? option.egress[0].mode.toLowerCase()
+    : false
 
   switch (accessMode) {
     case 'bicycle_rent':
@@ -579,7 +618,7 @@ function setModeString (option: NonTransitProfile | TransitProfile) {
   option.modeDescriptor = modeStr
 }
 
-function setRowStyle (step: Object) {
+function setRowStyle (step: Step) {
   step.rowStyle = {
     backgroundColor: segmentRowIdx % 2 ? '#edeff0' : '#fff'
   }
@@ -587,35 +626,30 @@ function setRowStyle (step: Object) {
   return step
 }
 
-function setSegments (option, segmentOptions) {
-  segmentOptions = segmentOptions || {}
-  const inline = !!segmentOptions.inline
-  const small = !!segmentOptions.small
-
-  let accessMode = option.access[0].mode.toLowerCase()
+function setSegments (option: NonTransitProfile | TransitProfile) {
+  let accessMode: string = option.access[0].mode.toLowerCase()
 
   // style a park-and-ride access mode the same as a regular car trip
   if (accessMode === 'car_park') accessMode = 'car'
 
-  let accessModeIcon = convert.modeToIcon(accessMode)
-  const {egress} = option
-  let segments = []
-  const transitSegments = option.transit ? option.transit : []
+  let accessModeIcon: string = convert.modeToIcon(accessMode)
+  const egress: ?NonTransitModeDetails = option.eggress
+  let segments: Array<SegmentDisplay> = []
+  const transitSegments: Array<TransitModeDetails> = option.transit ? option.transit : []
 
   if (transitSegments.length < 1 && accessMode === 'car') {
     accessModeIcon = convert.modeToIcon('carshare')
   }
 
   segments.push({
-    mode: accessModeIcon,
-    inline,
-    small,
-    svg: true
+    mode: accessModeIcon
   })
 
-  segments = segments.concat(transitSegments.map(function (segment) {
-    const patterns = segment.segmentPatterns.filter(patternFilter('color'))
-    let background = [patterns[0].color]
+  segments = segments.concat(transitSegments.map((segment: TransitModeDetails) => {
+    const patterns: Array<TransitModeDetails> = segment.segmentPatterns.filter(
+      patternFilter('color')
+    )
+    let background: Array<string> = [patterns[0].color]
 
     if (patterns.length > 0) {
       background = []
@@ -625,10 +659,8 @@ function setSegments (option, segmentOptions) {
     }
 
     return {
-      background: background,
+      background,
       mode: convert.modeToIcon(segment.mode),
-      inline,
-      small,
       shortName: patterns[0].shield,
       longName: patterns[0].longName || patterns[0].shield
     }
@@ -638,10 +670,7 @@ function setSegments (option, segmentOptions) {
     const egressMode = egress[0].mode.toLowerCase()
     if (egressMode !== 'walk') {
       segments.push({
-        mode: convert.modeToIcon(egressMode),
-        inline,
-        small,
-        svg: true
+        mode: convert.modeToIcon(egressMode)
       })
     }
   }
@@ -662,11 +691,14 @@ function setTimes (option: NonTransitProfile | TransitProfile) {
   option.walkTime = timeFromSpeedAndDistance(scorer.rates.walkSpeed, option.walkDistance)
 }
 
-function timeFromSpeedAndDistance (s, d) {
-  var t = d / s
-  if (t < 60) {
+function timeFromSpeedAndDistance (
+  seconds: number,
+  distance: number
+): string {
+  const time = distance / seconds
+  if (time < 60) {
     return '< 1'
   } else {
-    return parseInt(t / 60, 10)
+    return '' + parseInt(time / 60, 10)
   }
 }

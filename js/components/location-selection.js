@@ -19,6 +19,10 @@ import {
 import MapView from 'react-native-maps'
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons'
 
+import Header from './header'
+import {constructMapboxUrl, geolocateLocation} from '../util'
+import headerStyles from '../util/header-styles'
+
 import type {
   AutocompleteParams,
   MapzenResult,
@@ -32,10 +36,6 @@ import type {
 
 import type {AppConfig, CurrentQuery, MapRegion} from '../types'
 import type {styleOptions} from '../types/rn-style-config'
-
-import Header from './header'
-import {constructMapboxUrl, geolocateLocation} from '../util'
-import headerStyles from '../util/header-styles'
 
 const config: AppConfig = require('../../config.json')
 
@@ -55,10 +55,7 @@ type LocationType = {
 type Props = {
   clearLocation: () => void,
   currentQuery: CurrentQuery,
-  // I really want to make the following have a type of
-  // NavigationScreenProp<NavigationRoute, NavigationAction>,
-  // but can't cause of https://github.com/facebook/flow/issues/2570
-  navigation: any,
+  navigation: NavigationScreenProp<NavigationRoute, NavigationAction>,
   searchingOnMap: boolean,
   setLocation: () => void,
   setSearchingOnMap: () => void
@@ -167,28 +164,38 @@ export default class LocationSelection extends Component {
   _onConfirmMapLocation = () => {
     const {navigation, setLocation, setSearchingOnMap} = this.props
     const {inputValue, markerLocation} = this.state
+    const {params} = navigation.state
 
     setSearchingOnMap(false)  // temp fix for https://github.com/airbnb/react-native-maps/issues/453
-    setLocation({
-      type: navigation.state.params.type,
-      location: {
-        name: inputValue,
-        ...lonlat(markerLocation)
-      }
-    })
+    if (params) {
+      setLocation({
+        type: params.type,
+        location: {
+          name: inputValue,
+          ...lonlat(markerLocation)
+        }
+      })
+    } else {
+      console.warn('Navigation params not set for this route!')
+    }
 
     navigation.goBack()
   }
 
   _onGeocodeResultSelect = (value: MapzenResult) => {
     const {navigation, setLocation} = this.props
-    setLocation({
-      type: navigation.state.params.type,
-      location: {
-        ...lonlat(value.geometry.coordinates),
-        name: value.properties.label
-      }
-    })
+    const {params} = navigation.state
+    if (params) {
+      setLocation({
+        type: params.type,
+        location: {
+          ...lonlat(value.geometry.coordinates),
+          name: value.properties.label
+        }
+      })
+    } else {
+      console.warn('Navigation params not set for this route!')
+    }
     navigation.goBack()
   }
 
@@ -246,11 +253,16 @@ export default class LocationSelection extends Component {
 
   _setAsCurrentLocation = () => {
     const {navigation, setLocation} = this.props
+    const {params} = navigation.state
 
-    geolocateLocation(
-      navigation.state.params.type,
-      setLocation
-    )
+    if (params) {
+      geolocateLocation(
+        params.type,
+        setLocation
+      )
+    } else {
+      console.warn('Navigation params not set for this route!')
+    }
     navigation.goBack()
   }
 
@@ -334,9 +346,12 @@ export default class LocationSelection extends Component {
       geocodeResults,
       selectingOnMap
     } = this.state
+    const {params} = navigation.state
+
+    if (!params) throw new Error('Navigation params not set!')
 
     let otherFieldValue
-    switch (navigation.state.params.type) {
+    switch (params.type) {
       case 'from':
         otherFieldValue = parseLocation(currentQuery.to)
         break
