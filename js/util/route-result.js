@@ -17,6 +17,7 @@ import type {
   SegmentDisplay,
   StreetEdge,
   TransitModeDetails,
+  TripPlanResponse,
   TripPlanResult,
   TransitProfile
 } from '../types/results'
@@ -39,7 +40,7 @@ const scorer = new ProfileScorer()
 
 export default class RouteResult {
   fromLocation: Location
-  lastResponse: Object
+  lastResponse: TripPlanResponse
   results: TripPlanResult
   toLocation: Location
 

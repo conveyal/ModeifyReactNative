@@ -8,7 +8,8 @@ type Stats = {
   min: number
 }
 
-type BikeRentalStation = {
+export type BikeRentalStation = {
+  id: string,
   name: string
 }
 
@@ -74,6 +75,7 @@ export type NonTransitModeDetails = {
 export type Pattern = {
   color: string,
   longName: string,
+  patternId: string,
   shield: string,
   shortName?: string
 }
@@ -97,6 +99,13 @@ type Fare = {
   type: string
 }
 
+export type Stop = {
+  stop_id: string,
+  stop_lat: number,
+  stop_lon: number,
+  stop_name: string
+}
+
 export type NonTransitProfile = {
   access: Array<NonTransitModeDetails>,
   modes: Array<string>,
@@ -115,7 +124,13 @@ export type TransitProfile = {
 }
 
 export type TripPlanResult = {
-  profile: Array<TransitProfile | NonTransitProfile>
+  patterns: Pattern[],
+  profile: Array<TransitProfile | NonTransitProfile>,
+  stops: Stop[]
+}
+
+export type TripPlanResponse = {
+  r5: TripPlanResult
 }
 
 export type ModeifyResult = {

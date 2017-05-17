@@ -18,22 +18,55 @@ import Header from './header'
 import ModeifyIcon from './modeify-icon'
 import headerStyles from '../util/header-styles'
 
-const bikeSpeedOptions = ['4 mph', '6 mph', '8 mph', '10 mph']
-const bikeSpeedValues = [4, 6, 8, 10]
-const bikeTrafficStressOptions = ['Level 1', 'Level 2', 'Level 3', 'Level 4']
-const bikeTrafficStressValues = [1, 2, 3, 4]
-const walkSpeedOptions = ['2 mph', '3 mph', '4 mph']
-const walkSpeedValues = [2, 3, 4]
+import type {
+  NavigationAction,
+  NavigationRoute,
+  NavigationScreenProp
+} from 'react-navigation/src/TypeDefinition'
 
-const dayOfWeekOptions = ['Mon-Fri', 'Saturday', 'Sunday']
-const endHourOptions = []
-const endHourValues = []
-const startHourOptions = ['Midnight']
-const startHourValues = ['0:00']
+import type {
+  CurrentQuery,
+  ModeifyModeSettings,
+  ModeifyTiming
+} from '../types'
+import type {styleOptions} from '../types/rn-style-config'
 
-for (let i = 1; i < 12; i++) {
-  const curHourOption = `${i}am`
-  const curHourValue = `${i}:00`
+type Props = {
+  changePlanPostpressSetting({
+    setting: string,
+    value: string
+  }): void,
+  currentQuery: CurrentQuery,
+  navigation: NavigationScreenProp<NavigationRoute, NavigationAction>,
+  planPostprocessSettings: {
+    parkingCost: number,
+    drivingCostPerMile: number
+  },
+  setDate({ date: string }): void,
+  setMode({ mode: ModeifyModeSettings }): void,
+  setTime({ time: ModeifyTiming }): void
+}
+
+type State = {
+  activeTab: string;
+}
+
+const bikeSpeedOptions: string[] = ['4 mph', '6 mph', '8 mph', '10 mph']
+const bikeSpeedValues: number[] = [4, 6, 8, 10]
+const bikeTrafficStressOptions: string[] = ['Level 1', 'Level 2', 'Level 3', 'Level 4']
+const bikeTrafficStressValues: number[] = [1, 2, 3, 4]
+const walkSpeedOptions: string[] = ['2 mph', '3 mph', '4 mph']
+const walkSpeedValues: number[] = [2, 3, 4]
+
+const dayOfWeekOptions: string[] = ['Mon-Fri', 'Saturday', 'Sunday']
+const endHourOptions: string[] = []
+const endHourValues: string[] = []
+const startHourOptions: string[] = ['Midnight']
+const startHourValues: string[] = ['0:00']
+
+for (let i: number = 1; i < 12; i++) {
+  const curHourOption: string = `${i}am`
+  const curHourValue: string = `${i}:00`
   endHourOptions.push(curHourOption)
   endHourValues.push(curHourValue)
   startHourOptions.push(curHourOption)
@@ -45,9 +78,9 @@ endHourValues.push('12:00')
 startHourOptions.push('Noon')
 startHourValues.push('12:00')
 
-for (let i = 1; i < 12; i++) {
-  const curHourOption = `${i}pm`
-  const curHourValue = `${i + 12}:00`
+for (let i: number = 1; i < 12; i++) {
+  const curHourOption: string = `${i}pm`
+  const curHourValue: string = `${i + 12}:00`
   endHourOptions.push(curHourOption)
   endHourValues.push(curHourValue)
   startHourOptions.push(curHourOption)
@@ -58,14 +91,13 @@ endHourOptions.push('Midnight')
 endHourValues.push('23:59')
 
 
-type Props = Object
-
-type State = {
-  activeTab: string;
-}
-
 export default class Settings extends Component {
+  props: Props
   state: State
+
+  state = {
+    activeTab: 'modes'
+  }
 
   static navigationOptions = {
     drawerLabel: 'SETTINGS',
@@ -78,14 +110,6 @@ export default class Settings extends Component {
     )
   }
 
-  constructor (props: Props) {
-    super(props)
-
-    this.state = {
-      activeTab: 'modes'
-    }
-  }
-
   // ------------------------------------------------------------------------
   // handlers
   // ------------------------------------------------------------------------
@@ -94,18 +118,18 @@ export default class Settings extends Component {
     this._toggleMode('bike')
   }
 
-  _onBikeSpeedChange = (idx) => {
+  _onBikeSpeedChange = (idx: number) => {
     this._setModeSetting('bikeSpeed', bikeSpeedValues[idx])
   }
 
-  _onBikeMaxTimeChange = (text) => {
+  _onBikeMaxTimeChange = (text: string) => {
     if (!isValidNumericText(text)) {
       return
     }
     this._setModeSetting('maxBikeTime', text)
   }
 
-  _onBikeTrafficStressChange = (idx) => {
+  _onBikeTrafficStressChange = (idx: number) => {
     this._setModeSetting('bikeTrafficStress', bikeTrafficStressValues[idx])
   }
 
@@ -121,9 +145,9 @@ export default class Settings extends Component {
     this._toggleMode('car')
   }
 
-  _onDayOfWeekChange = (idx) => {
+  _onDayOfWeekChange = (idx: number) => {
     const planDate = moment()
-    function isRightDayOfWeek () {
+    function isRightDayOfWeek (): boolean {
       const dayOfWeek = planDate.day()
       switch (idx) {
         case '0':
@@ -145,14 +169,14 @@ export default class Settings extends Component {
     this.props.setDate({ date: planDate.format('YYYY-MM-DD') })
   }
 
-  _onDrivingCostPerMileChange = (text) => {
+  _onDrivingCostPerMileChange = (text: string) => {
     if (!isValidDecimal(text)) {
       return
     }
     this._setPostprocessSetting('drivingCostPerMile', text)
   }
 
-  _onEndHourChange = (endIdx) => {
+  _onEndHourChange = (endIdx: number) => {
     const {currentQuery, setTime} = this.props
     const {time} = currentQuery
 
@@ -167,7 +191,7 @@ export default class Settings extends Component {
     setTime({ time })
   }
 
-  _onParkingCostChange = (text) => {
+  _onParkingCostChange = (text: string) => {
     if (!isValidDecimal(text)) {
       return
     }
@@ -178,7 +202,7 @@ export default class Settings extends Component {
     this._toggleMode('rail')
   }
 
-  _onStartHourChange = (startIdx) => {
+  _onStartHourChange = (startIdx: number) => {
     const {currentQuery, setTime} = this.props
     const {time} = currentQuery
 
@@ -193,7 +217,7 @@ export default class Settings extends Component {
     setTime({ time })
   }
 
-  _onWalkMaxTimeChange = (text) => {
+  _onWalkMaxTimeChange = (text: string) => {
     if (!isValidNumericText(text)) {
       return
     }
@@ -204,11 +228,11 @@ export default class Settings extends Component {
     this._toggleMode('walk')
   }
 
-  _onWalkSpeedChange = (idx) => {
+  _onWalkSpeedChange = (idx: number) => {
     this._setModeSetting('walkSpeed', walkSpeedValues[idx])
   }
 
-  _setModeSetting (key: string, value: string) {
+  _setModeSetting (key: string, value: number | string) {
     const {currentQuery, setMode} = this.props
     const newModeSettings = Object.assign({}, currentQuery.mode.settings)
     newModeSettings[key] = value
@@ -224,9 +248,9 @@ export default class Settings extends Component {
     })
   }
 
-  _toggleMode (mode) {
+  _toggleMode (mode: string) {
     const {currentQuery, setMode} = this.props
-    const newMode = Object.assign({}, currentQuery.mode)
+    const newMode: ModeifyModeSettings = Object.assign({}, currentQuery.mode)
     newMode[mode] = !newMode[mode]
     setMode({ mode: newMode })
   }
@@ -582,7 +606,28 @@ export default class Settings extends Component {
   }
 }
 
-const styles = StyleSheet.create({
+type SettingsStyle = {
+  content: styleOptions,
+  dropdown: styleOptions,
+  dropdownText: styleOptions,
+  modeGrouping: styleOptions,
+  modeGroupingTitleText: styleOptions,
+  modeIcon: styleOptions,
+  modeIconSecond: styleOptions,
+  modeIconCheck: styleOptions,
+  modeSettingsIcon: styleOptions,
+  modeSettingsSection: styleOptions,
+  modeSettingsText: styleOptions,
+  numericInput: styleOptions,
+  tabBar: styleOptions,
+  tabBarActive: styleOptions,
+  tabBorderLeft: styleOptions,
+  tabTitle: styleOptions,
+  tabTitleText: styleOptions,
+  timingHeader: styleOptions
+}
+
+const settingsStyle: SettingsStyle = {
   content: {
     paddingHorizontal: 10,
     paddingVertical: 20
@@ -680,12 +725,14 @@ const styles = StyleSheet.create({
     marginBottom: 5,
     marginTop: 15
   }
-})
+}
 
-function isValidDecimal (number) {
+const styles: SettingsStyle = StyleSheet.create(settingsStyle)
+
+function isValidDecimal (number: string): boolean {
   return !!number.match(/^\d*(\.\d*)?$/)
 }
 
-function isValidNumericText (number) {
+function isValidNumericText (number: string): boolean {
   return !!number.match(/^\d*$/)
 }

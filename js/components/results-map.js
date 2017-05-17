@@ -8,18 +8,40 @@ import MapView from 'react-native-maps'
 import ModeifyIcon from './modeify-icon'
 import {constructMapboxUrl} from '../util'
 
-const config = require('../../config.json')
+import type {AppConfig, CurrentQuery, Location, MapRegion} from '../types'
+import type {
+  BikeRentalStation,
+  NonTransitModeDetails,
+  NonTransitProfile,
+  Pattern,
+  Stop,
+  StreetEdge,
+  TransitModeDetails,
+  TransitProfile,
+  TripPlanResponse,
+  TripPlanResult
+} from '../types/results'
+import type {styleOptions} from '../types/rn-style-config'
+
+const config: AppConfig = require('../../config.json')
+
+type BooleanLookup = { [key: string]: boolean }
+type Coordinate = [number, number]
+type MarkerCoordinate = {
+  latitude: ?number,
+  longitude: ?number
+}
 
 type Props = {
-  activeSearch: number;
-  searchingOnMap: boolean;
+  activeSearch: number,
+  fromLocation: Location,
+  searchingOnMap: boolean,
+  searches: Array<{planResponse: TripPlanResponse}>,
+  toLocation: Location
 }
 
 export default class ResultsMap extends Component {
-
-  constructor(props: Props) {
-    super(props)
-  }
+  props: Props
 
   componentDidUpdate () {
     if (this.refs.resultsMap && (this.props.fromLocation || this.props.toLocation)) {
@@ -37,17 +59,46 @@ export default class ResultsMap extends Component {
   // renderers
   // --------------------------------------------------
 
-  _renderTripPlanResult = () => {
+  _renderLocationMarker = (location: Location, type: string): ?React.Element<*> => {
+    if(hasCoords(location)) {
+      let color: string
+      let name: string
+
+      if(type === 'from') {
+        color = '#8ec449'
+        name = 'start'
+      } else {
+        color = '#f5a81c'
+        name = 'end'
+      }
+
+      return (
+        <MapView.Marker
+          coordinate={toLatLng(location)}
+          title={location.name}
+          zIndex={500}
+          >
+          <ModeifyIcon
+            color={color}
+            name={name}
+            size={30}
+            />
+        </MapView.Marker>
+      )
+    }
+  }
+
+  _renderTripPlanResult = (): Array<React.Element<*>> | React.Element<*> | null => {
     const {activeSearch, searches} = this.props
 
     if (searches.length === 0 || activeSearch === null) {
       return null
     }
 
-    const itemsToRender = []
-    const polylineKeys = {}
-    const stopKeys = {}
-    const cabiStationKeys = {}
+    const itemsToRender: Array<React.Element<*>> = []
+    const polylineKeys: BooleanLookup = {}
+    const stopKeys: BooleanLookup = {}
+    const cabiStationKeys: BooleanLookup = {}
 
     if (!searches[activeSearch].planResponse ||
       !searches[activeSearch].planResponse.r5 ||
@@ -56,7 +107,7 @@ export default class ResultsMap extends Component {
       return null
     }
 
-    function addCabiStationIfNeeded (station) {
+    function addCabiStationIfNeeded (station: ?BikeRentalStation) {
       if (!station || cabiStationKeys[station.id]) return
       cabiStationKeys[station.id] = true
 
@@ -81,7 +132,11 @@ export default class ResultsMap extends Component {
       )
     }
 
-    function addPolylineIfNeeded (mode, polylineCoords, polylineStyle) {
+    function addPolylineIfNeeded (
+      mode: string,
+      polylineCoords: Coordinate[],
+      polylineStyle: styleOptions
+    ) {
       const encodedPolyline = polyline.encode(polylineCoords)
       const polylineKey = `${mode}-${encodedPolyline}`
 
@@ -94,7 +149,9 @@ export default class ResultsMap extends Component {
       itemsToRender.push(
         <MapView.Polyline
           key={polylineKey}
-          coordinates={polylineCoords.map((coord) => ({
+          coordinates={polylineCoords.map((
+            coord: Coordinate
+          ): MarkerCoordinate[] => ({
             latitude: coord[0],
             longitude: coord[1]
           }))}
@@ -104,7 +161,7 @@ export default class ResultsMap extends Component {
       )
     }
 
-    function addStopMarkerIfNeeded (stop) {
+    function addStopMarkerIfNeeded (stop: Stop) {
       if (stopKeys[stop.stop_id]) return
       stopKeys[stop.stop_id] = true
       itemsToRender.push(
@@ -121,9 +178,9 @@ export default class ResultsMap extends Component {
       )
     }
 
-    function streetEdgesToCoordinates (streetEdges) {
-      let combinedLineCoordinates = []
-      streetEdges.forEach((edge) => {
+    function streetEdgesToCoordinates (streetEdges: Array<StreetEdge>) {
+      let combinedLineCoordinates: Coordinate[] = []
+      streetEdges.forEach((edge: StreetEdge) => {
         addCabiStationIfNeeded(edge.bikeRentalOffStation)
         addCabiStationIfNeeded(edge.bikeRentalOnStation)
         combinedLineCoordinates = combinedLineCoordinates
@@ -132,11 +189,14 @@ export default class ResultsMap extends Component {
       return combinedLineCoordinates
     }
 
-    const r5Response = searches[activeSearch].planResponse.r5
+    const r5Response: TripPlanResult = searches[activeSearch].planResponse.r5
 
-    r5Response.profile.forEach((profile, idx) => {
-      function addAccessOrEggressModes (accessOrEgress) {
-        accessOrEgress.forEach((modeOption) => {
+    r5Response.profile.forEach((
+      profile: TransitProfile | NonTransitProfile,
+      idx: number
+    ) => {
+      function addAccessOrEggressModes (accessOrEgress: NonTransitModeDetails[]) {
+        accessOrEgress.forEach((modeOption: NonTransitModeDetails) => {
           if (!getPolylineStylesForMode(modeOption.mode)) return
           addPolylineIfNeeded(
             modeOption.mode,
@@ -149,18 +209,20 @@ export default class ResultsMap extends Component {
         addAccessOrEggressModes(profile.access)
       } else if (profile.transit) {
         addAccessOrEggressModes(profile.access)
-        profile.transit.forEach((transitOption) => {
-          const coords = []
-          const firstSegmentPattern = transitOption.segmentPatterns[0]
-          const patternData = r5Response.patterns.find((pattern) =>
+        profile.transit.forEach((transitOption: TransitModeDetails) => {
+          const coords: Coordinate[] = []
+          const firstSegmentPattern: Pattern = transitOption.segmentPatterns[0]
+          const patternData: Pattern = r5Response.patterns.find((
+            pattern: Pattern
+          ): boolean =>
             pattern.pattern_id === firstSegmentPattern.patternId
           )
 
           // create polyline using stops
           // also add markers for board and alight stops
           for (let i = firstSegmentPattern.fromIndex; i <= firstSegmentPattern.toIndex; i++) {
-            const stop = r5Response.stops.find(
-              (stop) => stop.stop_id === patternData.stops[i].stop_id
+            const stop: Stop = r5Response.stops.find(
+              (stop: Stop) => stop.stop_id === patternData.stops[i].stop_id
             )
             coords.push([stop.stop_lat, stop.stop_lon])
             if (i === firstSegmentPattern.fromIndex || i === firstSegmentPattern.toIndex) {
@@ -182,16 +244,11 @@ export default class ResultsMap extends Component {
     return itemsToRender
   }
 
-  render () {
-    const {fromLocation, locationFieldHasFocus, searchingOnMap, toLocation} = this.props
+  render (): ?React.Element<*> {
+    const {fromLocation, searchingOnMap, toLocation} = this.props
     if (searchingOnMap) return null  // temp fix for https://github.com/airbnb/react-native-maps/issues/453
     return (
-      <View
-        style={[
-          styles.mapContainer,
-          locationFieldHasFocus && styles.mapContainerWithLocationFocus
-        ]}
-        >
+      <View style={styles.mapContainer}>
         <MapView
           initialRegion={config.map.initialRegion}
           ref='resultsMap'
@@ -207,32 +264,8 @@ export default class ResultsMap extends Component {
               urlTemplate={constructMapboxUrl(config.map.mapbox_label_style)}
               />
           }
-          {hasCoords(fromLocation) &&
-            <MapView.Marker
-              coordinate={toLatLng(fromLocation)}
-              title={fromLocation.name}
-              zIndex={500}
-              >
-              <ModeifyIcon
-                color='#8ec449'
-                name='start'
-                size={30}
-                />
-            </MapView.Marker>
-          }
-          {hasCoords(toLocation) &&
-            <MapView.Marker
-              coordinate={toLatLng(toLocation)}
-              title={toLocation.name}
-              zIndex={500}
-              >
-              <ModeifyIcon
-                color='#f5a81c'
-                name='end'
-                size={30}
-                />
-            </MapView.Marker>
-          }
+          {this._renderLocationMarker(fromLocation, 'from')}
+          {this._renderLocationMarker(toLocation, 'to')}
           {this._renderTripPlanResult()}
         </MapView>
       </View>
@@ -240,7 +273,15 @@ export default class ResultsMap extends Component {
   }
 }
 
-const styles = StyleSheet.create({
+type ResultMapStyle = {
+  cabiMarker: styleOptions,
+  cabiMarkerContainer: styleOptions,
+  map: styleOptions,
+  mapContainer: styleOptions,
+  mapContainerWithLocationFocus: styleOptions
+}
+
+const resultMapStyle: ResultMapStyle = {
   cabiMarker: {
     left: 2,
     position: 'absolute',
@@ -264,9 +305,11 @@ const styles = StyleSheet.create({
   mapContainerWithLocationFocus: {
     top: 300
   }
-})
+}
 
-const polylineStyles = {
+const styles: ResultMapStyle = StyleSheet.create(resultMapStyle)
+
+const polylineStyles: { [key: string]: styleOptions } = {
   BICYCLE: {
     lineDashPattern: [10, 10],
     strokeColor: '#ef3026',
@@ -303,7 +346,10 @@ const polylineStyles = {
   }
 }
 
-function getPolylineStylesForMode (mode, overrides={}) {
+function getPolylineStylesForMode (
+  mode: string,
+  overrides: styleOptions = {}
+): styleOptions {
   if (!polylineStyles[mode]) {
     console.warn(`unrecognized access/egress mode: ${mode}`)
     return
@@ -312,12 +358,13 @@ function getPolylineStylesForMode (mode, overrides={}) {
   return Object.assign({}, polylineStyles[mode], overrides)
 }
 
-function hasCoords(location) {
-  return location && (location.lat || location.lat === 0) &&
-    (location.lon || location.lon === 0)
+function hasCoords(location: Location): boolean {
+  return location &&
+    (typeof location.lat === 'number') &&
+    (typeof location.lon === 'number')
 }
 
-function toLatLng (location) {
+function toLatLng (location: Location): MarkerCoordinate {
   return {
     latitude: location.lat,
     longitude: location.lon

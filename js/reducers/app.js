@@ -3,7 +3,6 @@ import update from 'immutability-helper'
 
 type appReducerState = {
   appState: string;
-  locationFieldHasFocus: boolean;
 }
 
 type reduxAction = {
