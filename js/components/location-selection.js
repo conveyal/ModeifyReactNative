@@ -34,7 +34,8 @@ import type {
   NavigationScreenProp
 } from 'react-navigation/src/TypeDefinition'
 
-import type {AppConfig, CurrentQuery, MapRegion} from '../types'
+import type {AppConfig, MapRegion} from '../types'
+import type {CurrentQuery} from '../types/reducers'
 import type {styleOptions} from '../types/rn-style-config'
 
 const config: AppConfig = require('../../config.json')
@@ -44,13 +45,6 @@ type GeocodeQueryCache = {
 }
 
 const geocodeQueries: GeocodeQueryCache = {}
-
-type LocationType = {
-  currentLocation?: boolean;
-  lat: number;
-  lon: number;
-  name: string;
-}
 
 type Props = {
   clearLocation: () => void,
@@ -76,7 +70,7 @@ export default class LocationSelection extends Component {
   state: State
 
   componentWillMount () {
-    const {currentQuery} = this.props
+    const currentQuery: CurrentQuery = this.props.currentQuery
 
     // check if from location needs to be geocoded
     if (currentQuery.from &&

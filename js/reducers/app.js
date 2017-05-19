@@ -1,16 +1,26 @@
 // @flow
 import update from 'immutability-helper'
 
-type appReducerState = {
-  appState: string;
+import type {AppReducerState} from '../types/reducers'
+
+type changePlanPostprocessSettingAction = {
+  payload: {
+    setting: string,
+    value: string
+  },
+  type: string
 }
 
-type reduxAction = {
-  payload: any
+type searchingOnMapAction = {
+  payload: boolean,
+  type: string
 }
 
 export const reducers = {
-  'CHANGE_PLAN_POSTPROCESS_SETTING' (state: appReducerState, action: reduxAction) {
+  'CHANGE_PLAN_POSTPROCESS_SETTING' (
+    state: AppReducerState,
+    action: changePlanPostprocessSettingAction
+  ): AppReducerState {
     return update(state, {
       planPostprocessSettings: {
         [action.payload.setting]: {
@@ -19,7 +29,10 @@ export const reducers = {
       }
     })
   },
-  'SEARCHING_ON_MAP' (state: appReducerState, action: reduxAction) {
+  'SEARCHING_ON_MAP' (
+    state: AppReducerState,
+    action: searchingOnMapAction
+  ): AppReducerState {
     // temp fix for https://github.com/airbnb/react-native-maps/issues/453
     return update(state, {
       searchingOnMap: {

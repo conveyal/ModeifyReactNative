@@ -9,4 +9,7 @@ declare module 'redux-actions' {
     type: string,
     payloadCreator?: payloadCreator
   ): void
+  declare export function handleActions({
+    [key: string]: Function
+  }): Object
 }

@@ -8,7 +8,9 @@ import MapView from 'react-native-maps'
 import ModeifyIcon from './modeify-icon'
 import {constructMapboxUrl} from '../util'
 
-import type {AppConfig, CurrentQuery, Location, MapRegion} from '../types'
+import type {AppConfig, MapRegion} from '../types'
+import type {CurrentQuery, Location} from '../types/query'
+import type {PlanSearch} from '../types/reducers'
 import type {
   BikeRentalStation,
   NonTransitModeDetails,
@@ -36,7 +38,7 @@ type Props = {
   activeSearch: number,
   fromLocation: Location,
   searchingOnMap: boolean,
-  searches: Array<{planResponse: TripPlanResponse}>,
+  searches: PlanSearch[],
   toLocation: Location
 }
 

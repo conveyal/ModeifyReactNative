@@ -5,7 +5,9 @@ import {connect} from 'react-redux'
 import {setSearchingOnMap} from '../actions/app'
 import LocationSelection from '../components/location-selection'
 
-const mapStateToProps = (state, ownProps) => {
+import type {ReducersState} from '../types/reducers'
+
+const mapStateToProps = (state: ReducersState, ownProps) => {
   return {
     currentQuery: state.otp.currentQuery,
     searchingOnMap: state.app.searchingOnMap

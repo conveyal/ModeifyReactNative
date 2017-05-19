@@ -8,15 +8,22 @@ import * as app from './app'
 import * as user from './user'
 import {mphToMps, safeParseFloat, safeParseInt} from '../util/convert'
 
-const otpConfig = require('../../config.json')
-otpConfig.customOtpQueryBuilder = (api, query) => {
-  const planEndpoint = `${api.host}${api.path}`
+import type {AppConfig, RequestApi} from '../types'
+import type {CurrentQuery} from '../types/reducers'
+
+const appConfig: AppConfig = require('../../config.json')
+appConfig.customOtpQueryBuilder = (
+  api: RequestApi,
+  query: CurrentQuery
+) => {
+  const planEndpoint: string = `${api.host}${api.path}`
   const {date, from, mode, time, to} = query
+
   // calculate modes
-  const accessModes = ['WALK']
-  const directModes = []
-  const egressModes = ['WALK']
-  const transitModes = []
+  const accessModes: string[] = ['WALK']
+  const directModes: string[] = []
+  const egressModes: string[] = ['WALK']
+  const transitModes: string[] = []
 
   if (mode.bike) {
     accessModes.push('BICYCLE')
@@ -67,12 +74,12 @@ otpConfig.customOtpQueryBuilder = (api, query) => {
     transitModes: transitModes.join(','),
     walkSpeed: mphToMps(safeParseFloat(mode.settings.walkSpeed, 3))
   }
-  const url = `${planEndpoint}?${qs.stringify(params)}`
+  const url: string = `${planEndpoint}?${qs.stringify(params)}`
   console.log(url)
   return url
 }
 
-const initialOtpQuery = {
+const initialOtpQuery: CurrentQuery = {
   from: {
     currentLocation: true,
     name: 'Current Location',
@@ -102,6 +109,6 @@ const initialOtpQuery = {
 export default {
   app: handleActions(app.reducers, app.initialState),
   nav: {},
-  otp: createOtpReducer(otpConfig, initialOtpQuery),
+  otp: createOtpReducer(appConfig, initialOtpQuery),
   user: handleActions(user.reducers, user.initialState)
 }

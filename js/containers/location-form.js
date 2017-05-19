@@ -4,7 +4,9 @@ import {connect} from 'react-redux'
 
 import LocationForm from '../components/location-form'
 
-const mapStateToProps = (state, ownProps) => {
+import type {ReducersState} from '../types/reducers'
+
+const mapStateToProps = (state: ReducersState, ownProps) => {
   return {
     currentQuery: state.otp.currentQuery
   }

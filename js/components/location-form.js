@@ -20,7 +20,7 @@ import type {
   NavigationScreenProp
 } from 'react-navigation/src/TypeDefinition'
 
-import type {CurrentQuery} from '../types'
+import type {CurrentQuery, Location} from '../types/reducers'
 import type {styleOptions} from '../types/rn-style-config'
 
 type Props = {
@@ -49,7 +49,8 @@ export default class LocationForm extends Component {
   }
 
   _renderBothLocations () {
-    const {from, to} = this.props.currentQuery
+    const from: Location = this.props.currentQuery.from
+    const to: Location = this.props.currentQuery.to
 
     return (
       <View>

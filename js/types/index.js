@@ -1,14 +1,19 @@
 // @flow
 
+import type {CurrentQuery} from './query'
+
+export type RequestApi = {
+  host: string,
+  path: string
+}
+
 export type AppConfig = {
-  api: {
-    host: string,
-    path: string
-  },
+  api: RequestApi,
   auth0: {
     clientId: string,
     domain: string
   },
+  customOtpQueryBuilder?: (RequestApi, CurrentQuery) => string,
   debouncePlanTimeMs: number,
   map: {
     initialRegion: {
@@ -34,44 +39,6 @@ export type AppConfig = {
     apiKey: string
   },
   modes: Array<string>
-}
-
-export type Location = {
-  currentLocation?: boolean,
-  lat?: number,
-  lon?: number,
-  name: string
-}
-
-export type ModeifyModeSettings = {
-  bike: boolean,
-  bus: boolean,
-  cabi: boolean,
-  car: boolean,
-  rail: boolean,
-  settings: {
-    bikeSpeed: number,
-    bikeTrafficStress: number,
-    maxBikeTime: number,
-    maxWalkTime: number,
-    maxCarTime: number,
-    walkSpeed: number
-  },
-  walk: boolean
-}
-
-export type ModeifyTiming = {
-  end: string,
-  start: string
-}
-
-export type CurrentQuery = {
-  departArrive: string,
-  date: string,
-  from?: Location,
-  mode: ModeifyModeSettings,
-  to?: Location,
-  time: ModeifyTiming
 }
 
 export type MapRegion = {

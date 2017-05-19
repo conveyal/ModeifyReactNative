@@ -1,16 +1,24 @@
 // @flow
 
+import type UserReducerState from '../types/reducers'
+
 export const reducers = {
-  'log out' (state: any, action: any) {
+  'log out' (state: UserReducerState) {
     return {}
   },
-  'set auth0 user' (state: any, action: any) {
+  'set auth0 user' (state: UserReducerState, action: {
+    payload: Object,
+    type: string
+  }) {
     return {
       ...state,
       ...action.payload
     }
   },
-  'set id token' (state: any, action: any) {
+  'set id token' (state: UserReducerState, action: {
+    payload: string,
+    type: string
+  }) {
     return {
       ...state,
       idToken: action.payload
@@ -18,4 +26,4 @@ export const reducers = {
   }
 }
 
-export const initialState = {}
+export const initialState: UserReducerState = {}

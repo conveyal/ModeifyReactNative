@@ -28,23 +28,23 @@ import type {
   CurrentQuery,
   ModeifyModeSettings,
   ModeifyTiming
-} from '../types'
+} from '../types/reducers'
 import type {styleOptions} from '../types/rn-style-config'
 
 type Props = {
-  changePlanPostpressSetting({
+  changePlanPostpressSetting: ({
     setting: string,
     value: string
-  }): void,
+  }) => void,
   currentQuery: CurrentQuery,
   navigation: NavigationScreenProp<NavigationRoute, NavigationAction>,
   planPostprocessSettings: {
     parkingCost: number,
     drivingCostPerMile: number
   },
-  setDate({ date: string }): void,
-  setMode({ mode: ModeifyModeSettings }): void,
-  setTime({ time: ModeifyTiming }): void
+  setDate: ({ date: string }) => void,
+  setMode: ({ mode: ModeifyModeSettings }) => void,
+  setTime: ({ time: ModeifyTiming }) => void
 }
 
 type State = {

@@ -6,7 +6,7 @@ import toSentenceCase from 'to-sentence-case'
 
 import convert from './convert'
 
-import type {Location} from '../types'
+import type {Location} from '../types/reducers'
 import type {
   ModeifyResult,
   NonTransitModeDetails,

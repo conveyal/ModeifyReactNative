@@ -25,7 +25,8 @@ import type {
   NavigationScreenProp
 } from 'react-navigation/src/TypeDefinition'
 
-import type {Location, Resource} from '../types'
+import type {Resource} from '../types'
+import type {Location} from '../types/reducers'
 import type {NonTransitProfile, TransitProfile} from '../types/results'
 import type {styleOptions} from '../types/rn-style-config'
 

@@ -4,7 +4,9 @@ import { connect } from 'react-redux'
 
 import ResultsMap from '../components/results-map'
 
-const mapStateToProps = (state, ownProps) => {
+import type {ReducersState} from '../types/reducers'
+
+const mapStateToProps = (state: ReducersState, ownProps) => {
   const {activeSearch, currentQuery, searches} = state.otp
   return {
     activeSearch,

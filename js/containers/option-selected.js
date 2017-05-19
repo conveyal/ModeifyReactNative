@@ -4,7 +4,9 @@ import { connect } from 'react-redux'
 
 import OptionSelected from '../components/option-selected'
 
-const mapStateToProps = (state, ownProps) => {
+import type {ReducersState} from '../types/reducers'
+
+const mapStateToProps = (state: ReducersState, ownProps) => {
   const {currentQuery} = state.otp
   return {
     fromLocation: currentQuery.from,

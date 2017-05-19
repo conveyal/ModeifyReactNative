@@ -3,7 +3,9 @@ import { connect } from 'react-redux'
 
 import App from '../components/app'
 
-const mapStateToProps = (state, ownProps) => {
+import type {ReducersState} from '../types/reducers'
+
+const mapStateToProps = (state: ReducersState) => {
   return {
     currentQuery: state.otp.currentQuery
   }

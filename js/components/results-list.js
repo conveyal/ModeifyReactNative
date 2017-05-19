@@ -23,7 +23,7 @@ import type {
   NavigationScreenProp
 } from 'react-navigation/src/TypeDefinition'
 
-import type {Location} from '../types'
+import type {Location} from '../types/reducers'
 import type {
   ModeifyResult,
   SegmentDetail,
