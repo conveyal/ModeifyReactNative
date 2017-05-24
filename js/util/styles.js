@@ -4,7 +4,7 @@ import {Platform, StyleSheet} from 'react-native'
 
 import type {styleOptions} from '../types/rn-style-config'
 
-type stylesType = {
+type HeaderStylesType = {
   backContainer: styleOptions,
   backImage: styleOptions,
   closeContainer: styleOptions,
@@ -15,7 +15,7 @@ type stylesType = {
   title: styleOptions
 }
 
-const styles: stylesType = StyleSheet.create({
+const headerStyleConfig: HeaderStylesType = {
   backContainer: {
     position: 'absolute',
     height: 34,
@@ -81,6 +81,35 @@ const styles: stylesType = StyleSheet.create({
       ios: {}
     })
   }
-})
+}
 
-export default styles
+type MarkdownStyle = {
+  heading2: styleOptions,
+  paragraph: styleOptions
+}
+
+const markdownLinkStyle: styleOptions = {
+  //backgroundColor: '#dd9719',
+  color: '#dd9719',
+  textDecorationLine: 'underline'
+}
+
+export const markdownStyles: MarkdownStyle = {
+  heading: {
+    marginVertical: 10
+  },
+  heading2: {
+    fontSize: 24
+  },
+  heading3: {
+    fontSize: 18
+  },
+  link: markdownLinkStyle,
+  mailTo: markdownLinkStyle,
+  paragraph: {
+    fontSize: 14,
+    marginVertical: 5
+  }
+}
+
+export const headerStyles: HeaderStylesType = StyleSheet.create(headerStyleConfig)

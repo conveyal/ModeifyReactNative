@@ -51,9 +51,8 @@ export default class RouteResult {
   getResults (): Array<ModeifyResult> {
     if (this.hasError || !this.lastResponse) return []
 
-    console.log(this.lastResponse.r5.profile)
+    // console.log(this.lastResponse.r5.profile)
     const scoredOptions = scorer.processOptions(this.lastResponse.r5.profile)
-    console.log(scoredOptions)
     const driveOption = addModeifyData(scoredOptions.find(option =>
       option.access[0].mode === 'CAR' &&
       (!option.transit || option.transit.length < 1)))

@@ -15,9 +15,9 @@ import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons'
 import Header from './header'
 import HyperLink from './hyperlink'
 import ModeifyIcon from './modeify-icon'
-import headerStyles from '../util/header-styles'
 import {getResourcesByTag} from '../util/route-option-resource'
 import {getOptionTags} from '../util/route-result'
+import {headerStyles} from '../util/styles'
 
 import type {
   NavigationAction,

@@ -91,10 +91,8 @@ export default class DrawerContent extends Component {
           onPress={() => Linking.openURL('http://carfreenearme.com/')}
           >
           <View style={styles.cfnmContainer}>
-            <MaterialIcon
-              color='#fff'
-              name='clippy'
-              size={24}
+            <Image
+              source={require('../../assets/CFNM-logo.png')}
               style={styles.cfnmLogo}
               />
             <Text style={styles.cfnmText}>CAR FREE NEAR ME</Text>
@@ -126,7 +124,10 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   cfnmLogo: {
-    marginHorizontal: 16
+    height: 30,
+    marginHorizontal: 16,
+    resizeMode: 'contain',
+    width: 30
   },
   cfnmText: {
     color: '#fff',

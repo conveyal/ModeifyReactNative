@@ -8,7 +8,7 @@ import Header from './header'
 import LocationForm from '../containers/location-form'
 import ResultsList from '../containers/results-list'
 import ResultsMap from '../containers/results-map'
-import headerStyles from '../util/header-styles'
+import {headerStyles} from '../util/styles'
 
 import type {
   NavigationAction,

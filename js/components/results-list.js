@@ -334,7 +334,8 @@ export default class ResultsList extends Component {
                 <View
                   style={styles.segmentShortNameContainer}
                   >
-                  {segment.background.length > 0 &&
+                  {segment.background &&
+                    segment.background.length > 0 &&
                     segment.background.map((
                       color: string
                     ): React.Element<*> =>
