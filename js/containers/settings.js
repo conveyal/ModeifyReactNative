@@ -1,12 +1,7 @@
 // @flow
 
-import {
-  setMode,
-  setDepart,
-  setDate,
-  setTime
-} from 'otp-react-redux/lib/actions/form'
-import { connect } from 'react-redux'
+import {setMode} from 'otp-react-redux/lib/actions/form'
+import {connect} from 'react-redux'
 
 import {changePlanPostpressSetting} from '../actions/app'
 import Settings from '../components/settings'
@@ -22,10 +17,7 @@ const mapStateToProps = (state: ReducersState, ownProps) => {
 
 const mapDispatchToProps = {
   changePlanPostpressSetting,
-  setMode,
-  setDepart,
-  setDate,
-  setTime
+  setMode
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(Settings)

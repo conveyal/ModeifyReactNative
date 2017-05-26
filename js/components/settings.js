@@ -1,6 +1,5 @@
 // @flow
 
-import moment from 'moment'
 import React, { Component } from 'react'
 import {
   Platform,
@@ -16,7 +15,6 @@ import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons'
 
 import Header from './header'
 import ModeifyIcon from './modeify-icon'
-import {headerStyles} from '../util/styles'
 
 import type {
   NavigationAction,
@@ -26,8 +24,7 @@ import type {
 
 import type {
   CurrentQuery,
-  ModeifyModeSettings,
-  ModeifyTiming
+  ModeifyModeSettings
 } from '../types/reducers'
 import type {styleOptions} from '../types/rn-style-config'
 
@@ -42,9 +39,7 @@ type Props = {
     parkingCost: number,
     drivingCostPerMile: number
   },
-  setDate: ({ date: string }) => void,
-  setMode: ({ mode: ModeifyModeSettings }) => void,
-  setTime: ({ time: ModeifyTiming }) => void
+  setMode: ({ mode: ModeifyModeSettings }) => void
 }
 
 type State = {
@@ -58,38 +53,6 @@ const bikeTrafficStressValues: number[] = [1, 2, 3, 4]
 const walkSpeedOptions: string[] = ['2 mph', '3 mph', '4 mph']
 const walkSpeedValues: number[] = [2, 3, 4]
 
-const dayOfWeekOptions: string[] = ['Mon-Fri', 'Saturday', 'Sunday']
-const endHourOptions: string[] = []
-const endHourValues: string[] = []
-const startHourOptions: string[] = ['Midnight']
-const startHourValues: string[] = ['0:00']
-
-for (let i: number = 1; i < 12; i++) {
-  const curHourOption: string = `${i}am`
-  const curHourValue: string = `${i}:00`
-  endHourOptions.push(curHourOption)
-  endHourValues.push(curHourValue)
-  startHourOptions.push(curHourOption)
-  startHourValues.push(curHourValue)
-}
-
-endHourOptions.push('Noon')
-endHourValues.push('12:00')
-startHourOptions.push('Noon')
-startHourValues.push('12:00')
-
-for (let i: number = 1; i < 12; i++) {
-  const curHourOption: string = `${i}pm`
-  const curHourValue: string = `${i + 12}:00`
-  endHourOptions.push(curHourOption)
-  endHourValues.push(curHourValue)
-  startHourOptions.push(curHourOption)
-  startHourValues.push(curHourValue)
-}
-
-endHourOptions.push('Midnight')
-endHourValues.push('23:59')
-
 
 export default class Settings extends Component {
   props: Props
@@ -100,7 +63,7 @@ export default class Settings extends Component {
   }
 
   static navigationOptions = {
-    drawerLabel: 'SETTINGS',
+    drawerLabel: 'Settings',
     drawerIcon: ({ tintColor }) => (
       <MaterialIcon
         name='settings'
@@ -145,50 +108,11 @@ export default class Settings extends Component {
     this._toggleMode('car')
   }
 
-  _onDayOfWeekChange = (idx: number) => {
-    const planDate = moment()
-    function isRightDayOfWeek (): boolean {
-      const dayOfWeek = planDate.day()
-      switch (idx) {
-        case '0':
-          return dayOfWeek > 0 && dayOfWeek < 6
-        case '1':
-          return dayOfWeek === 6
-        case '2':
-          return dayOfWeek === 0
-        default:
-          // should not happen, but return true to prevent infinite loop
-          return true
-      }
-    }
-
-    while (!isRightDayOfWeek()) {
-      planDate.add(1, 'days')
-    }
-
-    this.props.setDate({ date: planDate.format('YYYY-MM-DD') })
-  }
-
   _onDrivingCostPerMileChange = (text: string) => {
     if (!isValidDecimal(text)) {
       return
     }
     this._setPostprocessSetting('drivingCostPerMile', text)
-  }
-
-  _onEndHourChange = (endIdx: number) => {
-    const {currentQuery, setTime} = this.props
-    const {time} = currentQuery
-
-    time.end = endHourValues[endIdx]
-
-    if(startHourValues.indexOf(time.start) > endIdx) {
-      // set start to 1 hour before end
-      time.start = startHourValues[endIdx]
-      this.refs.startTime.select(endIdx)
-    }
-
-    setTime({ time })
   }
 
   _onParkingCostChange = (text: string) => {
@@ -200,21 +124,6 @@ export default class Settings extends Component {
 
   _onRailPress = () => {
     this._toggleMode('rail')
-  }
-
-  _onStartHourChange = (startIdx: number) => {
-    const {currentQuery, setTime} = this.props
-    const {time} = currentQuery
-
-    time.start = startHourValues[startIdx]
-
-    if(endHourValues.indexOf(time.end) < startIdx) {
-      // set end to 1 hour after start
-      time.end = endHourValues[startIdx]
-      this.refs.endTime.select(startIdx)
-    }
-
-    setTime({ time })
   }
 
   _onWalkMaxTimeChange = (text: string) => {
@@ -262,75 +171,13 @@ export default class Settings extends Component {
   }
 
   // ------------------------------------------------------------------------
-  // helpers
-  // ------------------------------------------------------------------------
-
-  _getDefaultDateValue () {
-    const planDayOfWeek = moment(this.props.currentQuery.date).day()
-    switch (planDayOfWeek) {
-      case 0:
-        return 'Sunday'
-      case 6:
-        return 'Saturday'
-      default:
-        return 'Mon-Fri'
-    }
-  }
-
-  _getDefaultTimeValue (type: 'start' | 'end') {
-    const {time} = this.props.currentQuery
-    if (type === 'start') {
-      return startHourOptions[
-        startHourValues.indexOf(
-          time.start
-        )
-      ]
-    } else {
-      return endHourOptions[
-        endHourValues.indexOf(
-          time.end
-        )
-      ]
-    }
-  }
-
-  // ------------------------------------------------------------------------
   // renderers
   // ------------------------------------------------------------------------
 
   _renderGeneralContent () {
+    const {currentQuery} = this.props
     return (
-      <View style={styles.content}>
-        <Text style={styles.timingHeader}>Day of Week</Text>
-        <ModalDropdown
-          defaultValue={this._getDefaultDateValue()}
-          dropdownTextStyle={styles.dropdownText}
-          onSelect={this._onDayOfWeekChange}
-          options={dayOfWeekOptions}
-          style={styles.dropdown}
-          textStyle={styles.dropdownText}
-          />
-        <Text style={styles.timingHeader}>From</Text>
-        <ModalDropdown
-          defaultValue={this._getDefaultTimeValue('start')}
-          dropdownTextStyle={styles.dropdownText}
-          onSelect={this._onStartHourChange}
-          options={startHourOptions}
-          ref='startTime'
-          style={styles.dropdown}
-          textStyle={styles.dropdownText}
-          />
-        <Text style={styles.timingHeader}>To</Text>
-        <ModalDropdown
-          defaultValue={this._getDefaultTimeValue('end')}
-          dropdownTextStyle={styles.dropdownText}
-          onSelect={this._onEndHourChange}
-          options={endHourOptions}
-          ref='endTime'
-          style={styles.dropdown}
-          textStyle={styles.dropdownText}
-          />
-      </View>
+      <View style={styles.content} />
     )
   }
 
@@ -434,7 +281,7 @@ export default class Settings extends Component {
           </TouchableOpacity>
         </View>
         <View style={styles.modeGrouping}>
-          <Text style={styles.modeGroupingTitleText}>CAR</Text>
+          <Text style={styles.modeGroupingTitleText}>CARPOOL</Text>
           <TouchableOpacity
             onPress={this._onCarPress}
             >
@@ -569,7 +416,7 @@ export default class Settings extends Component {
           left={{back: true}}
           navigation={this.props.navigation}
           right={{close: true}}
-          title='Home'
+          title='Settings'
           />
         <ScrollView>
           <View style={styles.tabBar}>
@@ -623,8 +470,7 @@ type SettingsStyle = {
   tabBarActive: styleOptions,
   tabBorderLeft: styleOptions,
   tabTitle: styleOptions,
-  tabTitleText: styleOptions,
-  timingHeader: styleOptions
+  tabTitleText: styleOptions
 }
 
 const settingsStyle: SettingsStyle = {
@@ -718,12 +564,6 @@ const settingsStyle: SettingsStyle = {
     fontSize: 17,
     fontWeight: 'bold',
     textAlign: 'center'
-  },
-  timingHeader: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 5,
-    marginTop: 15
   }
 }
 

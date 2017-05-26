@@ -12,6 +12,7 @@ import {About, Legal} from './containers/info-screens'
 import LocationSelection from './containers/location-selection'
 import OptionSelected from './containers/option-selected'
 import Settings from './containers/settings'
+import Timing from './containers/timing'
 import reducers from './reducers'
 
 const AppNavigator = DrawerNavigator({
@@ -25,6 +26,7 @@ const AppNavigator = DrawerNavigator({
     screen: OptionSelected
   },
   Settings: { screen: Settings },
+  Timing: { screen: Timing },
   About: { screen: About },
   Legal: { screen: Legal }
 }, {
