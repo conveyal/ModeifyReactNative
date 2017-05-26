@@ -6,6 +6,7 @@ export type AppReducerState = {
     parkingCost: number,
     drivingCostPerMile: number
   },
+  planViewState: 'init' | 'result-collapsed' | 'result-summarized' | 'result-expanded',
   searchingOnMap: boolean
 }
 

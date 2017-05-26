@@ -47,9 +47,11 @@ type GeocodeQueryCache = {
 const geocodeQueries: GeocodeQueryCache = {}
 
 type Props = {
+  changePlanViewState: (string) => void,
   clearLocation: () => void,
   currentQuery: CurrentQuery,
   navigation: NavigationScreenProp<NavigationRoute, NavigationAction>,
+  planViewState: string,
   searchingOnMap: boolean,
   setLocation: () => void,
   setSearchingOnMap: () => void
@@ -156,12 +158,21 @@ export default class LocationSelection extends Component {
   }
 
   _onConfirmMapLocation = () => {
-    const {navigation, setLocation, setSearchingOnMap} = this.props
+    const {
+      changePlanViewState,
+      navigation,
+      planViewState,
+      setLocation,
+      setSearchingOnMap
+    } = this.props
     const {inputValue, markerLocation} = this.state
     const {params} = navigation.state
 
     setSearchingOnMap(false)  // temp fix for https://github.com/airbnb/react-native-maps/issues/453
     if (params) {
+      if (params.type === 'to' && planViewState === 'init') {
+        changePlanViewState('result-summarized')
+      }
       setLocation({
         type: params.type,
         location: {
@@ -177,9 +188,12 @@ export default class LocationSelection extends Component {
   }
 
   _onGeocodeResultSelect = (value: MapzenResult) => {
-    const {navigation, setLocation} = this.props
+    const {changePlanViewState, navigation, planViewState, setLocation} = this.props
     const {params} = navigation.state
     if (params) {
+      if (params.type === 'to' && planViewState === 'init') {
+        changePlanViewState('result-summarized')
+      }
       setLocation({
         type: params.type,
         location: {
@@ -246,10 +260,13 @@ export default class LocationSelection extends Component {
   }
 
   _setAsCurrentLocation = () => {
-    const {navigation, setLocation} = this.props
+    const {changePlanViewState, navigation, planViewState, setLocation} = this.props
     const {params} = navigation.state
 
     if (params) {
+      if (params.type === 'to' && planViewState === 'init') {
+        changePlanViewState('result-summarized')
+      }
       geolocateLocation(
         params.type,
         setLocation

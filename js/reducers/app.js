@@ -11,6 +11,11 @@ type changePlanPostprocessSettingAction = {
   type: string
 }
 
+type changePlanViewStateAction = {
+  payload: string,
+  type: string
+}
+
 type searchingOnMapAction = {
   payload: boolean,
   type: string
@@ -29,6 +34,16 @@ export const reducers = {
       }
     })
   },
+  'CHANGE_PLAN_VIEW_STATE' (
+    state: AppReducerState,
+    action: changePlanViewStateAction
+  ): AppReducerState {
+    return update(state, {
+      planViewState: {
+        $set: action.payload
+      }
+    })
+  },
   'SEARCHING_ON_MAP' (
     state: AppReducerState,
     action: searchingOnMapAction
@@ -42,10 +57,11 @@ export const reducers = {
   }
 }
 
-export const initialState = {
+export const initialState: AppReducerState = {
   planPostprocessSettings: {
     parkingCost: 10,
     drivingCostPerMile: 0.56
   },
+  planViewState: 'init',
   searchingOnMap: false
 }

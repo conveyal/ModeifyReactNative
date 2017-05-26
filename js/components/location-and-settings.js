@@ -24,13 +24,19 @@ import type {CurrentQuery, Location} from '../types/reducers'
 import type {styleOptions} from '../types/rn-style-config'
 
 type Props = {
+  changePlanViewState: (string) => void,
   currentQuery: CurrentQuery,
   navigation: NavigationScreenProp<NavigationRoute, NavigationAction>,
+  planViewState: string,
   switchLocations: () => void
 }
 
-export default class LocationForm extends Component {
+export default class LocationAndSettings extends Component {
   props: Props
+
+  _onExpand = () => {
+    this.props.changePlanViewState('result-collapsed')
+  }
 
   _onSwitch = () => {
     this.props.switchLocations()
@@ -115,6 +121,58 @@ export default class LocationForm extends Component {
     )
   }
 
+  _renderCollapsedState () {
+    let fromText: string = getCollapsedLocationText('From', this.props.currentQuery.from)
+    let toText: string = getCollapsedLocationText('To', this.props.currentQuery.to)
+
+    return (
+      <View style={styles.collapsed}>
+        <TouchableOpacity
+          onPress={this._onExpand}
+          style={styles.collapsedContent}
+          >
+          <View
+            style={styles.collapsedLocation}
+            >
+            <ModeifyIcon
+              color='#8ec449'
+              name='start'
+              size={15}
+              />
+            <Text
+              style={styles.collapsedText}
+              >
+              {fromText}
+            </Text>
+          </View>
+          <View
+            style={styles.collapsedLocation}
+            >
+            <ModeifyIcon
+              color='#f5a81c'
+              name='end'
+              size={15}
+              />
+            <Text
+              style={styles.collapsedText}
+              >
+              {toText}
+            </Text>
+          </View>
+          <View
+            style={styles.editSearchContainer}
+            >
+            <Text
+              style={styles.editSearchText}
+              >
+              EDIT SEARCH
+            </Text>
+          </View>
+        </TouchableOpacity>
+      </View>
+    )
+  }
+
   _renderHomeLocation () {
     return (
       <View style={styles.homeInputContainer}>
@@ -131,15 +189,39 @@ export default class LocationForm extends Component {
     )
   }
 
-  render () {
-    return !this.props.currentQuery.to
-      ? this._renderHomeLocation()
-      : this._renderBothLocations()
+  render (): React.Element<*> {
+    switch (this.props.planViewState) {
+      case 'init':
+        return this._renderHomeLocation()
+      case 'result-collapsed':
+        return this._renderBothLocations()
+      default:
+        return this._renderCollapsedState()
+    }
   }
 }
 
-type LocationFormStyle = {
+function getCollapsedLocationText (prefix: string, location: ?Location): string {
+  let outputText: string = location
+    ? `${prefix} ${location.name}`
+    : '${prefix} location not set'
+
+  if (outputText.length > 35) {
+    outputText = outputText.substring(0, 35) + '...'
+  }
+
+  return outputText
+}
+
+type LocationAndSettingsStyle = {
+  collapsed: styleOptions,
+  collapsedContent: styleOptions,
+  collapsedIcon: styleOptions,
+  collapsedLocation: styleOptions,
+  collapsedText: styleOptions,
   currentLocationText: styleOptions,
+  editSearchContainer: styleOptions,
+  editSearchText: styleOptions,
   homeInputContainer: styleOptions,
   homeInputText: styleOptions,
   locationContainer: styleOptions,
@@ -148,9 +230,40 @@ type LocationFormStyle = {
   topLocationContainer: styleOptions
 }
 
-const locationFormStyle: LocationFormStyle = {
+const locationAndSettingsStyle: LocationAndSettingsStyle = {
+  collapsed: {
+    padding: 5
+  },
+  collapsedContent: {
+    flex: 1
+  },
+  collapsedIcon: {
+    position: 'absolute',
+    right: 5,
+    top: 0
+  },
+  collapsedLocation: {
+    flexDirection: 'row'
+  },
+  collapsedText: {
+
+  },
   currentLocationText: {
     color: '#15b3ff',
+    fontWeight: 'bold'
+  },
+  editSearchContainer: {
+    backgroundColor: '#999999',
+    borderColor: '#999999',
+    borderRadius: 5,
+    borderWidth: 1,
+    padding: 4,
+    position: 'absolute',
+    right: 0,
+    top: 4
+  },
+  editSearchText: {
+    color: '#fff',
     fontWeight: 'bold'
   },
   homeInputContainer: {
@@ -194,4 +307,4 @@ const locationFormStyle: LocationFormStyle = {
   }
 }
 
-const styles: LocationFormStyle = StyleSheet.create(locationFormStyle)
+const styles: LocationAndSettingsStyle = StyleSheet.create(locationAndSettingsStyle)
