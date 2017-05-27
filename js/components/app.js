@@ -42,13 +42,13 @@ export default class App extends Component {
 
   render () {
     return (
-      <View>
+      <View sytle={styles.app}>
         <Header
           left={{menu: true}}
           navigation={this.props.navigation}
           title='Home'
           />
-        <ScrollView style={styles.app}>
+        <View style={styles.app}>
           <LocationAndSettings
             navigation={this.props.navigation}
             />
@@ -58,7 +58,7 @@ export default class App extends Component {
           <ResultsList
             navigation={this.props.navigation}
             />
-        </ScrollView>
+        </View>
       </View>
     )
   }

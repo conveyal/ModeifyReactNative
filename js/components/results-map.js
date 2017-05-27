@@ -2,9 +2,17 @@
 
 import polyline from 'polyline'
 import React, { Component } from 'react'
-import {Platform, StyleSheet, Text, View} from 'react-native'
+import {
+  Dimensions,
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from 'react-native'
 import MapView from 'react-native-maps'
 
+import DumbTextButton from './dumb-text-button'
 import ModeifyIcon from './modeify-icon'
 import {constructMapboxUrl} from '../util'
 
@@ -36,7 +44,9 @@ type MarkerCoordinate = {
 
 type Props = {
   activeSearch: number,
+  changePlanViewState: (string) => void,
   fromLocation: Location,
+  planViewState: string,
   searchingOnMap: boolean,
   searches: PlanSearch[],
   toLocation: Location
@@ -55,11 +65,28 @@ export default class ResultsMap extends Component {
   // handlers
   // --------------------------------------------------
 
-
+  _onExpandMap = () => {
+    this.props.changePlanViewState('result-summarized')
+  }
 
   // --------------------------------------------------
   // renderers
   // --------------------------------------------------
+
+  _renderCollapsedMap (): ?React.Element<*> {
+    return (
+      <TouchableOpacity
+        onPress={this._onExpandMap}
+        style={styles.collapsedMapContainer}
+        >
+        <DumbTextButton
+          backgroundColor='#F5A729'
+          color='#fff'
+          text='VIEW MAP'
+          />
+      </TouchableOpacity>
+    )
+  }
 
   _renderLocationMarker = (location: Location, type: string): ?React.Element<*> => {
     if(hasCoords(location)) {
@@ -247,10 +274,28 @@ export default class ResultsMap extends Component {
   }
 
   render (): ?React.Element<*> {
-    const {fromLocation, searchingOnMap, toLocation} = this.props
+    const {fromLocation, planViewState, searchingOnMap, toLocation} = this.props
     if (searchingOnMap) return null  // temp fix for https://github.com/airbnb/react-native-maps/issues/453
+
+    const screenHeight: number = Dimensions.get('window').height
+    let curMapHeight: number = 0
+
+    switch (planViewState) {
+      case 'init':
+        curMapHeight = screenHeight - 112
+        break
+      case 'result-collapsed':
+        curMapHeight = screenHeight - 323
+        break
+      case 'result-summarized':
+        curMapHeight = screenHeight - 250
+        break
+      case 'result-expanded':
+        return this._renderCollapsedMap()
+    }
+
     return (
-      <View style={styles.mapContainer}>
+      <View style={{height: curMapHeight}}>
         <MapView
           initialRegion={config.map.initialRegion}
           ref='resultsMap'
@@ -274,42 +319,6 @@ export default class ResultsMap extends Component {
     )
   }
 }
-
-type ResultMapStyle = {
-  cabiMarker: styleOptions,
-  cabiMarkerContainer: styleOptions,
-  map: styleOptions,
-  mapContainer: styleOptions,
-  mapContainerWithLocationFocus: styleOptions
-}
-
-const resultMapStyle: ResultMapStyle = {
-  cabiMarker: {
-    left: 2,
-    position: 'absolute',
-    top: 1
-  },
-  cabiMarkerContainer: {
-    backgroundColor: '#EF3026',
-    borderColor: '#FFCB00',
-    borderRadius: 15,
-    borderWidth: 2,
-    height: 20,
-    overflow: 'hidden',
-    width: 20
-  },
-  map: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  mapContainer: {
-    height: 400
-  },
-  mapContainerWithLocationFocus: {
-    top: 300
-  }
-}
-
-const styles: ResultMapStyle = StyleSheet.create(resultMapStyle)
 
 const polylineStyles: { [key: string]: styleOptions } = {
   BICYCLE: {
@@ -372,3 +381,38 @@ function toLatLng (location: Location): MarkerCoordinate {
     longitude: location.lon
   }
 }
+
+type ResultMapStyle = {
+  cabiMarker: styleOptions,
+  cabiMarkerContainer: styleOptions,
+  collapsedMapContainer: styleOptions,
+  map: styleOptions,
+  mapContainer: styleOptions
+}
+
+const resultMapStyle: ResultMapStyle = {
+  cabiMarker: {
+    left: 2,
+    position: 'absolute',
+    top: 1
+  },
+  cabiMarkerContainer: {
+    backgroundColor: '#EF3026',
+    borderColor: '#FFCB00',
+    borderRadius: 15,
+    borderWidth: 2,
+    height: 20,
+    overflow: 'hidden',
+    width: 20
+  },
+  collapsedMapContainer: {
+    alignItems: 'center',
+    backgroundColor: '#999999',
+    padding: 10
+  },
+  map: {
+    ...StyleSheet.absoluteFillObject,
+  }
+}
+
+const styles: ResultMapStyle = StyleSheet.create(resultMapStyle)

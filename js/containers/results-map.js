@@ -2,6 +2,7 @@
 
 import { connect } from 'react-redux'
 
+import {changePlanViewState} from '../actions/app'
 import ResultsMap from '../components/results-map'
 
 import type {ReducersState} from '../types/reducers'
@@ -11,12 +12,15 @@ const mapStateToProps = (state: ReducersState, ownProps) => {
   return {
     activeSearch,
     fromLocation: currentQuery.from,
+    planViewState: state.app.planViewState,
     searches,
     searchingOnMap: state.app.searchingOnMap,
     toLocation: currentQuery.to
   }
 }
 
-const mapDispatchToProps = {}
+const mapDispatchToProps = {
+  changePlanViewState
+}
 
 export default connect(mapStateToProps, mapDispatchToProps)(ResultsMap)

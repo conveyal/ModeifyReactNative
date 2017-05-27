@@ -3,6 +3,7 @@
 import isEqual from 'lodash.isequal'
 import React, { Component } from 'react'
 import {
+  Dimensions,
   ListView,
   Platform,
   ScrollView,
@@ -14,6 +15,7 @@ import {
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome'
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons'
 
+import DumbTextButton from './dumb-text-button'
 import ModeifyIcon from './modeify-icon'
 import RouteResult, {getSegmentDetailsForOption} from '../util/route-result'
 
@@ -38,6 +40,7 @@ type SearchResult = {
 
 type Props = {
   activeSearch: number,
+  changePlanViewState: (string) => void,
   fromLocation: Location,
   modeSettings: {
     bikeSpeed: number,
@@ -48,6 +51,7 @@ type Props = {
     drivingCostPerMile: number,
     parkingCost: number
   },
+  planViewState: string,
   searches: Array<SearchResult>,
   toLocation: Location
 }
@@ -61,6 +65,7 @@ type State = {
   noPlans?: boolean,
   options: ListView.DataSource,
   resultIndex?: number,
+  resultText: string,
   rowDetailToggle: RowDetailToggle
 }
 
@@ -79,6 +84,7 @@ export default class ResultsList extends Component {
     noPlans: true,
     options: makeNewDatasourceListview(),
     resultIndex: 0,
+    resultText: 'No results yet',
     rowDetailToggle: {}
   }
 
@@ -111,6 +117,7 @@ export default class ResultsList extends Component {
       isPending: currentSearch.pending,
       noPlans: false,
       options,
+      resultText: '',
       rowDetailToggle
     }
 
@@ -141,6 +148,18 @@ export default class ResultsList extends Component {
     }
 
     this.routeResult.hasChanged = false
+
+    const numResults: number = nextState.options.getRowCount()
+
+    if (currentSearch.pending) {
+      nextState.resultText = 'Calculating...'
+    } else {
+      if (this.routeResult.hasError) {
+        nextState.resultText = 'An error occurred'
+      } else {
+        nextState.resultText = `Found ${numResults > 0 ? numResults : 'no'} options`
+      }
+    }
 
     if (returnFullState) {
       return Object.assign(this.state, nextState)
@@ -183,6 +202,14 @@ export default class ResultsList extends Component {
   // handlers
   // ------------------------------------------------------------------------
 
+  _handleSelectOption = (option: ModeifyResult) => {
+    this.props.navigation.navigate('OptionSelected', { option })
+  }
+
+  _onCollapsedContainerPress = () => {
+    this.props.changePlanViewState('result-summarized')
+  }
+
   _toggleDetails = (rowId: number) => {
     const nextRowDetailToggle: RowDetailToggle = Object.assign(
       {},
@@ -195,13 +222,41 @@ export default class ResultsList extends Component {
     })
   }
 
-  _handleSelectOption = (option: ModeifyResult) => {
-    this.props.navigation.navigate('OptionSelected', { option })
-  }
-
   // ------------------------------------------------------------------------
   // renderers
   // ------------------------------------------------------------------------
+
+  _renderCollapsed (): React.Element<*> {
+    return (
+      <TouchableOpacity
+        onPress={this._onCollapsedContainerPress}
+        style={styles.collapsedContainer}
+        >
+        <Text style={styles.collapsedText}>
+          {this.state.resultText}
+        </Text>
+        <DumbTextButton
+          backgroundColor='#F5A729'
+          color='#fff'
+          containerStyle={{
+            position: 'absolute',
+            right: 5,
+            top: 6
+          }}
+          text='VIEW RESULTS'
+          />
+      </TouchableOpacity>
+    )
+  }
+
+  _renderExpanded (): React.Element<*> {
+    const screenHeight: number = Dimensions.get('window').height
+    return (
+      <ScrollView>
+        <Text>{this.state.resultText}</Text>
+      </ScrollView>
+    )
+  }
 
   _renderOptionDetails = (
     optionDetail: SegmentDetail,
@@ -465,14 +520,26 @@ export default class ResultsList extends Component {
     )
   }
 
-  render (): React.Element<*> {
+  _renderSummarized (): React.Element<*> {
+    const screenHeight: number = Dimensions.get('window').height
     return (
-      <View
-        style={styles.resultListContainer}
-        >
-        {this._renderResult()}
+      <View>
+        <Text>{this.state.resultText}</Text>
       </View>
     )
+  }
+
+  render (): ?React.Element<*> {
+    switch (this.props.planViewState) {
+      case 'init':
+        return null
+      case 'result-collapsed':
+        return this._renderCollapsed()
+      case 'result-summarized':
+        return this._renderSummarized()
+      case 'result-expanded':
+        return this._renderExpanded()
+    }
   }
 }
 
@@ -495,6 +562,8 @@ function makeNewDatasourceListview (): ListView.DataSource  {
 
 
 type ResultListStyle = {
+  collapsedContainer: styleOptions,
+  collapsedText: styleOptions,
   cost: styleOptions,
   detailsButton: styleOptions,
   infoText: styleOptions,
@@ -527,6 +596,14 @@ type ResultListStyle = {
 }
 
 const resultListStyle: ResultListStyle = {
+  collapsedContainer: {
+    backgroundColor: '#5a7491',
+    padding: 10
+  },
+  collapsedText: {
+    color: '#fff',
+    fontSize: 16
+  },
   cost: {
     backgroundColor: '#8ec449',
     bottom: 3,
@@ -588,8 +665,6 @@ const resultListStyle: ResultListStyle = {
   },
   resultListContainer: {
     backgroundColor: '#5a7491',
-    flex: 1,
-    minHeight: 200,
     paddingHorizontal: 10,
     paddingBottom: 50,
     paddingTop: 10
