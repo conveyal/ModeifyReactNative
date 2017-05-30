@@ -41,22 +41,36 @@ const scorer = new ProfileScorer()
 export default class RouteResult {
   fromLocation: Location
   lastResponse: TripPlanResponse
-  results: TripPlanResult
+  _results: ?Array<ModeifyResult>
   toLocation: Location
 
   hasChanged = false
   hasError = false
   lastResponse = {}
 
+  getBestOptionsByMode (): Array<ModeifyResult> {
+    const modesSeen: {[key: string]: boolean} = {}
+    return this.getResults()
+      .filter((option: ModeifyResult): ModeifyResult => {
+        if (modesSeen[option.dominantMode]) return false
+
+        modesSeen[option.dominantMode] = true
+        return true
+      })
+  }
+
   getResults (): Array<ModeifyResult> {
-    if (this.hasError || !this.lastResponse) return []
+    console.log(this)
+    if (this.hasError || !this.lastResponse || !this.lastResponse.r5) return []
+    if (this._results) return this._results
 
     // console.log(this.lastResponse.r5.profile)
     const scoredOptions = scorer.processOptions(this.lastResponse.r5.profile)
     const driveOption = addModeifyData(scoredOptions.find(option =>
       option.access[0].mode === 'CAR' &&
       (!option.transit || option.transit.length < 1)))
-    return scoredOptions.map((option) => addModeifyData(option, driveOption))
+    this._results = scoredOptions.map((option) => addModeifyData(option, driveOption))
+    return this._results
   }
 
   /**
@@ -67,7 +81,7 @@ export default class RouteResult {
   parseResponse (response: TripPlanResult) {
     if (isEqual(response, this.lastResponse)) return
 
-    this.hasChanged = true
+    this._setChanged()
     this.lastResponse = response
 
     if (response && response.error) {
@@ -77,12 +91,17 @@ export default class RouteResult {
     }
   }
 
+  _setChanged () {
+    this.hasChanged = true
+    this._results = null
+  }
+
   setLocation (type: 'from' | 'to', location: Location) {
     if (type === 'from') {
-      if (this.fromLocation !== location) this.hasChanged = true
+      if (this.fromLocation !== location) this._setChanged()
       this.fromLocation = location
     } else {
-      if (this.toLocation !== location) this.hasChanged = true
+      if (this.toLocation !== location) this._setChanged()
       this.toLocation = location
     }
   }
@@ -91,7 +110,7 @@ export default class RouteResult {
     value = parseFloat(value)
     if (scorer.rates[setting] === value) return
     scorer.rates[setting] = value
-    this.hasChanged = true
+    this._setChanged()
   }
 }
 
@@ -160,7 +179,7 @@ function addModeifyData (
 ) {
   if (!option) return  // might happen if results returned don't include driving
   setModePresence(option)
-  setModeString(option)
+  setModeStrings(option)
   setSegments(option)
   setDistances(option)
   setCost(option)
@@ -568,12 +587,41 @@ function setModePresence (option: NonTransitProfile | TransitProfile) {
   option.directCar = option.modes.length === 1 && option.hasCar
 }
 
-function setModeString (option: NonTransitProfile | TransitProfile) {
+function setModeStrings (option: NonTransitProfile | TransitProfile) {
   let modeStr: string = ''
+  let dominantMode: string = ''
+  let dominantModeIcon: string = ''
   const accessMode: string = option.access[0].mode.toLowerCase()
   const egressMode: string | boolean = option.egress
     ? option.egress[0].mode.toLowerCase()
     : false
+
+  if (option.hasTransit) {
+    dominantMode = 'transit'
+    dominantModeIcon = convert.modeToIcon('rail')
+  } else {
+    switch (accessMode) {
+      case 'bicycle_rent':
+      case 'bicycle':
+        dominantMode = 'bike'
+        dominantModeIcon = convert.modeToIcon('bike')
+        break
+      case 'car':
+        dominantMode = 'carpool/vanpool'
+        dominantModeIcon = convert.modeToIcon('carshare')
+        break
+      case 'walk':
+        dominantMode = 'walk'
+        dominantModeIcon = convert.modeToIcon('walk')
+        break
+      default:
+        console.error(`Unknown accessMode: ${accessMode}`)
+        return false
+    }
+  }
+
+  option.dominantMode = dominantMode
+  option.dominantModeIcon = dominantModeIcon
 
   switch (accessMode) {
     case 'bicycle_rent':

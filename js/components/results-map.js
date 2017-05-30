@@ -386,8 +386,7 @@ type ResultMapStyle = {
   cabiMarker: styleOptions,
   cabiMarkerContainer: styleOptions,
   collapsedMapContainer: styleOptions,
-  map: styleOptions,
-  mapContainer: styleOptions
+  map: styleOptions
 }
 
 const resultMapStyle: ResultMapStyle = {

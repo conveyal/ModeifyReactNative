@@ -141,6 +141,8 @@ export type ModeifyResult = {
   costPerTrip: string,
   dataSource: ListView.DataSource,
   directCar: boolean,
+  dominantMode: string,
+  dominantModeIcon: string,
   driveDistances: boolean | string,
   freeflowTime: number,
   hasCar: boolean,

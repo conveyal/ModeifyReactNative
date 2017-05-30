@@ -3,6 +3,7 @@
 import isEqual from 'lodash.isequal'
 import React, { Component } from 'react'
 import {
+  ActivityIndicator,
   Dimensions,
   ListView,
   Platform,
@@ -97,7 +98,8 @@ export default class ResultsList extends Component {
   }
 
   shouldComponentUpdate (nextProps: Props, nextState: State) {
-    return nextState.isPending !== this.state.isPending ||
+    return nextProps.planViewState !== this.props.planViewState ||
+      nextState.isPending !== this.state.isPending ||
       nextState.resultIndex !== this.state.resultIndex ||
       !isEqual(nextState.rowDetailToggle, this.state.rowDetailToggle)
   }
@@ -230,9 +232,9 @@ export default class ResultsList extends Component {
     return (
       <TouchableOpacity
         onPress={this._onCollapsedContainerPress}
-        style={styles.collapsedContainer}
+        style={styles.summaryTitle}
         >
-        <Text style={styles.collapsedText}>
+        <Text style={styles.summaryText}>
           {this.state.resultText}
         </Text>
         <DumbTextButton
@@ -522,9 +524,42 @@ export default class ResultsList extends Component {
 
   _renderSummarized (): React.Element<*> {
     const screenHeight: number = Dimensions.get('window').height
+
+    const {isPending, resultText} = this.state
+
+    const bestOptionsByMode = this.routeResult.getBestOptionsByMode()
+
     return (
       <View>
-        <Text>{this.state.resultText}</Text>
+        <View style={styles.summaryTitle}>
+          <Text style={styles.summaryText}>
+            {resultText}
+          </Text>
+        </View>
+        <View style={styles.summaryContent}>
+          {isPending &&
+            <ActivityIndicator
+              animating
+              size='large'
+              />
+          }
+          {!isPending &&
+            <View style={styles.summaryAllOptions}>
+              <View style={styles.summarizedModesContainer}>
+                {bestOptionsByMode.map((option: ModeifyResult) =>
+                  <SummarizedMode
+                    option={option}
+                    />
+                )}
+              </View>
+              <Text
+                style={styles.summaryText}
+                >
+                Swipe to view each option
+              </Text>
+            </View>
+          }
+        </View>
       </View>
     )
   }
@@ -542,6 +577,32 @@ export default class ResultsList extends Component {
     }
   }
 }
+
+// ------------------------------------------------------------------------
+// helper components
+// ------------------------------------------------------------------------
+
+const SummarizedMode = (props: {option: ModeifyResult}) : React.Element<*> => (
+  <View style={styles.summarizedModeContainer}>
+    {['cabi', 'carshare'].indexOf(props.option.dominantModeIcon) > -1
+      ? <ModeifyIcon
+          color='#fff'
+          name={props.option.dominantModeIcon}
+          size={20}
+          />
+      : <MaterialIcon
+          color='#fff'
+          name={props.option.dominantModeIcon}
+          size={20}
+          />
+    }
+    <Text
+      style={styles.summarizedModeTime}
+      >
+      {props.option.averageTime} mins
+    </Text>
+  </View>
+)
 
 const WalkBikeText = (props: {text: string}): React.Element<*> => (
   <Text
@@ -562,8 +623,6 @@ function makeNewDatasourceListview (): ListView.DataSource  {
 
 
 type ResultListStyle = {
-  collapsedContainer: styleOptions,
-  collapsedText: styleOptions,
   cost: styleOptions,
   detailsButton: styleOptions,
   infoText: styleOptions,
@@ -586,7 +645,14 @@ type ResultListStyle = {
   segmentShortNameStroke: styleOptions,
   segmentShortNameContainer: styleOptions,
   selectOptionButton: styleOptions,
+  summarizedModeContainer: styleOptions,
+  summarizedModesContainer: styleOptions,
+  summarizedModeTime: styleOptions,
   summary: styleOptions,
+  summaryAllOptions: styleOptions,
+  summaryContent: styleOptions,
+  summaryText: styleOptions,
+  summaryTitle: styleOptions,
   time: styleOptions,
   timeContainer: styleOptions,
   timeMinutes: styleOptions,
@@ -596,14 +662,6 @@ type ResultListStyle = {
 }
 
 const resultListStyle: ResultListStyle = {
-  collapsedContainer: {
-    backgroundColor: '#5a7491',
-    padding: 10
-  },
-  collapsedText: {
-    color: '#fff',
-    fontSize: 16
-  },
   cost: {
     backgroundColor: '#8ec449',
     bottom: 3,
@@ -742,9 +800,41 @@ const resultListStyle: ResultListStyle = {
     top: 5,
     width: 60
   },
+  summarizedModeContainer: {
+    alignItems: 'center',
+    borderColor: '#fff',
+    borderRadius: 5,
+    borderWidth: 1,
+    marginRight: 10,
+    padding: 5
+  },
+  summarizedModesContainer: {
+    flexDirection: 'row',
+    marginBottom: 5
+  },
+  summarizedModeTime: {
+    color: '#fff',
+    marginLeft: 5
+  },
   summary: {
     backgroundColor: '#fff',
     flex: 1
+  },
+  summaryAllOptions: {
+    alignItems: 'center'
+  },
+  summaryContent: {
+    backgroundColor: '#5a7491',
+    height: 100,
+    padding: 10
+  },
+  summaryText: {
+    color: '#fff',
+    fontSize: 16
+  },
+  summaryTitle: {
+    backgroundColor: '#455a71',
+    padding: 10
   },
   time: {
     fontSize: 18,
