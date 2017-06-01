@@ -27,7 +27,14 @@ type Props = {
   renderIcon: (scene: DrawerScene) => ?React.Element<*>,
 }
 
-const routesToRenderInMenu = ['Home', 'Settings', 'About', 'Legal']
+const routesToRenderInMenu = [
+  'Home',
+  'Timing',
+  'Settings',
+  'ServiceAlerts',
+  'About',
+  'Legal'
+]
 const activeTintColor = '#2196f3'
 const activeBackgroundColor = 'rgba(0, 0, 0, .04)'
 const inactiveTintColor = 'rgba(0, 0, 0, .87)'

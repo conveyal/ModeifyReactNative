@@ -10,6 +10,7 @@ import {
   View
 } from 'react-native'
 import ModalDropdown from 'react-native-modal-dropdown'
+import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons'
 
 import Header from './header'
 import {
@@ -46,7 +47,14 @@ export default class Timing extends Component {
   props: Props
 
   static navigationOptions = {
-    drawerLabel: 'TIMING'
+    drawerLabel: 'TIMING',
+    drawerIcon: ({ tintColor }) => (
+      <MaterialIcon
+        name='clock'
+        size={24}
+        style={{ color: tintColor }}
+        />
+    )
   }
 
   // ------------------------------------------------------------------------

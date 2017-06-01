@@ -8,7 +8,7 @@ declare module 'redux-actions' {
   declare export function createAction(
     type: string,
     payloadCreator?: payloadCreator
-  ): void
+  ): (Object) => void
   declare export function handleActions({
     [key: string]: Function
   }, Object): Object

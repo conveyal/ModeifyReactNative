@@ -4,12 +4,14 @@ import React, { Component } from 'react'
 import {
   Linking,
   StyleSheet,
-  Text
+  Text,
+  TouchableOpacity
 } from 'react-native'
 
 import type {styleOptions} from '../types/rn-style-config'
 
 type Props = {
+  children?: React.Element<*>,
   text: string,
   url?: string
 }
@@ -30,21 +32,32 @@ export default class HyperLink extends Component {
         if (!supported) {
           console.log('Can\'t handle url: ', url)
         } else {
-          return Linking.openURL(url)
+          return Linking2.openURL(url)
         }
       })
       .catch(err => console.error('An error occurred', err))
   }
 
   render () {
-    return (
-      <Text
-        onPress={this._onPress}
-        style={styles.link}
-        >
-        {this.props.text}
-      </Text>
-    )
+    const {text} = this.props
+    if (text) {
+      return (
+        <Text
+          onPress={this._onPress}
+          style={styles.link}
+          >
+          {this.props.text}
+        </Text>
+      )
+    } else {
+      return (
+        <TouchableOpacity
+          onPress={this._onPress}
+          >
+          {this.props.children}
+        </TouchableOpacity>
+      )
+    }
   }
 }
 

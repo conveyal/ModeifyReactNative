@@ -33,5 +33,6 @@
   },
   "modes": [
     "TRANSIT,WALK"
-  ]
+  ],
+  "serviceAlertsUrl": "https://example.com"
 }

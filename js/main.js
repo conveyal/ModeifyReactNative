@@ -11,6 +11,7 @@ import App from './containers/app.js'
 import {About, Legal} from './containers/info-screens'
 import LocationSelection from './containers/location-selection'
 import OptionSelected from './containers/option-selected'
+import ServiceAlerts from './containers/service-alerts'
 import Settings from './containers/settings'
 import Timing from './containers/timing'
 import reducers from './reducers'
@@ -25,8 +26,9 @@ const AppNavigator = DrawerNavigator({
     path: 'option-selected/:option',
     screen: OptionSelected
   },
-  Settings: { screen: Settings },
   Timing: { screen: Timing },
+  Settings: { screen: Settings },
+  ServiceAlerts: { screen: ServiceAlerts },
   About: { screen: About },
   Legal: { screen: Legal }
 }, {

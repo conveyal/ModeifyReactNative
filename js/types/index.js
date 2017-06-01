@@ -38,7 +38,8 @@ export type AppConfig = {
     },
     apiKey: string
   },
-  modes: Array<string>
+  modes: Array<string>,
+  serviceAlertsUrl: string
 }
 
 export type MapRegion = {

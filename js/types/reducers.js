@@ -22,6 +22,19 @@ export type OtpReducerState = {
   activeSearch: number
 }
 
+export type ServiceAlert = {
+  alertUrl: string,
+  fromDate: string,
+  text: string,
+  toDate: string
+}
+
+export type ServiceAlertsReducerState = {
+  alerts: ServiceAlert[],
+  loaded: boolean,
+  success: boolean
+}
+
 export type UserReducerState = {
   idToken?: string
 }

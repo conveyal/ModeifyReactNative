@@ -63,7 +63,7 @@ export default class Settings extends Component {
   }
 
   static navigationOptions = {
-    drawerLabel: 'Settings',
+    drawerLabel: 'SETTINGS',
     drawerIcon: ({ tintColor }) => (
       <MaterialIcon
         name='settings'
@@ -416,7 +416,7 @@ export default class Settings extends Component {
           left={{back: true}}
           navigation={this.props.navigation}
           right={{close: true}}
-          title='Settings'
+          title='SETTINGS'
           />
         <ScrollView>
           <View style={styles.tabBar}>

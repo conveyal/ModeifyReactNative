@@ -20,7 +20,7 @@ import MapView from 'react-native-maps'
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons'
 
 import Header from './header'
-import {constructMapboxUrl, geolocateLocation} from '../util'
+import {constructMapboxUrl, createDataSource, geolocateLocation} from '../util'
 import {headerStyles} from '../util/styles'
 
 import type {
@@ -89,7 +89,7 @@ export default class LocationSelection extends Component {
     }
 
     this.state = {
-      geocodeResults: new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2}),
+      geocodeResults: createDataSource(),
       inputValue: '',
       markerLocation: config.map.initialRegion
     }

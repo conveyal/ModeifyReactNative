@@ -5,6 +5,7 @@ import qs from 'qs'
 import {handleActions} from 'redux-actions'
 
 import * as app from './app'
+import * as serviceAlerts from './serice-alerts'
 import * as user from './user'
 import {mphToMps, safeParseFloat, safeParseInt} from '../util/convert'
 
@@ -12,6 +13,7 @@ import type {AppConfig, RequestApi} from '../types'
 import type {CurrentQuery} from '../types/reducers'
 
 const appConfig: AppConfig = require('../../config.json')
+
 appConfig.customOtpQueryBuilder = (
   api: RequestApi,
   query: CurrentQuery
@@ -106,9 +108,14 @@ const initialOtpQuery: CurrentQuery = {
   }
 }
 
+function createReducer (reducer) {
+  return handleActions(reducer.reducers, reducer.initialState)
+}
+
 export default {
-  app: handleActions(app.reducers, app.initialState),
+  app: createReducer(app),
   nav: {},
   otp: createOtpReducer(appConfig, initialOtpQuery),
-  user: handleActions(user.reducers, user.initialState)
+  serviceAlerts: createReducer(serviceAlerts),
+  user: createReducer(user)
 }

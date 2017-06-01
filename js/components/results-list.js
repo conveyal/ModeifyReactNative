@@ -19,6 +19,7 @@ import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons'
 
 import DumbTextButton from './dumb-text-button'
 import ModeifyIcon from './modeify-icon'
+import {createDataSource} from '../util'
 import RouteResult, {getSegmentDetailsForOption} from '../util/route-result'
 
 import type {
@@ -174,7 +175,7 @@ export default class ResultsList extends Component {
     if (option.dataSource) return option.dataSource
 
     const {fromLocation, toLocation} = this.props
-    option.dataSource = makeNewDatasourceListview()
+    option.dataSource = createDataSource()
     option.dataSource =
       option.dataSource.cloneWithRows(
         getSegmentDetailsForOption(
@@ -594,16 +595,6 @@ const WalkBikeText = (props: {text: string}): React.Element<*> => (
     {props.text}
   </Text>
 )
-
-function makeNewDatasourceListview (): ListView.DataSource  {
-  return new ListView.DataSource({
-    rowHasChanged: (
-      row1: any,
-      row2: any
-    ): boolean => row1 !== row2
-  })
-}
-
 
 type ResultListStyle = {
   cost: styleOptions,
