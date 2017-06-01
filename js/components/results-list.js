@@ -13,6 +13,7 @@ import {
   TouchableOpacity,
   View
 } from 'react-native'
+import Swiper from 'react-native-swiper'
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome'
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons'
 
@@ -26,7 +27,7 @@ import type {
   NavigationScreenProp
 } from 'react-navigation/src/TypeDefinition'
 
-import type {Location} from '../types/reducers'
+import type {Location, PlanSearch} from '../types/reducers'
 import type {
   ModeifyResult,
   SegmentDetail,
@@ -34,9 +35,19 @@ import type {
 } from '../types/results'
 import type {styleOptions} from '../types/rn-style-config'
 
-type SearchResult = {
-  pending: boolean,
-  planResponse: RouteResult
+type SlideChangeState = {
+  autoplayEnd: boolean,
+  dir: string,
+  height: number,
+  index: number,
+  isScrolling: boolean,
+  loopJump: boolean,
+  offset: {
+    x: number,
+    y: number
+  },
+  total: number,
+  width: number
 }
 
 type Props = {
@@ -53,7 +64,8 @@ type Props = {
     parkingCost: number
   },
   planViewState: string,
-  searches: Array<SearchResult>,
+  searches: Array<PlanSearch>,
+  setActiveItinerary: ({index: number}) => void,
   toLocation: Location
 }
 
@@ -212,16 +224,15 @@ export default class ResultsList extends Component {
     this.props.changePlanViewState('result-summarized')
   }
 
+  _onSlideChange = (e: Object, state: SlideChangeState, context: Object) => {
+    this.props.setActiveItinerary({ index: state.index })
+  }
+
   _toggleDetails = (rowId: number) => {
-    const nextRowDetailToggle: RowDetailToggle = Object.assign(
-      {},
-      this.state.rowDetailToggle
+    this.props.changePlanViewState(this.props.planViewState === 'result-summarized'
+      ? 'result-expanded'
+      : 'result-summarized'
     )
-    nextRowDetailToggle[rowId] = !nextRowDetailToggle[rowId]
-    this.setState({
-      options: this._getRows(nextRowDetailToggle),
-      rowDetailToggle: nextRowDetailToggle
-    })
   }
 
   // ------------------------------------------------------------------------
@@ -251,19 +262,8 @@ export default class ResultsList extends Component {
     )
   }
 
-  _renderExpanded (): React.Element<*> {
-    const screenHeight: number = Dimensions.get('window').height
-    return (
-      <ScrollView>
-        <Text>{this.state.resultText}</Text>
-      </ScrollView>
-    )
-  }
-
   _renderOptionDetails = (
-    optionDetail: SegmentDetail,
-    listSectionID: string,
-    listRowID: number
+    optionDetail: SegmentDetail
   ): React.Element<*> => {
     return (
       <View style={[styles.optionDetailsRow, optionDetail.rowStyle]}>
@@ -343,13 +343,14 @@ export default class ResultsList extends Component {
 
   _renderOption = (
     option: ModeifyResult,
-    listSectionID: string,
-    listRowID: number
+    idx: number
   ): React.Element<*> => {
-    const {rowDetailToggle} = this.state
+    const screenHeight: number = Dimensions.get('window').height
+
+    const {planViewState} = this.props
 
     return (
-      <View style={styles.optionCard}>
+      <View style={styles.optionContent}>
         <View style={styles.optionHeader}>
           <Text style={styles.optionTitle}>
             {option.modeDescriptor}
@@ -360,64 +361,67 @@ export default class ResultsList extends Component {
             </Text>
           }
         </View>
-        <View style={styles.optionContent}>
-          <View style={styles.segments} >
-            {option.segments.map((
-              segment: SegmentDisplay,
-              idx: number
-            ): React.Element<*> =>
-              <View style={styles.segmentRow}>
-                <View>
+        <View style={styles.optionSummary}>
+          <View style={styles.segmentsContainer}>
+            <View style={styles.segments}>
+              {option.segments.map((segment, idx) =>
+                <View style={styles.segments}>
                   {['cabi', 'carshare'].indexOf(segment.mode) > -1
                     ? <ModeifyIcon
                         name={segment.mode}
-                        size={30}
-                        style={styles.modeIcon}
+                        size={20}
                         />
                     : <MaterialIcon
                         name={segment.mode}
-                        size={30}
-                        style={styles.modeIcon}
+                        size={20}
                         />
+                  }
+                  {segment.shortName &&
+                    <View
+                      style={styles.segmentShortNameContainer}
+                      >
+                      {segment.background &&
+                        segment.background.map((color) =>
+                          <View style={[
+                              styles.segmentRouteBackground,
+                              {
+                                backgroundColor: color
+                              }
+                            ]}
+                            />
+                      )}
+                      <Text
+                        style={styles.segmentShortNameStroke}
+                        >
+                        {segment.shortName}
+                      </Text>
+                      <Text
+                        style={styles.segmentShortName}
+                        >
+                        {segment.shortName}
+                      </Text>
+                    </View>
                   }
                   {idx < option.segments.length - 1 &&
                     <MaterialIcon
-                      name='menu-down'
+                      name='menu-right'
                       size={20}
-                      style={styles.transferIcon}
                       />
                   }
                 </View>
-                <View
-                  style={styles.segmentShortNameContainer}
-                  >
-                  {segment.background &&
-                    segment.background.length > 0 &&
-                    segment.background.map((
-                      color: string
-                    ): React.Element<*> =>
-                      <View style={[
-                          styles.segmentRouteBackground,
-                          {
-                            backgroundColor: color
-                          }
-                        ]} />
-                  )}
-                  <Text
-                    style={styles.segmentShortNameStroke}
-                    >
-                    {segment.shortName}
-                  </Text>
-                  <Text
-                    style={styles.segmentShortName}
-                    >
-                    {segment.shortName}
-                  </Text>
-                </View>
-              </View>
-            )}
+              )}
+            </View>
           </View>
-          <View style={styles.summary} >
+        </View>
+        <View style={styles.summaryTimingAndButtons} >
+          <View style={styles.selectOptionButton}>
+            <TouchableOpacity
+              onPress={() => this._handleSelectOption(option)}
+              >
+              <Text>select</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.optionTimeSummary}>
             <View style={styles.timeContainer}>
               <Text style={styles.time}>
                 {option.averageTime}
@@ -451,70 +455,23 @@ export default class ResultsList extends Component {
                   />
               }
             </View>
-            <View style={styles.selectOptionButton}>
-              <TouchableOpacity
-                onPress={() => this._handleSelectOption(option)}
-                >
-                <Text>select</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.detailsButton}>
-              <MaterialIcon.Button
-                backgroundColor='#455a71'
-                name='plus-circle'
-                onPress={() => this._toggleDetails(listRowID)}
-                >
-                details
-              </MaterialIcon.Button>
-            </View>
+          </View>
+          <View style={styles.detailsButton}>
+            <MaterialIcon.Button
+              backgroundColor='#455a71'
+              name='plus-circle'
+              onPress={() => this._toggleDetails(idx)}
+              size={20}
+              >
+              details
+            </MaterialIcon.Button>
           </View>
         </View>
-        {rowDetailToggle && rowDetailToggle[listRowID] &&
-          <ListView
-            dataSource={this._getOptionDetailListviewDatasource(option)}
-            renderRow={this._renderOptionDetails}
-          />
-        }
-      </View>
-    )
-  }
-
-  _renderResult (): React.Element<*> {
-    const {noPlans, isPending, options} = this.state
-
-    const numResults: number = options.getRowCount()
-    const hasResults: boolean = numResults > 0
-
-    if (noPlans) {
-      return (
-        <View>
-          <Text style={styles.infoText}>No results yet!</Text>
-          <Text style={styles.infoText}>
-            Select your locations to view your commuting options
-          </Text>
-        </View>
-      )
-    }
-
-    return (
-      <View>
-        {isPending &&
-          <Text style={styles.infoText}>Calculating...</Text>
-        }
-        {!isPending && !hasResults &&
-          <Text style={styles.infoText}>No results found between these locations!</Text>
-        }
-        {this.routeResult.hasError &&
-          <Text style={styles.infoText}>An error occurred.  Please try again!</Text>
-        }
-        {!isPending && hasResults &&
-          <View>
-            <Text style={styles.infoText}>
-              {`Found ${numResults > 0 ? numResults : 'no'} options`}
-            </Text>
+        {planViewState === 'result-expanded' &&
+          <View style={{height: screenHeight - 300}}>
             <ListView
-              dataSource={options}
-              renderRow={this._renderOption}
+              dataSource={this._getOptionDetailListviewDatasource(option)}
+              renderRow={this._renderOptionDetails}
             />
           </View>
         }
@@ -522,45 +479,100 @@ export default class ResultsList extends Component {
     )
   }
 
-  _renderSummarized (): React.Element<*> {
+  _renderResults (): React.Element<*> {
     const screenHeight: number = Dimensions.get('window').height
 
+    const {searches} = this.props
     const {isPending, resultText} = this.state
 
-    const bestOptionsByMode = this.routeResult.getBestOptionsByMode()
+    const currentSearch: PlanSearch = searches[searches.length - 1]
+    const slideIdx: number = (
+      currentSearch && currentSearch.activeItinerary > -1
+        ? currentSearch.activeItinerary
+        : 0
+    )
+
+    const allOptions: Array<ModeifyResult> = this.routeResult.getResults()
+    const bestOptionsByMode: Array<ModeifyResult> = (
+      this.routeResult.getBestOptionsByMode()
+    )
+    const hasResults: boolean = allOptions.length > 0
+
+    const slides: Array<React.Element<*>> = []
+
+    if (isPending) {
+      slides.push(
+        <View>
+          <View style={styles.summaryTitle}>
+            <Text style={styles.summaryText}>
+              {resultText}
+            </Text>
+          </View>
+          <ActivityIndicator
+            animating
+            size='large'
+            style={styles.summaryLoading}
+            />
+        </View>
+      )
+    } else {
+      let content: React.Element<*>
+
+      if (hasResults) {
+        content = (
+          <View
+            key='modeify-summary'
+            style={styles.summaryAllOptions}
+            >
+            <View style={styles.summarizedModesContainer}>
+              {bestOptionsByMode.map((option: ModeifyResult) =>
+                <SummarizedMode
+                  option={option}
+                  />
+              )}
+            </View>
+            <Text
+              style={styles.summaryText}
+              >
+              Swipe to view each option
+            </Text>
+          </View>
+        )
+      } else {
+        content = (
+          <View style={styles.summaryAllOptions}>
+            <Text
+              style={styles.summaryText}
+              >
+              No results found between these locations!  Try changing the starting or ending location.
+            </Text>
+          </View>
+        )
+      }
+
+      slides.push(
+        <View style={styles.summaryContent}>
+          <View style={styles.summaryTitle}>
+            <Text style={styles.summaryText}>
+              {resultText}
+            </Text>
+          </View>
+          {content}
+        </View>
+      )
+
+      allOptions.forEach((option: ModeifyResult, idx: number) => {
+        slides.push(this._renderOption(option, idx))
+      })
+    }
 
     return (
-      <View>
-        <View style={styles.summaryTitle}>
-          <Text style={styles.summaryText}>
-            {resultText}
-          </Text>
-        </View>
-        <View style={styles.summaryContent}>
-          {isPending &&
-            <ActivityIndicator
-              animating
-              size='large'
-              />
-          }
-          {!isPending &&
-            <View style={styles.summaryAllOptions}>
-              <View style={styles.summarizedModesContainer}>
-                {bestOptionsByMode.map((option: ModeifyResult) =>
-                  <SummarizedMode
-                    option={option}
-                    />
-                )}
-              </View>
-              <Text
-                style={styles.summaryText}
-                >
-                Swipe to view each option
-              </Text>
-            </View>
-          }
-        </View>
-      </View>
+      <Swiper
+        index={slideIdx}
+        onMomentumScrollEnd={this._onSlideChange}
+        >
+        {slides}
+      </Swiper>
     )
   }
 
@@ -571,9 +583,8 @@ export default class ResultsList extends Component {
       case 'result-collapsed':
         return this._renderCollapsed()
       case 'result-summarized':
-        return this._renderSummarized()
       case 'result-expanded':
-        return this._renderExpanded()
+        return this._renderResults()
     }
   }
 }
@@ -633,6 +644,8 @@ type ResultListStyle = {
   optionDetailsRow: styleOptions,
   optionDetailIcon: styleOptions,
   optionHeader: styleOptions,
+  optionSummary: styleOptions,
+  optionTimeSummary: styleOptions,
   optionTitle: styleOptions,
   resultListContainer: styleOptions,
   routeStyleAlight: styleOptions,
@@ -641,6 +654,7 @@ type ResultListStyle = {
   segmentRow: styleOptions,
   segmentRouteBackground: styleOptions,
   segments: styleOptions,
+  segmentsContainer: styleOptions,
   segmentShortName: styleOptions,
   segmentShortNameStroke: styleOptions,
   segmentShortNameContainer: styleOptions,
@@ -648,10 +662,11 @@ type ResultListStyle = {
   summarizedModeContainer: styleOptions,
   summarizedModesContainer: styleOptions,
   summarizedModeTime: styleOptions,
-  summary: styleOptions,
   summaryAllOptions: styleOptions,
   summaryContent: styleOptions,
+  summaryLoading: styleOptions,
   summaryText: styleOptions,
+  summaryTimingAndButtons: styleOptions,
   summaryTitle: styleOptions,
   time: styleOptions,
   timeContainer: styleOptions,
@@ -676,9 +691,9 @@ const resultListStyle: ResultListStyle = {
     width: 70
   },
   detailsButton: {
-    bottom: 5,
     position: 'absolute',
-    right: 5,
+    right: 10,
+    top: 10,
     width: 100
   },
   infoText: {
@@ -698,8 +713,7 @@ const resultListStyle: ResultListStyle = {
     marginVertical: 5
   },
   optionContent: {
-    flexDirection: 'row',
-    minHeight: 90
+    backgroundColor: '#fff'
   },
   optionDetailDescription: {
     paddingTop: 11
@@ -717,9 +731,16 @@ const resultListStyle: ResultListStyle = {
     backgroundColor: '#455a71',
     padding: 5
   },
+  optionSummary: {
+    backgroundColor: '#fff',
+    padding: 10
+  },
+  optionTimeSummary: {
+    alignItems: 'center'
+  },
   optionTitle: {
     color: '#fff',
-    fontSize: 14
+    fontSize: 16
   },
   resultListContainer: {
     backgroundColor: '#5a7491',
@@ -755,22 +776,24 @@ const resultListStyle: ResultListStyle = {
     flex: 1
   },
   segments: {
-    backgroundColor: '#edeff0',
-    padding: 5,
-    width: 90
+    flexDirection: 'row'
+  },
+  segmentsContainer: {
+    alignItems: 'center'
   },
   segmentShortName: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'transparent',
     color: '#fff',
+    fontSize: 12,
     textAlign: 'center',
-    top: 5
+    top: 2
   },
   segmentShortNameStroke: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'transparent',
     color: '#455a71',
-    fontSize: 15,
+    fontSize: 13,
     fontWeight: 'bold',
     textAlign: 'center',
     textShadowColor: '#455a71',
@@ -778,7 +801,7 @@ const resultListStyle: ResultListStyle = {
       height: 1,
       width: 1
     },
-    top: 5
+    top: 2
   },
   segmentShortNameContainer: {
     borderColor: '#edeff0',
@@ -786,18 +809,18 @@ const resultListStyle: ResultListStyle = {
     borderStyle: 'solid',
     borderWidth: 1,
     flexDirection: 'row',
-    height: 30,
+    height: 20,
     marginLeft: 5,
     overflow: 'hidden',
-    width: 45
+    width: 30
   },
   selectOptionButton: {
     backgroundColor: '#DD9719',
     borderRadius: 5,
+    left: 10,
     padding: 10,
     position: 'absolute',
-    right: 5,
-    top: 5,
+    top: 10,
     width: 60
   },
   summarizedModeContainer: {
@@ -816,21 +839,25 @@ const resultListStyle: ResultListStyle = {
     color: '#fff',
     marginLeft: 5
   },
-  summary: {
-    backgroundColor: '#fff',
-    flex: 1
-  },
   summaryAllOptions: {
-    alignItems: 'center'
+    alignItems: 'center',
+    height: 1000,
+    margin: 10
   },
   summaryContent: {
-    backgroundColor: '#5a7491',
-    height: 100,
-    padding: 10
+    backgroundColor: '#5a7491'
+  },
+  summaryLoading: {
+    padding: 15
   },
   summaryText: {
     color: '#fff',
     fontSize: 16
+  },
+  summaryTimingAndButtons: {
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    height: 60
   },
   summaryTitle: {
     backgroundColor: '#455a71',
@@ -842,11 +869,7 @@ const resultListStyle: ResultListStyle = {
     marginRight: 5
   },
   timeContainer: {
-    flexDirection: 'row',
-    height: 40,
-    left: 10,
-    position: 'absolute',
-    top: 10
+    flexDirection: 'row'
   },
   timeMinutes: {
     fontSize: 18
@@ -859,8 +882,7 @@ const resultListStyle: ResultListStyle = {
     color: '#748395'
   },
   walkBikeTimeContainer: {
-    marginLeft: 10,
-    marginTop: 36
+    alignItems: 'center'
   }
 }
 

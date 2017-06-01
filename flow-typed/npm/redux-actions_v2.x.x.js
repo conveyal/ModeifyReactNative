@@ -11,5 +11,5 @@ declare module 'redux-actions' {
   ): void
   declare export function handleActions({
     [key: string]: Function
-  }): Object
+  }, Object): Object
 }

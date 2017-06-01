@@ -218,9 +218,17 @@ export default class ResultsMap extends Component {
       return combinedLineCoordinates
     }
 
-    const r5Response: TripPlanResult = searches[activeSearch].planResponse.r5
+    const activePlan: PlanSearch = searches[activeSearch]
+    const r5Response: TripPlanResult = activePlan.planResponse.r5
+    let filteredProfiles: Array<TransitProfile | NonTransitProfile> = []
 
-    r5Response.profile.forEach((
+    if (!activePlan.activeItinerary) {
+      filteredProfiles = r5Response.profile
+    } else {
+      filteredProfiles = [r5Response.profile[activePlan.activeItinerary - 1]]
+    }
+
+    filteredProfiles.forEach((
       profile: TransitProfile | NonTransitProfile,
       idx: number
     ) => {
@@ -348,6 +356,9 @@ const polylineStyles: { [key: string]: styleOptions } = {
     strokeWidth: 8
   },
   SUBWAY: {
+    strokeWidth: 8
+  },
+  TRAM: {
     strokeWidth: 8
   },
   WALK: {

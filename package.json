@@ -29,6 +29,7 @@
 		"react-native-maps": "0.13.0",
 		"react-native-modal-dropdown": "evansiroky/react-native-modal-dropdown",
 		"react-native-simple-markdown": "^1.0.60-rc.3",
+		"react-native-swiper": "^1.5.4",
 		"react-native-vector-icons": "^4.0.0",
 		"react-navigation": "^1.0.0-beta.9",
 		"react-redux": "^5.0.2",
@@ -39,7 +40,7 @@
 	},
 	"devDependencies": {
 		"babel-preset-react-native": "1.9.1",
-		"flow-bin": "^0.45.0",
+		"flow-bin": "^0.47.0",
 		"flow-coverage-report": "^0.3.0",
 		"jest": "19.0.0",
 		"react-test-renderer": "~15.4.0",

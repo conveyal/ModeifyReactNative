@@ -60,7 +60,6 @@ export default class RouteResult {
   }
 
   getResults (): Array<ModeifyResult> {
-    console.log(this)
     if (this.hasError || !this.lastResponse || !this.lastResponse.r5) return []
     if (this._results) return this._results
 

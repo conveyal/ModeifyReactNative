@@ -1,6 +1,7 @@
 // @flow
 
-import { connect } from 'react-redux'
+import {connect} from 'react-redux'
+import {setActiveItinerary} from 'otp-react-redux/lib/actions/narrative'
 
 import {changePlanViewState} from '../actions/app'
 import ResultsList from '../components/results-list'
@@ -21,7 +22,8 @@ const mapStateToProps = (state: ReducersState, ownProps) => {
 }
 
 const mapDispatchToProps = {
-  changePlanViewState
+  changePlanViewState,
+  setActiveItinerary
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(ResultsList)

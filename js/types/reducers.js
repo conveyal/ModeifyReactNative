@@ -11,6 +11,7 @@ export type AppReducerState = {
 }
 
 export type PlanSearch = {
+  activeItinerary: ?number,
   planResponse: TripPlanResponse
 }
 
