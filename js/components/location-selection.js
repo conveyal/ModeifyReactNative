@@ -44,7 +44,10 @@ type GeocodeQueryCache = {
   [key: string]: Array<MapzenResult>
 }
 
-const geocodeQueries: GeocodeQueryCache = {}
+type SetLocation = {
+  type: 'from' | 'to',
+  location: Location
+}
 
 type Props = {
   changePlanViewState: (string) => void,
@@ -53,8 +56,8 @@ type Props = {
   navigation: NavigationScreenProp<NavigationRoute, NavigationAction>,
   planViewState: string,
   searchingOnMap: boolean,
-  setLocation: () => void,
-  setSearchingOnMap: () => void
+  setLocation: (SetLocation) => void,
+  setSearchingOnMap: (boolean) => void
 }
 
 type State = {
@@ -64,6 +67,9 @@ type State = {
   noGeocodeResultsFound?: boolean;
   selectingOnMap?: boolean;
 }
+
+const geocodeQueries: GeocodeQueryCache = {}
+
 
 export default class LocationSelection extends Component {
   currentAutocompleteQuery: string
@@ -173,13 +179,16 @@ export default class LocationSelection extends Component {
       if (params.type === 'to' && planViewState === 'init') {
         changePlanViewState('result-summarized')
       }
-      setLocation({
+
+      const locationUpdate: SetLocation = ((({
         type: params.type,
         location: {
           name: inputValue,
           ...lonlat(markerLocation)
         }
-      })
+      }): any): SetLocation)
+
+      setLocation(locationUpdate)
     } else {
       console.warn('Navigation params not set for this route!')
     }
@@ -194,13 +203,16 @@ export default class LocationSelection extends Component {
       if (params.type === 'to' && planViewState === 'init') {
         changePlanViewState('result-summarized')
       }
-      setLocation({
+
+      const locationUpdate: SetLocation = ((({
         type: params.type,
         location: {
           ...lonlat(value.geometry.coordinates),
           name: value.properties.label
         }
-      })
+      }): any): SetLocation)
+
+      setLocation(locationUpdate)
     } else {
       console.warn('Navigation params not set for this route!')
     }
@@ -458,7 +470,6 @@ type LocationSelectionStyle = {
   confirmMapLocationButtonText: styleOptions,
   container: styleOptions,
   contentContainer: styleOptions,
-  currentLocationTextInput: styleOptions,
   geocodeResult: styleOptions,
   inputContainer: styleOptions,
   map: styleOptions,
@@ -493,10 +504,6 @@ const locationSelectionStyle: LocationSelectionStyle = {
   contentContainer: {
     flex: 1,
     paddingTop: 10
-  },
-  currentLocationTextInput: {
-    color: '#15b3ff',
-    fontWeight: 'bold'
   },
   geocodeResult: {
     fontSize: 16,

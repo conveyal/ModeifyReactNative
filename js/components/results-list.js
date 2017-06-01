@@ -69,17 +69,11 @@ type Props = {
   toLocation: Location
 }
 
-type RowDetailToggle = {
-  [key: number]: boolean
-}
-
 type State = {
   isPending: boolean,
   noPlans?: boolean,
-  options: ListView.DataSource,
   resultIndex?: number,
-  resultText: string,
-  rowDetailToggle: RowDetailToggle
+  resultText: string
 }
 
 export default class ResultsList extends Component {
@@ -95,10 +89,8 @@ export default class ResultsList extends Component {
   state = {
     isPending: true,
     noPlans: true,
-    options: makeNewDatasourceListview(),
     resultIndex: 0,
-    resultText: 'No results yet',
-    rowDetailToggle: {}
+    resultText: 'No results yet'
   }
 
   componentWillMount () {
@@ -112,12 +104,10 @@ export default class ResultsList extends Component {
   shouldComponentUpdate (nextProps: Props, nextState: State) {
     return nextProps.planViewState !== this.props.planViewState ||
       nextState.isPending !== this.state.isPending ||
-      nextState.resultIndex !== this.state.resultIndex ||
-      !isEqual(nextState.rowDetailToggle, this.state.rowDetailToggle)
+      nextState.resultIndex !== this.state.resultIndex
   }
 
   _calculateState (nextProps: Props, returnFullState?: boolean): State {
-    const {options, rowDetailToggle} = this.state
     let {resultIndex} = this.state
     const {searches} = nextProps
 
@@ -130,9 +120,7 @@ export default class ResultsList extends Component {
     const nextState: State = {
       isPending: currentSearch.pending,
       noPlans: false,
-      options,
-      resultText: '',
-      rowDetailToggle
+      resultText: ''
     }
 
     this.routeResult.setLocation('from', nextProps.fromLocation)
@@ -156,14 +144,12 @@ export default class ResultsList extends Component {
     this.routeResult.parseResponse(currentSearch.planResponse)
 
     if (this.routeResult.hasChanged) {
-      nextState.options = this._getRows({})
       nextState.resultIndex = resultIndex + 1
-      nextState.rowDetailToggle = {}
     }
 
     this.routeResult.hasChanged = false
 
-    const numResults: number = nextState.options.getRowCount()
+    const numResults: number = this.routeResult.getResults().length
 
     if (currentSearch.pending) {
       nextState.resultText = 'Calculating...'
@@ -196,20 +182,6 @@ export default class ResultsList extends Component {
           fromLocation,
           toLocation))
     return option.dataSource
-  }
-
-  _getRows (nextRowDetailToggle: RowDetailToggle): ListView.DataSource {
-    const results = this.routeResult.getResults()
-    let rows = results && results.length > 0
-      ? results.map((result, idx) => {
-          if (nextRowDetailToggle[idx]) {
-            // return a new object so ListView re-renders
-            return Object.assign({}, result)
-          }
-          return result
-        })
-      : []
-    return this.state.options.cloneWithRows(rows)
   }
 
   // ------------------------------------------------------------------------
@@ -636,9 +608,6 @@ function makeNewDatasourceListview (): ListView.DataSource  {
 type ResultListStyle = {
   cost: styleOptions,
   detailsButton: styleOptions,
-  infoText: styleOptions,
-  modeIcon: styleOptions,
-  optionCard: styleOptions,
   optionContent: styleOptions,
   optionDetailDescription: styleOptions,
   optionDetailsRow: styleOptions,
@@ -647,11 +616,9 @@ type ResultListStyle = {
   optionSummary: styleOptions,
   optionTimeSummary: styleOptions,
   optionTitle: styleOptions,
-  resultListContainer: styleOptions,
   routeStyleAlight: styleOptions,
   routeStyleBoard: styleOptions,
   routeStyleTake: styleOptions,
-  segmentRow: styleOptions,
   segmentRouteBackground: styleOptions,
   segments: styleOptions,
   segmentsContainer: styleOptions,
@@ -671,7 +638,6 @@ type ResultListStyle = {
   time: styleOptions,
   timeContainer: styleOptions,
   timeMinutes: styleOptions,
-  transferIcon: styleOptions,
   walkBikeTimeText: styleOptions,
   walkBikeTimeContainer: styleOptions
 }
@@ -695,22 +661,6 @@ const resultListStyle: ResultListStyle = {
     right: 10,
     top: 10,
     width: 100
-  },
-  infoText: {
-    color: '#fff',
-    fontSize: 16
-  },
-  modeIcon: {...Platform.select({
-    android: {
-      height: 29
-    },
-    ios: {
-      height: 28
-    }
-  })},
-  optionCard: {
-    borderRadius: 5,
-    marginVertical: 5
   },
   optionContent: {
     backgroundColor: '#fff'
@@ -742,12 +692,6 @@ const resultListStyle: ResultListStyle = {
     color: '#fff',
     fontSize: 16
   },
-  resultListContainer: {
-    backgroundColor: '#5a7491',
-    paddingHorizontal: 10,
-    paddingBottom: 50,
-    paddingTop: 10
-  },
   routeStyleAlight: {
     height: 20,
     left: 13,
@@ -768,9 +712,6 @@ const resultListStyle: ResultListStyle = {
     position: 'absolute',
     top: 0,
     width: 24
-  },
-  segmentRow: {
-    flexDirection: 'row'
   },
   segmentRouteBackground: {
     flex: 1
@@ -873,10 +814,6 @@ const resultListStyle: ResultListStyle = {
   },
   timeMinutes: {
     fontSize: 18
-  },
-  transferIcon: {
-    height: 15,
-    paddingLeft: 3
   },
   walkBikeTimeText: {
     color: '#748395'

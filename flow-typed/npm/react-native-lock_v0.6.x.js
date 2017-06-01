@@ -14,6 +14,7 @@
  */
 
 declare class Lock {
+  constructor(Object): Lock;
   show(
     {
       authParams: {

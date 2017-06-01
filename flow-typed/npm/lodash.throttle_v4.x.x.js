@@ -14,5 +14,5 @@
  */
 
 declare module 'lodash.throttle' {
-  declare export default function throttle<T>(args: T): (T) => void
+  declare export default function throttle<T>((T) => void, number): (T) => void
 }

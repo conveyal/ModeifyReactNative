@@ -307,7 +307,7 @@ export function getSegmentDetailsForOption (
   segmentRowIdx = 1
 
   segments = segments.concat(
-    narrativeDirections(option.access[0].streetEdges, segmentRowIdx)
+    narrativeDirections(option.access[0].streetEdges)
   )
 
   // Add transit segments
