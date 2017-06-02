@@ -1,8 +1,8 @@
 // @flow
 
-import { connect } from 'react-redux'
+import {setAuth0User} from '@conveyal/woonerf/src/actions/user'
+import {connect} from 'react-redux'
 
-import {setAuth0User} from '../actions/user'
 import Login from '../components/login'
 
 const mapStateToProps = () => ({})

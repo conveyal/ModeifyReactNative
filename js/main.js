@@ -6,17 +6,21 @@ import React from 'react'
 import {addNavigationHelpers, DrawerNavigator} from 'react-navigation'
 import {connect, Provider} from 'react-redux'
 
-import DrawerContent from './components/drawer-content'
 import App from './containers/app.js'
+import DrawerContent from './containers/drawer-content'
 import {About, Legal} from './containers/info-screens'
 import LocationSelection from './containers/location-selection'
 import OptionSelected from './containers/option-selected'
+import Profile from './containers/profile'
 import ServiceAlerts from './containers/service-alerts'
 import Settings from './containers/settings'
 import Timing from './containers/timing'
 import reducers from './reducers'
 
 const AppNavigator = DrawerNavigator({
+  // items get rendered in this order,
+  // but some are omitted according to
+  // config in DrawerContent component
   Home: { screen: App },
   LocationSelection: {
     path: 'location-selection/:type',
@@ -26,8 +30,9 @@ const AppNavigator = DrawerNavigator({
     path: 'option-selected/:option',
     screen: OptionSelected
   },
-  Timing: { screen: Timing },
+  Profile: { screen: Profile },
   Settings: { screen: Settings },
+  Timing: { screen: Timing },
   ServiceAlerts: { screen: ServiceAlerts },
   About: { screen: About },
   Legal: { screen: Legal }

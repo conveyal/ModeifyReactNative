@@ -1,12 +1,12 @@
 // @flow
 
+import * as user from '@conveyal/woonerf/src/reducers/user'
 import createOtpReducer from 'otp-react-redux/lib/reducers/create-otp-reducer'
 import qs from 'qs'
 import {handleActions} from 'redux-actions'
 
 import * as app from './app'
 import * as serviceAlerts from './serice-alerts'
-import * as user from './user'
 import {mphToMps, safeParseFloat, safeParseInt} from '../util/convert'
 
 import type {AppConfig, RequestApi} from '../types'

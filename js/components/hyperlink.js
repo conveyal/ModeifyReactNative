@@ -12,7 +12,7 @@ import type {styleOptions} from '../types/rn-style-config'
 
 type Props = {
   children?: React.Element<*>,
-  text: string,
+  text?: string,
   url?: string
 }
 

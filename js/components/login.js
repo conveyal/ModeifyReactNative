@@ -1,7 +1,6 @@
 // @flow
 
 import React, {Component} from 'react'
-import {Image, ScrollView, StyleSheet, Text, View} from 'react-native'
 import Auth0Lock from 'react-native-lock'
 
 const config = require('../../config.json')

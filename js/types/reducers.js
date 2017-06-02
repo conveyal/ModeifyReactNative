@@ -36,7 +36,9 @@ export type ServiceAlertsReducerState = {
 }
 
 export type UserReducerState = {
-  idToken?: string
+  idToken?: string,
+  name?: string,
+  picture?: string
 }
 
 export type ReducersState = {

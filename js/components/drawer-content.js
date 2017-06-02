@@ -1,5 +1,6 @@
 // @flow
 
+import isEqual from 'lodash.isequal'
 import React, {Component} from 'react'
 import {
   Image,
@@ -11,8 +12,11 @@ import {
   TouchableOpacity,
   View
 } from 'react-native'
-import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons'
 import {addNavigationHelpers, DrawerItems, DrawerNavigator} from 'react-navigation'
+
+import Button from './button'
+import Login from '../containers/login'
+import {collapseString} from '../util'
 
 import type {
   NavigationAction,
@@ -21,10 +25,19 @@ import type {
 } from 'react-navigation/src/TypeDefinition'
 import type { DrawerScene } from 'react-navigation/src/views/Drawer/DrawerView'
 
+import type {UserReducer} from '../types/reducers'
+import type {styleOptions} from '../types/rn-style-config'
+
 type Props = {
   getLabel: (scene: DrawerScene) => ?(React.Element<*> | string),
+  logout: () => void,
   navigation: NavigationScreenProp<NavigationState, NavigationAction>,
   renderIcon: (scene: DrawerScene) => ?React.Element<*>,
+  user: UserReducer
+}
+
+type State = {
+  showLogin: boolean
 }
 
 const routesToRenderInMenu = [
@@ -42,6 +55,57 @@ const inactiveBackgroundColor = 'transparent'
 
 export default class DrawerContent extends Component {
   props: Props
+  state: State
+
+  state = {
+    showLogin: false
+  }
+
+  componentWillReceiveProps (nextProps: Props) {
+    if (!isEqual(this.props.user, nextProps.user)) {
+      this.setState({
+        showLogin: false
+      })
+    }
+  }
+
+  // ------------------------------------------------------------------------
+  // handlers
+  // ------------------------------------------------------------------------
+
+  _createNavigationHandlerForRoute = (routeName) => {
+    const {navigation} = this.props
+    return () => {
+      navigation.navigate('DrawerClose')
+      navigation.navigate(routeName)
+    }
+  }
+
+  _onLogin = () => {
+    this.setState({
+      showLogin: true
+    })
+  }
+
+  _onLogout = () => {
+    this.props.logout()
+  }
+
+  _onSignup = () => {
+    this.setState({
+      showLogin: true
+    })
+  }
+
+  _onViewProfilePress = () => {
+    const {navigation} = this.props
+    navigation.navigate('DrawerClose')
+    navigation.navigate('Profile')
+  }
+
+  // ------------------------------------------------------------------------
+  // renderers
+  // ------------------------------------------------------------------------
 
   _renderMenuItems () {
     const {getLabel, navigation, renderIcon} = this.props
@@ -59,10 +123,7 @@ export default class DrawerContent extends Component {
       itemsToRender.push(
         <TouchableOpacity
           key={route.key}
-          onPress={() => {
-            navigation.navigate('DrawerClose');
-            navigation.navigate(route.routeName);
-          }}
+          onPress={this._createNavigationHandlerForRoute(route.routeName)}
         >
           <View style={[styles.menuItem, { backgroundColor }]}>
             {icon
@@ -85,13 +146,55 @@ export default class DrawerContent extends Component {
   }
 
   render () {
+    const {user} = this.props
+    const userLoggedIn: boolean = !!user.idToken
+
     return (
       <ScrollView style={styles.container}>
-        <View style={styles.logoContainer}>
-          <Image
-            source={require('../../assets/cfaz-drawer-logo.png')}
-            style={styles.cfazLogo}
-            />
+        <View>
+          {userLoggedIn
+            ? <View style={styles.userContainer}>
+                <View style={styles.userInfoContainer}>
+                  <Image
+                    source={{ uri: user.picture }}
+                    style={styles.userAvatar}
+                    />
+                  <Text style={styles.userInfoText}>
+                    {collapseString(user.name, 25)}
+                  </Text>
+                </View>
+                <View style={styles.userButtons}>
+                  <Button
+                    containerStyle={styles.userButton}
+                    onPress={this._onViewProfilePress}
+                    text='Profile'
+                    />
+                  <Button
+                    containerStyle={styles.userButton}
+                    onPress={this._onLogout}
+                    text='Logout'
+                    />
+                </View>
+              </View>
+            : <View style={styles.userContainer}>
+                <Image
+                  source={require('../../assets/cfaz-drawer-logo.png')}
+                  style={styles.cfazLogo}
+                  />
+                <View style={styles.userButtons}>
+                  <Button
+                    containerStyle={styles.userButton}
+                    onPress={this._onLogin}
+                    text='Login'
+                    />
+                  <Button
+                    containerStyle={styles.userButton}
+                    onPress={this._onSignup}
+                    text='Sign Up'
+                    />
+                </View>
+              </View>
+          }
         </View>
         {this._renderMenuItems()}
         <TouchableOpacity
@@ -105,16 +208,39 @@ export default class DrawerContent extends Component {
             <Text style={styles.cfnmText}>CAR FREE NEAR ME</Text>
           </View>
         </TouchableOpacity>
+        {this.state.showLogin &&
+          <Login/>
+        }
       </ScrollView>
     )
   }
 }
 
-const styles = StyleSheet.create({
+
+
+type DrawerStyles = {
+  cfazLogo: styleOptions,
+  cfnmContainer: styleOptions,
+  cfnmLogo: styleOptions,
+  cfnmText: styleOptions,
+  container: styleOptions,
+  menuIcon: styleOptions,
+  menuIconInactive: styleOptions,
+  menuItem: styleOptions,
+  menuLabel: styleOptions,
+  userAvatar: styleOptions,
+  userButton: styleOptions,
+  userButtons: styleOptions,
+  userContainer: styleOptions,
+  userInfoContainer: styleOptions,
+  userInfoText: styleOptions
+}
+
+const styleConfig: DrawerStyles = {
   cfazLogo: {
-    flex: 1,
+    height: 50,
     resizeMode: 'contain',
-    width: 300,
+    width: 250,
     ...Platform.select({
       android: {
         marginLeft: 25
@@ -144,10 +270,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1
   },
-  logoContainer: {
-    height: 100,
-    width: 300
-  },
   menuIcon: {
     marginHorizontal: 16,
     width: 24,
@@ -157,11 +279,39 @@ const styles = StyleSheet.create({
     opacity: 0.62
   },
   menuItem: {
-    flexDirection: 'row',
     alignItems: 'center',
+    flexDirection: 'row'
   },
   menuLabel: {
     margin: 16,
     fontWeight: 'bold',
+  },
+  userAvatar: {
+    height: 40,
+    marginRight: 20,
+    resizeMode: 'contain',
+    width: 40
+  },
+  userButton: {
+    marginHorizontal: 20,
+    width: 80
+  },
+  userButtons: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    margin: 20
+  },
+  userContainer: {
+    alignItems: 'center'
+  },
+  userInfoContainer: {
+    flexDirection: 'row',
+    marginTop: 40
+  },
+  userInfoText: {
+    fontSize: 18,
+    paddingTop: 10
   }
-})
+}
+
+const styles: DrawerStyles = StyleSheet.create(styleConfig)
