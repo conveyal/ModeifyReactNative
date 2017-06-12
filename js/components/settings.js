@@ -1,5 +1,6 @@
 // @flow
 
+import throttle from 'lodash.throttle'
 import React, { Component } from 'react'
 import {
   Platform,
@@ -25,7 +26,10 @@ import type {
 
 import type {
   CurrentQuery,
-  ModeifyModeSettings
+  ModeifyModeSettings,
+  ModeifyOpts,
+  PlanPostprocessSettings,
+  UserReducerState
 } from '../types/reducers'
 import type {styleOptions} from '../types/rn-style-config'
 
@@ -36,11 +40,10 @@ type Props = {
   }) => void,
   currentQuery: CurrentQuery,
   navigation: NavigationScreenProp<NavigationRoute, NavigationAction>,
-  planPostprocessSettings: {
-    parkingCost: number,
-    drivingCostPerMile: number
-  },
-  setMode: ({ mode: ModeifyModeSettings }) => void
+  planPostprocessSettings: PlanPostprocessSettings,
+  setMode: ({ mode: ModeifyModeSettings }) => void,
+  updateSettings: ({ settings: ModeifyOpts, user: UserReducerState }) => void,
+  user: UserReducerState
 }
 
 type State = {
@@ -117,14 +120,14 @@ export default class Settings extends Component {
     if (!isValidDecimal(text)) {
       return
     }
-    this._setPostprocessSetting('drivingCostPerMile', text)
+    this._setPostprocessSetting('carCostPerMile', text)
   }
 
   _onParkingCostChange = (text: string) => {
     if (!isValidDecimal(text)) {
       return
     }
-    this._setPostprocessSetting('parkingCost', text)
+    this._setPostprocessSetting('carParkingCost', text)
   }
 
   _onRailPress = () => {
@@ -152,6 +155,7 @@ export default class Settings extends Component {
     newModeSettings[key] = value
     const newMode = Object.assign({}, currentQuery.mode, { settings: newModeSettings })
     setMode({ mode: newMode })
+    this._updateUserSettings(key, value)
   }
 
   _setPostprocessSetting (key: string, value: string) {
@@ -160,6 +164,7 @@ export default class Settings extends Component {
       setting: key,
       value
     })
+    this._updateUserSettings(key, value)
   }
 
   _toggleMode (mode: string) {
@@ -175,6 +180,50 @@ export default class Settings extends Component {
     })
   }
 
+  _updateUserSettings = throttle((key: string, value: string | number ) => {
+      const {updateSettings, user} = this.props
+
+      // check if user is logged in
+      if (!user.idToken) return
+
+      // if user is logged in, update settings
+      const defaultModeSettings: ModeifyOpts = {
+        bikeSpeed: 8,
+        bikeTrafficStress: 4,
+        carCostPerMile: 0.56,
+        carParkingCost: 10,
+        maxBikeTime: 20,
+        maxWalkTime: 15,
+        walkSpeed: 3
+      }
+
+      const partialUpdate = {}
+      partialUpdate[key] = value
+
+      let modeSettings
+      if (user.userMetadata && user.userMetadata.modeify_opts) {
+        modeSettings = Object.assign(
+          {},
+          user.userMetadata.modeify_opts,
+          defaultModeSettings,
+          partialUpdate
+        )
+      } else {
+        modeSettings = Object.assign(
+          {},
+          defaultModeSettings,
+          partialUpdate
+        )
+      }
+
+      updateSettings({
+        settings: modeSettings,
+        user
+      })
+    },
+    500
+  )
+
   // ------------------------------------------------------------------------
   // renderers
   // ------------------------------------------------------------------------
@@ -188,6 +237,7 @@ export default class Settings extends Component {
 
   _renderModesContent () {
     const {mode} = this.props.currentQuery
+
     const {
       bikeSpeed,
       bikeTrafficStress,
@@ -195,7 +245,10 @@ export default class Settings extends Component {
       maxWalkTime,
       walkSpeed
     } = mode.settings
-    const {planPostprocessSettings} = this.props
+    const {
+      carCostPerMile,
+      carParkingCost
+    } = this.props.planPostprocessSettings
 
     return (
       <View style={styles.content}>
@@ -394,7 +447,7 @@ export default class Settings extends Component {
             keyboardType='numeric'
             onChangeText={this._onParkingCostChange}
             style={styles.numericInput}
-            value={'' + planPostprocessSettings.parkingCost}
+            value={'' + carParkingCost}
             />
           <Text
             style={styles.modeSettingsText}
@@ -405,7 +458,7 @@ export default class Settings extends Component {
             keyboardType='numeric'
             onChangeText={this._onDrivingCostPerMileChange}
             style={styles.numericInput}
-            value={'' + planPostprocessSettings.drivingCostPerMile}
+            value={'' + carCostPerMile}
             />
         </View>
       </View>
@@ -457,6 +510,18 @@ export default class Settings extends Component {
     )
   }
 }
+
+function isValidDecimal (number: string): boolean {
+  return !!number.match(/^\d*(\.\d*)?$/)
+}
+
+function isValidNumericText (number: string): boolean {
+  return !!number.match(/^\d*$/)
+}
+
+// ------------------------------------------------------------------------
+// styling
+// ------------------------------------------------------------------------
 
 type SettingsStyle = {
   content: styleOptions,
@@ -573,11 +638,3 @@ const settingsStyle: SettingsStyle = {
 }
 
 const styles: SettingsStyle = StyleSheet.create(settingsStyle)
-
-function isValidDecimal (number: string): boolean {
-  return !!number.match(/^\d*(\.\d*)?$/)
-}
-
-function isValidNumericText (number: string): boolean {
-  return !!number.match(/^\d*$/)
-}

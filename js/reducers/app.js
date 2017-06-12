@@ -59,8 +59,8 @@ export const reducers = {
 
 export const initialState: AppReducerState = {
   planPostprocessSettings: {
-    parkingCost: 10,
-    drivingCostPerMile: 0.56
+    carCostPerMile: 0.56,
+    carParkingCost: 10
   },
   planViewState: 'init',
   searchingOnMap: false

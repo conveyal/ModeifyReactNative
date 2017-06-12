@@ -4,7 +4,11 @@ import {fetchAction} from '@conveyal/woonerf/fetch'
 import {setAuth0User} from '@conveyal/woonerf/actions/user'
 
 import type {AppConfig} from '../types'
-import type {UserMetadata, UserReducerState} from '../types/reducers'
+import type {
+  ModeifyOpts,
+  UserMetadata,
+  UserReducerState
+} from '../types/reducers'
 
 const config: AppConfig = require('../../config.json')
 
@@ -38,4 +42,15 @@ function saveUserMetadata (
     },
     url: `https://${config.auth0.domain}/api/v2/users/${user.userId}`
   })
+}
+
+export function updateSettings ({
+  settings, user
+}: {
+  settings: ModeifyOpts,
+  user: UserReducerState
+}) {
+  const newMetadata = {...user.userMetadata}
+  newMetadata.modeify_opts = settings
+  return saveUserMetadata(user, newMetadata)
 }

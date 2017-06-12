@@ -28,7 +28,11 @@ import type {
   NavigationScreenProp
 } from 'react-navigation/src/TypeDefinition'
 
-import type {Location, PlanSearch} from '../types/reducers'
+import type {
+  Location,
+  PlanPostprocessSettings,
+  PlanSearch
+} from '../types/reducers'
 import type {
   ModeifyResult,
   SegmentDetail,
@@ -60,10 +64,7 @@ type Props = {
     walkSpeed: number
   },
   navigation: NavigationScreenProp<NavigationRoute, NavigationAction>,
-  planPostprocessSettings: {
-    drivingCostPerMile: number,
-    parkingCost: number
-  },
+  planPostprocessSettings: PlanPostprocessSettings,
   planViewState: string,
   searches: Array<PlanSearch>,
   setActiveItinerary: ({index: number}) => void,
@@ -136,11 +137,11 @@ export default class ResultsList extends Component {
     )
     this.routeResult.setScorerRate(
       'carParkingCost',
-      nextProps.planPostprocessSettings.parkingCost
+      nextProps.planPostprocessSettings.carParkingCost
     )
     this.routeResult.setScorerRate(
       'mileageRate',
-      nextProps.planPostprocessSettings.drivingCostPerMile
+      nextProps.planPostprocessSettings.carCostPerMile
     )
     this.routeResult.parseResponse(currentSearch.planResponse)
 

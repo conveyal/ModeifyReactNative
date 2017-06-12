@@ -1,11 +1,13 @@
 import type {CurrentQuery} from './query'
 import type {TripPlanResponse} from './results'
 
+export type PlanPostprocessSettings = {
+  carCostPerMile: number,
+  carParkingCost: number
+}
+
 export type AppReducerState = {
-  planPostprocessSettings: {
-    parkingCost: number,
-    drivingCostPerMile: number
-  },
+  planPostprocessSettings: PlanPostprocessSettings,
   planViewState: 'init' | 'result-collapsed' | 'result-summarized' | 'result-expanded',
   searchingOnMap: boolean
 }
@@ -39,15 +41,18 @@ type ModeifyPlace = {
   address: string
 }
 
+export type ModeifyOpts = {
+  bikeSpeed: number,
+  bikeTrafficStress: number,
+  carCostPerMile: number,
+  carParkingCost: number,
+  maxBikeTime: number,
+  maxWalkTime: number,
+  walkSpeed: number
+}
+
 export type UserMetadata = {
-  modeify_opts?: {
-    bikeSpeed: number,
-    carCostPerMile: number,
-    carParkingCost: number,
-    maxBikeTime: number,
-    maxWalkTime: number,
-    walkSpeed: number
-  },
+  modeify_opts?: ModeifyOpts,
   modeify_places?: Array<ModeifyPlace>
 }
 
