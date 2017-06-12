@@ -5,6 +5,7 @@ import {View, ScrollView, StyleSheet, Text} from 'react-native'
 import Markdown from 'react-native-simple-markdown'
 
 import Header from './header'
+import tracker from '../util/analytics'
 import {markdownStyles} from '../util/styles'
 
 import type {
@@ -29,6 +30,10 @@ export default class Legal extends Component {
 
   static navigationOptions = {
     drawerLabel: 'LEGAL'
+  }
+
+  componentDidMount () {
+    tracker.trackScreenView('Legal')
   }
 
   render () {

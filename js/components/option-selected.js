@@ -15,6 +15,7 @@ import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons'
 import Header from './header'
 import HyperLink from './hyperlink'
 import ModeifyIcon from './modeify-icon'
+import tracker from '../util/analytics'
 import {getResourcesByTag} from '../util/route-option-resource'
 import {getOptionTags} from '../util/route-result'
 import {headerStyles} from '../util/styles'
@@ -56,6 +57,10 @@ export default class OptionSelected extends Component {
       expandedResources: {},
       resources: []
     }
+  }
+
+  componentDidMount () {
+    tracker.trackScreenView('Option Selected')
   }
 
   componentWillMount () {

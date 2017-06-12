@@ -16,6 +16,7 @@ import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons'
 import Button from './button'
 import Header from './header'
 import {collapseString, createDataSource} from '../util'
+import tracker from '../util/analytics'
 
 import type {
   NavigationAction,
@@ -35,6 +36,10 @@ type Props = {
 
 export default class Profile extends Component {
   props: Props
+
+  componentDidMount () {
+    tracker.trackScreenView('Profile')
+  }
 
   // ------------------------------------------------------------------------
   // handlers

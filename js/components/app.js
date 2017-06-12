@@ -8,6 +8,7 @@ import Header from './header'
 import LocationAndSettings from '../containers/location-and-settings'
 import ResultsList from '../containers/results-list'
 import ResultsMap from '../containers/results-map'
+import tracker from '../util/analytics'
 import {headerStyles} from '../util/styles'
 
 import type {
@@ -38,6 +39,10 @@ export default class App extends Component {
         style={{ color: tintColor }}
       />
     )
+  }
+
+  componentDidMount () {
+    tracker.trackScreenView('Home')
   }
 
   render () {

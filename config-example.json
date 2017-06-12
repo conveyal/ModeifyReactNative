@@ -1,4 +1,5 @@
 {
+  "analyticsKey": "UA-12345-1",
   "api": {
     "host": "https://example.com",
     "path": "/api/plan"

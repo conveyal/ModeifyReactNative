@@ -8,6 +8,7 @@ export type RequestApi = {
 }
 
 export type AppConfig = {
+  analyticsKey: string,
   api: RequestApi,
   auth0: {
     clientId: string,

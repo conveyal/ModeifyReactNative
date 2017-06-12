@@ -16,6 +16,7 @@ import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons'
 import Header from './header'
 import HyperLink from './hyperlink'
 import {createDataSource} from '../util'
+import tracker from '../util/analytics'
 
 import type {
   NavigationAction,
@@ -44,6 +45,10 @@ export default class ServiceAlerts extends Component {
         style={{ color: tintColor }}
         />
     )
+  }
+
+  componentDidMount () {
+    tracker.trackScreenView('Service Alerts')
   }
 
   componentWillMount () {

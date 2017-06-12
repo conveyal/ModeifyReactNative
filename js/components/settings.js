@@ -15,6 +15,7 @@ import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons'
 
 import Header from './header'
 import ModeifyIcon from './modeify-icon'
+import tracker from '../util/analytics'
 
 import type {
   NavigationAction,
@@ -71,6 +72,10 @@ export default class Settings extends Component {
         style={{ color: tintColor }}
         />
     )
+  }
+
+  componentDidMount () {
+    tracker.trackScreenView('Settings')
   }
 
   // ------------------------------------------------------------------------

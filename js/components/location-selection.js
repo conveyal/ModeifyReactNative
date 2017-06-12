@@ -21,6 +21,7 @@ import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons'
 
 import Header from './header'
 import {constructMapboxUrl, createDataSource, geolocateLocation} from '../util'
+import tracker from '../util/analytics'
 import {headerStyles} from '../util/styles'
 
 import type {
@@ -97,6 +98,7 @@ export default class LocationSelection extends Component {
 
   componentDidMount () {
     this.refs.input.focus()
+    tracker.trackScreenView('Location Selection')
   }
 
   componentWillUnmount () {

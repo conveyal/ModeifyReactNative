@@ -13,6 +13,8 @@ import type {
   NavigationScreenProp
 } from 'react-navigation/src/TypeDefinition'
 
+import tracker from '../util/analytics'
+
 import type {styleOptions} from '../types/rn-style-config'
 
 type Props = {
@@ -24,6 +26,10 @@ export default class About extends Component {
 
   static navigationOptions = {
     drawerLabel: 'ABOUT'
+  }
+
+  componentDidMount () {
+    tracker.trackScreenView('About')
   }
 
   render () {

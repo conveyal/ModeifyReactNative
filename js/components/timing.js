@@ -13,6 +13,7 @@ import ModalDropdown from 'react-native-modal-dropdown'
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons'
 
 import Header from './header'
+import tracker from '../util/analytics'
 import {
   dayOfWeekOptions,
   endHourOptions,
@@ -55,6 +56,10 @@ export default class Timing extends Component {
         style={{ color: tintColor }}
         />
     )
+  }
+
+  componentDidMount () {
+    tracker.trackScreenView('Timing')
   }
 
   // ------------------------------------------------------------------------

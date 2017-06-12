@@ -3878,6 +3878,10 @@ react-native-drawer-layout@1.2.0:
   dependencies:
     react-native-dismiss-keyboard "1.0.0"
 
+react-native-google-analytics-bridge@^5.0.1:
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/react-native-google-analytics-bridge/-/react-native-google-analytics-bridge-5.0.1.tgz#b4b4eb00e1316d1aaa9f02304912355f8a5797e2"
+
 react-native-html-parser@^0.0.4:
   version "0.0.4"
   resolved "https://registry.yarnpkg.com/react-native-html-parser/-/react-native-html-parser-0.0.4.tgz#eb6f856d161ae46ef38d03a0ceb953397dd4e4fc"
