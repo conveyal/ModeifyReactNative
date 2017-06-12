@@ -35,10 +35,27 @@ export type ServiceAlertsReducerState = {
   success: boolean
 }
 
+type ModeifyPlace = {
+  address: string
+}
+
+export type UserMetadata = {
+  modeify_opts?: {
+    bikeSpeed: number,
+    carCostPerMile: number,
+    carParkingCost: number,
+    maxBikeTime: number,
+    maxWalkTime: number,
+    walkSpeed: number
+  },
+  modeify_places?: Array<ModeifyPlace>
+}
+
 export type UserReducerState = {
   idToken?: string,
   name?: string,
-  picture?: string
+  picture?: string,
+  userMetadata?: UserMetadata
 }
 
 export type ReducersState = {

@@ -24,7 +24,7 @@ import type {
   NavigationScreenProp
 } from 'react-navigation/src/TypeDefinition'
 
-import type {UserReducerState} from '../types/reducers'
+import type {ModeifyPlace, UserReducerState} from '../types/reducers'
 import type {styleOptions} from '../types/rn-style-config'
 
 type Props = {
@@ -45,8 +45,12 @@ export default class Profile extends Component {
   // handlers
   // ------------------------------------------------------------------------
 
-  _onDeleteLocation = (location) => {
-    this.props.deleteLocation(location)
+  _onDeleteLocation = (locationIdx: string) => {
+    const {user} = this.props
+    this.props.deleteLocation({
+      locationIdx: parseInt(locationIdx, 10),
+      user
+    })
   }
 
   _onLogout = () => {
@@ -57,7 +61,11 @@ export default class Profile extends Component {
   // renderers
   // ------------------------------------------------------------------------
 
-  _renderLocation = (location): React.Element<*> => {
+  _renderLocation = (
+    location: ModeifyPlace,
+    sectionId: string,
+    rowId: string
+  ): React.Element<*> => {
     const screenWidth: number = Dimensions.get('window').width
 
     return (
@@ -72,7 +80,7 @@ export default class Profile extends Component {
           </Text>
         </View>
         <TouchableOpacity
-          onPress={() => this._onDeleteLocation(location)}
+          onPress={() => this._onDeleteLocation(rowId)}
           style={styles.locationDeleteButton}
           >
           <MaterialIcon
@@ -87,13 +95,13 @@ export default class Profile extends Component {
   render (): React.Element<*> {
     const {user} = this.props
 
-    const locations = [
-      {
-        address: 'Ronald Reagan Washington National Airport, Arlington, VA, USA undefined'
-      }, {
-        address: '950 Stafford, Arlington, VA'
-      }
-    ]
+    const locations = (
+      (user.userMetadata &&
+        user.userMetadata.modeify_places &&
+        user.userMetadata.modeify_places.length > 0)
+      ? user.userMetadata.modeify_places
+      : []
+    )
 
     let locationsDataSource = createDataSource()
     locationsDataSource = locationsDataSource.cloneWithRows(locations)
