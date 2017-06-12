@@ -5,20 +5,22 @@ export type Location = {
   name: string
 }
 
+export type ModeifyAdvancedModeSettings = {
+  bikeSpeed: number,
+  bikeTrafficStress: number,
+  maxBikeTime: number,
+  maxWalkTime: number,
+  maxCarTime: number,
+  walkSpeed: number
+}
+
 export type ModeifyModeSettings = {
   bike: boolean,
   bus: boolean,
   cabi: boolean,
   car: boolean,
   rail: boolean,
-  settings: {
-    bikeSpeed: number,
-    bikeTrafficStress: number,
-    maxBikeTime: number,
-    maxWalkTime: number,
-    maxCarTime: number,
-    walkSpeed: number
-  },
+  settings: ModeifyAdvancedModeSettings,
   walk: boolean
 }
 

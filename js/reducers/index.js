@@ -7,6 +7,7 @@ import {handleActions} from 'redux-actions'
 
 import * as app from './app'
 import * as serviceAlerts from './serice-alerts'
+import {defaultModeSettings} from '../util'
 import {mphToMps, safeParseFloat, safeParseInt} from '../util/convert'
 
 import type {AppConfig, RequestApi} from '../types'
@@ -92,14 +93,7 @@ const initialOtpQuery: CurrentQuery = {
     cabi: true,
     car: true,
     rail: true,
-    settings: {
-      bikeSpeed: 8,
-      bikeTrafficStress: 4,
-      maxBikeTime: 20,
-      maxWalkTime: 15,
-      maxCarTime: 45,
-      walkSpeed: 3
-    },
+    settings: defaultModeSettings,
     walk: true
   },
   time: {

@@ -3,7 +3,10 @@
 import lonlat from '@conveyal/lonlat'
 import {ListView, PixelRatio} from 'react-native'
 
-const config = require('../../config.json')
+import type {AppConfig} from '../types'
+import type {ModeifyAdvancedModeSettings} from '../types/query'
+
+const config: AppConfig = require('../../config.json')
 
 export function collapseString (text: string, maxLength: number): string {
   let trimmedString: string = text.substr(0, maxLength)
@@ -22,6 +25,15 @@ export function constructMapboxUrl (tileset: string) {
 
 export function createDataSource () {
   return new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2})
+}
+
+export const defaultModeSettings: ModeifyAdvancedModeSettings = {
+  bikeSpeed: 8,
+  bikeTrafficStress: 4,
+  maxBikeTime: 20,
+  maxWalkTime: 15,
+  maxCarTime: 45,
+  walkSpeed: 3
 }
 
 export function geolocateLocation (locationType: string, setLocation: Function) {

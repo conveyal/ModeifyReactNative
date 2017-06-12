@@ -204,8 +204,8 @@ export default class Settings extends Component {
       if (user.userMetadata && user.userMetadata.modeify_opts) {
         modeSettings = Object.assign(
           {},
-          user.userMetadata.modeify_opts,
           defaultModeSettings,
+          user.userMetadata.modeify_opts,
           partialUpdate
         )
       } else {

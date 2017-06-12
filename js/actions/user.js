@@ -27,13 +27,18 @@ function saveUserMetadata (
   user: UserReducerState,
   newMetadata: UserMetadata
 ) {
+  console.log(newMetadata)
   return fetchAction({
     next: (err, res) => {
       if (err) {
         console.error(err)
         alert('An error occurred while trying to save user data.  Try again later')
       } else {
-        return setAuth0User(res.value)
+        // camel casize raw response
+        const newUserData = res.value
+        newUserData.userMetadata = newUserData.user_metadata
+        delete newUserData.user_metadata
+        return setAuth0User(newUserData)
       }
     },
     options: {
