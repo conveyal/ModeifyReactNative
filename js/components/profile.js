@@ -28,7 +28,10 @@ import type {ModeifyPlace, UserReducerState} from '../types/reducers'
 import type {styleOptions} from '../types/rn-style-config'
 
 type Props = {
-  deleteLocation: (Object) => void,
+  deleteFavorite: ({
+    favoriteIdx: number,
+    user: UserReducerState
+  }) => void,
   logout: () => void,
   navigation: NavigationScreenProp<NavigationRoute, NavigationAction>,
   user: UserReducerState
@@ -45,10 +48,10 @@ export default class Profile extends Component {
   // handlers
   // ------------------------------------------------------------------------
 
-  _onDeleteLocation = (locationIdx: string) => {
+  _onDeleteLocation = (favoriteIdx: string) => {
     const {user} = this.props
-    this.props.deleteLocation({
-      locationIdx: parseInt(locationIdx, 10),
+    this.props.deleteFavorite({
+      favoriteIdx: parseInt(favoriteIdx, 10),
       user
     })
   }

@@ -2,7 +2,8 @@
 
 import lonlat from '@conveyal/lonlat'
 import isEqual from 'lodash.isequal'
-import {autocomplete, reverse} from 'isomorphic-mapzen-search'
+import isNumber from 'lodash.isnumber'
+import {autocomplete, reverse, search} from 'isomorphic-mapzen-search'
 import throttle from 'lodash.throttle'
 import React, {Component} from 'react'
 import {
@@ -20,14 +21,21 @@ import MapView from 'react-native-maps'
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons'
 
 import Header from './header'
-import {constructMapboxUrl, createDataSource, geolocateLocation} from '../util'
+import {
+  collapseString,
+  constructMapboxUrl,
+  createDataSource,
+  geolocateLocation
+} from '../util'
 import tracker from '../util/analytics'
 import {headerStyles} from '../util/styles'
 
 import type {
   AutocompleteParams,
+  IMSResponse,
   MapzenResult,
-  ReverseParams
+  ReverseParams,
+  SearchParams
 } from 'isomorphic-mapzen-search'
 import type {
   NavigationAction,
@@ -35,8 +43,8 @@ import type {
   NavigationScreenProp
 } from 'react-navigation/src/TypeDefinition'
 
-import type {AppConfig, MapRegion} from '../types'
-import type {CurrentQuery} from '../types/reducers'
+import type {AppConfig, Favorite, MapRegion} from '../types'
+import type {CurrentQuery, UserReducerState} from '../types/reducers'
 import type {styleOptions} from '../types/rn-style-config'
 
 const config: AppConfig = require('../../config.json')
@@ -50,6 +58,12 @@ type SetLocation = {
   location: Location
 }
 
+type UpdateFavorite = {
+  oldLocationAddress: number,
+  newLocationData: Favorite,
+  user: UserReducerState
+}
+
 type Props = {
   changePlanViewState: (string) => void,
   clearLocation: () => void,
@@ -58,7 +72,9 @@ type Props = {
   planViewState: string,
   searchingOnMap: boolean,
   setLocation: (SetLocation) => void,
-  setSearchingOnMap: (boolean) => void
+  setSearchingOnMap: (boolean) => void,
+  updateFavorite: (UpdateFavorite) => void,
+  user: UserReducerState
 }
 
 type State = {
@@ -166,59 +182,67 @@ export default class LocationSelection extends Component {
   }
 
   _onConfirmMapLocation = () => {
-    const {
-      changePlanViewState,
-      navigation,
-      planViewState,
-      setLocation,
-      setSearchingOnMap
-    } = this.props
     const {inputValue, markerLocation} = this.state
-    const {params} = navigation.state
 
-    setSearchingOnMap(false)  // temp fix for https://github.com/airbnb/react-native-maps/issues/453
-    if (params) {
-      if (params.type === 'to' && planViewState === 'init') {
-        changePlanViewState('result-summarized')
-      }
+    this._setLocation(({
+      name: inputValue,
+      ...lonlat(markerLocation)
+    }:any ))
 
-      const locationUpdate: SetLocation = ((({
-        type: params.type,
-        location: {
-          name: inputValue,
-          ...lonlat(markerLocation)
+    this.props.setSearchingOnMap(false)  // temp fix for https://github.com/airbnb/react-native-maps/issues/453
+  }
+
+  _onFavoriteSelect (favorite: Favorite) {
+    if (!isNumber(favorite.lat)) {
+      // geocode legacy favorites without lat/lon
+      const searchQuery: SearchParams = (Object.assign(
+        {},
+        config.geocoderSettings,
+        {
+          text: favorite.address
         }
-      }): any): SetLocation)
+      ): any)
 
-      setLocation(locationUpdate)
+      search(searchQuery)
+        .then((results: IMSResponse) => {
+          if (results.features && results.features.length > 0) {
+            const firstFeature: MapzenResult = results.features[0]
+            const gps = lonlat(firstFeature.geometry.coordinates)
+            const updateLocationParams: UpdateFavorite = (({
+              oldLocationAddress: favorite.address,
+              newLocationData: {
+                address: firstFeature.properties.label,
+                ...gps
+              },
+              user: this.props.user
+            }): any)
+            this.props.updateFavorite(updateLocationParams)
+            this._setLocation((({
+              name: firstFeature.properties.label,
+              ...gps
+            }): any))
+          } else {
+            alert('Could not locate this favorite!')
+          }
+        })
+        .catch((err) => {
+          console.error(err)
+          alert('Could not locate this favorite!')
+        })
     } else {
-      console.warn('Navigation params not set for this route!')
+      this._setLocation((({
+        address: favorite.address,
+        lat: favorite.lat,
+        lon: favorite.lon
+      }): any))
     }
-
-    navigation.goBack()
   }
 
   _onGeocodeResultSelect = (value: MapzenResult) => {
-    const {changePlanViewState, navigation, planViewState, setLocation} = this.props
-    const {params} = navigation.state
-    if (params) {
-      if (params.type === 'to' && planViewState === 'init') {
-        changePlanViewState('result-summarized')
-      }
-
-      const locationUpdate: SetLocation = ((({
-        type: params.type,
-        location: {
-          ...lonlat(value.geometry.coordinates),
-          name: value.properties.label
-        }
-      }): any): SetLocation)
-
-      setLocation(locationUpdate)
-    } else {
-      console.warn('Navigation params not set for this route!')
-    }
-    navigation.goBack()
+    this._setLocation(({
+      ...lonlat(value.geometry.coordinates),
+      name: value.properties.label
+    }: any))
   }
 
   _onMapRegionChange = (region: MapRegion) => {
@@ -239,7 +263,7 @@ export default class LocationSelection extends Component {
     )
 
     reverse(reverseQuery)
-      .then((geojson) => {
+      .then((geojson: IMSResponse) => {
         const {features} = geojson
         if (
           lonlat.isEqual(
@@ -285,6 +309,26 @@ export default class LocationSelection extends Component {
         params.type,
         setLocation
       )
+    } else {
+      console.warn('Navigation params not set for this route!')
+    }
+    navigation.goBack()
+  }
+
+  _setLocation (locationData: Location) {
+    const {changePlanViewState, navigation, planViewState, setLocation} = this.props
+    const {params} = navigation.state
+    if (params) {
+      if (params.type === 'to' && planViewState === 'init') {
+        changePlanViewState('result-summarized')
+      }
+
+      const locationUpdate: SetLocation = ((({
+        type: params.type,
+        location: locationData
+      }): any): SetLocation)
+
+      setLocation(locationUpdate)
     } else {
       console.warn('Navigation params not set for this route!')
     }
@@ -364,7 +408,7 @@ export default class LocationSelection extends Component {
   }
 
   _renderResults () {
-    const {currentQuery, navigation} = this.props
+    const {currentQuery, navigation, user} = this.props
     const {
       inputValue,
       noGeocodeResultsFound,
@@ -372,6 +416,8 @@ export default class LocationSelection extends Component {
       selectingOnMap
     } = this.state
     const {params} = navigation.state
+
+    if (selectingOnMap) return null
 
     if (!params) throw new Error('Navigation params not set!')
 
@@ -385,11 +431,28 @@ export default class LocationSelection extends Component {
         break
     }
 
-    if (selectingOnMap) return null
+    const hasFavorites: boolean = (
+      user &&
+      user.userMetadata &&
+      user.userMetadata.modeify_places &&
+      user.userMetadata.modeify_places.length > 0
+    )
+    const showSearchOnly: boolean = (
+      inputValue !== undefined &&
+      inputValue.length > 3 &&
+      !noGeocodeResultsFound
+    )
+
+    let favorites: ListView.DataSource
+    if (hasFavorites) {
+      favorites = createDataSource()
+      favorites = favorites.cloneWithRows(user.userMetadata.modeify_places)
+    }
 
     return (
       <View style={styles.resultContainer}>
-        {otherFieldValue !== 'Current Location' &&
+        {!showSearchOnly &&
+          otherFieldValue !== 'Current Location' &&
           <TouchableOpacity
             onPress={this._setAsCurrentLocation}
             style={styles.resultSelectionButton}
@@ -403,18 +466,20 @@ export default class LocationSelection extends Component {
             </Text>
           </TouchableOpacity>
         }
-        <TouchableOpacity
-          onPress={this._selectOnMap}
-          style={styles.resultSelectionButton}
-          >
-          <Image
-            source={require('../../assets/map.png')}
-            style={styles.resultSelectionButtonImage}
-            />
-          <Text style={styles.resultSelectionButtonText}>
-            Selection Location on Map
-          </Text>
-        </TouchableOpacity>
+        {!showSearchOnly &&
+          <TouchableOpacity
+            onPress={this._selectOnMap}
+            style={styles.resultSelectionButton}
+            >
+            <Image
+              source={require('../../assets/map.png')}
+              style={styles.resultSelectionButtonImage}
+              />
+            <Text style={styles.resultSelectionButtonText}>
+              Selection Location on Map
+            </Text>
+          </TouchableOpacity>
+        }
         {inputValue !== 'Current Location' &&
           <View>
             <View style={styles.resultDividerContainer}>
@@ -432,7 +497,7 @@ export default class LocationSelection extends Component {
                       </Text>
                     </TouchableOpacity>
                   )}
-                />
+                  />
               : <Text>{
                 (inputValue === undefined
                   || inputValue.length < 4)
@@ -442,6 +507,32 @@ export default class LocationSelection extends Component {
                     : 'Searching...')}
                 </Text>
             )}
+          </View>
+        }
+        {!showSearchOnly &&
+          hasFavorites &&
+          <View>
+            <View style={styles.resultDividerContainer}>
+              <Text style={styles.resultDividerText}>Favorites</Text>
+            </View>
+            <ListView
+              dataSource={favorites}
+              renderRow={(favorite: Favorite) => (
+                <TouchableOpacity
+                  onPress={() => this._onFavoriteSelect(favorite)}
+                  style={styles.favorite}
+                  >
+                  <MaterialIcon
+                    name='heart'
+                    size={30}
+                    />
+                  <Text style={styles.favoriteText}>
+                    {collapseString(favorite.address, 37)}
+                  </Text>
+                </TouchableOpacity>
+              )
+            }
+            />
           </View>
         }
       </View>
@@ -472,6 +563,8 @@ type LocationSelectionStyle = {
   confirmMapLocationButtonText: styleOptions,
   container: styleOptions,
   contentContainer: styleOptions,
+  favorite: styleOptions,
+  favoriteText: styleOptions,
   geocodeResult: styleOptions,
   inputContainer: styleOptions,
   map: styleOptions,
@@ -506,6 +599,14 @@ const locationSelectionStyle: LocationSelectionStyle = {
   contentContainer: {
     flex: 1,
     paddingTop: 10
+  },
+  favorite: {
+    flexDirection: 'row'
+  },
+  favoriteText: {
+    fontSize: 16,
+    marginLeft: 10,
+    paddingTop: 5
   },
   geocodeResult: {
     fontSize: 16,

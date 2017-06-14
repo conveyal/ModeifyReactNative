@@ -1,7 +1,10 @@
 // @flow
 
+import isNumber from 'lodash.isnumber'
 import React, {Component} from 'react'
 import {
+  Image,
+  Linking,
   Platform,
   StyleSheet,
   Text,
@@ -22,22 +25,114 @@ import type {
   NavigationScreenProp
 } from 'react-navigation/src/TypeDefinition'
 
-import type {CurrentQuery, Location} from '../types/reducers'
+import type {CurrentQuery, Location, UserReducerState} from '../types/reducers'
 import type {styleOptions} from '../types/rn-style-config'
 
 type Props = {
+  addFavorite: ({
+    locationAddress: string,
+    user: UserReducerState
+  }) => void,
   changePlanViewState: (string) => void,
   currentQuery: CurrentQuery,
+  deleteFavorite: ({
+    favoriteIdx: number,
+    user: UserReducerState
+  }) => void,
   navigation: NavigationScreenProp<NavigationRoute, NavigationAction>,
   planViewState: string,
-  switchLocations: () => void
+  switchLocations: () => void,
+  user: UserReducerState
 }
+
+type State = {
+  locationIsCurrentLocation: boolean,
+  locationIsFavorite: boolean,
+  locationMenuTop: number,
+  locationMenuType: string,
+  showingLocationMenu: boolean
+}
+
+const Linking2: {
+  canOpenURL: (url: string) => Promise<boolean>,
+  openURL: (string) => void
+} = Linking
 
 export default class LocationAndSettings extends Component {
   props: Props
+  state: State
+
+  state = {
+    locationIsCurrentLocation: false,
+    locationIsFavorite: false,
+    locationMenuTop: 20,
+    locationMenuType: '',
+    showingLocationMenu: false
+  }
+
+  componentWillReceiveProps (nextProps: Props) {
+    // refresh menu state if menu is open
+    const {locationMenuType, showingLocationMenu} = this.state
+    if (showingLocationMenu) {
+      if (locationMenuType === 'from') {
+        this._onFromMenuPress()
+      } else {
+        this._onToMenuPress()
+      }
+    }
+  }
+
+  _getLocationData (type: 'from' | 'to', props: Props): {
+    isCurrent: boolean,
+    isFavorite: boolean
+  } {
+
+    const {currentQuery, user} = props
+
+    const location: Location = currentQuery[type]
+
+    return {
+      isCurrent: location.currentLocation,
+      isFavorite: (
+        user.idToken &&
+        user.userMetadata &&
+        user.userMetadata.modeify_places &&
+        getfavoriteIdx(location, user) > -1
+      )
+    }
+  }
+
+  _setMenuState (type: 'from' | 'to', props: Props) {
+    const locationData = this._getLocationData(type, props)
+    this.setState({
+      locationIsCurrentLocation: locationData.isCurrent,
+      locationIsFavorite: locationData.isFavorite,
+      locationMenuTop: type === 'from' ? 20 : 40,
+      locationMenuType: type,
+      showingLocationMenu: true
+    })
+  }
+
+  // --------------------------------------------------
+  // handlers
+  // --------------------------------------------------
+
+  _onCloseLocationMenu = () => {
+    this.setState({
+      locationIsCurrentLocation: false,
+      locationIsFavorite: false,
+      locationMenuTop: 20,
+      locationMenuType: '',
+      showingLocationMenu: false
+    })
+  }
 
   _onExpand = () => {
     this.props.changePlanViewState('result-collapsed')
+  }
+
+  _onFromMenuPress = () => {
+    this._setMenuState('from', this.props)
   }
 
   _onFromPress = () => {
@@ -60,13 +155,83 @@ export default class LocationAndSettings extends Component {
     this.props.navigation.navigate('Timing')
   }
 
+  _onToggleFavorite = () => {
+    const {addFavorite, currentQuery, deleteFavorite, user} = this.props
+    const {
+      locationIsCurrentLocation,
+      locationIsFavorite,
+      locationMenuType
+    } = this.state
+
+    const location: Location = currentQuery[locationMenuType]
+
+    if (locationIsCurrentLocation) {
+      return alert('Only addresses can be favorited')
+    }
+
+    if (!user.idToken) {
+      // show login?
+      return alert('You must be logged in to perform this action')
+    }
+
+    if (locationIsFavorite) {
+      deleteFavorite({
+        favoriteIdx: getfavoriteIdx(location, user),
+        user
+      })
+    } else {
+      addFavorite(({
+        location: {
+          address: location.name,
+          lat: location.lat,
+          lon: location.lon
+        },
+        user
+      }: any))
+    }
+  }
+
+  _onToMenuPress = () => {
+    this._setMenuState('to', this.props)
+  }
+
   _onToPress = () => {
     this.props.navigation.navigate('LocationSelection', { type: 'to' })
   }
 
+  _onViewInCFNMPress = () => {
+    const location: Location = this.props.currentQuery[this.state.locationMenuType]
+
+    if (isNumber(location.lat) && isNumber(location.lon)) {
+      const cfnmLink = 'http://carfreenearme.com/dashboard.cfm?' +
+        `cfnmLat=${location.lat}&cfnmLon=${location.lon}` +
+        '&cfnmRadius=0.125#map:art:metrobus:metrorail:cabi:car2go'
+      Linking2.canOpenURL(cfnmLink)
+        .then((supported: boolean) => {
+          if (!supported) {
+            console.log('Can\'t handle url: ', cfnmLink)
+          } else {
+            return Linking2.openURL(cfnmLink)
+          }
+        })
+        .catch(err => console.error('An error occurred', err))
+    }
+  }
+
+  // --------------------------------------------------
+  // handlers
+  // --------------------------------------------------
+
   _renderBothLocations (): React.Element<*> {
     const from: Location = this.props.currentQuery.from
     const to: Location = this.props.currentQuery.to
+
+    const {
+      locationIsFavorite,
+      locationMenuTop,
+      locationMenuType,
+      showingLocationMenu
+    } = this.state
 
     return (
       <View>
@@ -92,6 +257,16 @@ export default class LocationAndSettings extends Component {
                 : 'Where are you coming from?'}
             </Text>
           </TouchableOpacity>
+          <TouchableOpacity
+            onPress={this._onFromMenuPress}
+            style={styles.favoriteDots}
+            >
+            <MaterialIcon
+              color='#BCBEC0'
+              name='dots-vertical'
+              size={30}
+              />
+          </TouchableOpacity>
         </View>
         <View style={styles.locationContainer}>
           <ModeifyIcon
@@ -115,6 +290,16 @@ export default class LocationAndSettings extends Component {
                 : 'Where do you want to go?'}
             </Text>
           </TouchableOpacity>
+          <TouchableOpacity
+            onPress={this._onToMenuPress}
+            style={styles.favoriteDots}
+            >
+            <MaterialIcon
+              color='#BCBEC0'
+              name='dots-vertical'
+              size={30}
+              />
+          </TouchableOpacity>
         </View>
         <TouchableHighlight
           onPress={this._onSwitch}
@@ -133,6 +318,65 @@ export default class LocationAndSettings extends Component {
           {this._renderTiming()}
           {this._renderModes()}
         </View>
+        {showingLocationMenu &&
+          <View style={[
+              styles.menuOverlay,
+              {
+                right: 10,
+                top: locationMenuTop
+              }
+            ]}>
+            <View style={styles.menuHeader}>
+              <Text
+                style={styles.menuHeaderText}
+                >
+                Preferences
+              </Text>
+              <TouchableOpacity
+                onPress={this._onCloseLocationMenu}
+                style={styles.menuCloseButton}
+                >
+                <MaterialIcon
+                  name='close'
+                  size={20}
+                  />
+              </TouchableOpacity>
+            </View>
+            <TouchableOpacity
+              onPress={this._onToggleFavorite}
+              style={[
+                styles.menuRow,
+                styles.menuRowBottom
+              ]}
+              >
+              <MaterialIcon
+                name={`heart${locationIsFavorite ? '' : '-outline'}`}
+                size={20}
+                />
+              <Text
+                style={styles.menuRowText}
+                >
+                {locationIsFavorite
+                  ? 'Remove from Favorites'
+                  : 'Add to Favorites'}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={this._onViewInCFNMPress}
+              style={styles.menuRow}
+              >
+              <Image
+                source={require('../../assets/CFNM-logo.png')}
+                style={styles.cfnmLogo}
+                />
+              <Text
+                style={styles.menuRowText}
+                >
+                View in CarFreeNearMe
+              </Text>
+            </TouchableOpacity>
+          </View>
+        }
       </View>
     )
   }
@@ -304,6 +548,12 @@ const possibleModes: string[] = [
   'walk'
 ]
 
+function getfavoriteIdx (location: Location, user: UserReducerState): number {
+  return user.userMetadata.modeify_places.findIndex((place: { address: string }) =>
+    location.name === place.address
+  )
+}
+
 function getNumModes (currentQuery: CurrentQuery): number {
   return possibleModes.reduce(
     (
@@ -329,14 +579,23 @@ function getCollapsedLocationText (prefix: string, location: ?Location): string 
 }
 
 type LocationAndSettingsStyle = {
+  cfnmLogo: styleOptions,
   collapsed: styleOptions,
   currentLocationText: styleOptions,
   editSearchButton: styleOptions,
+  favoriteDots: styleOptions,
   flexRow: styleOptions,
   homeInputContainer: styleOptions,
   homeInputText: styleOptions,
   locationContainer: styleOptions,
   locationText: styleOptions,
+  menuCloseButton: styleOptions,
+  menuHeader: styleOptions,
+  menuHeaderText: styleOptions,
+  menuOverlay: styleOptions,
+  menuRow: styleOptions,
+  menuRowBottom: styleOptions,
+  menuRowText: styleOptions,
   modeIcon: styleOptions,
   modesContainer: styleOptions,
   settingsContainer: styleOptions,
@@ -348,6 +607,11 @@ type LocationAndSettingsStyle = {
 }
 
 const locationAndSettingsStyle: LocationAndSettingsStyle = {
+  cfnmLogo: {
+    height: 20,
+    resizeMode: 'contain',
+    width: 20
+  },
   collapsed: {
     padding: 5
   },
@@ -367,6 +631,11 @@ const locationAndSettingsStyle: LocationAndSettingsStyle = {
     position: 'absolute',
     right: 0,
     top: 4
+  },
+  favoriteDots: {
+    position: 'absolute',
+    right: 0,
+    top: 5
   },
   flexRow: {
     flexDirection: 'row'
@@ -400,6 +669,50 @@ const locationAndSettingsStyle: LocationAndSettingsStyle = {
     paddingLeft: 10,
     paddingTop: 7
   },
+  menuCloseButton: {
+    position: 'absolute',
+    right: 5,
+    top: 10
+  },
+  menuHeader: {
+    justifyContent: 'center',
+    borderBottomColor: '#BCBEC0',
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    marginBottom: 10,
+    padding: 10
+  },
+  menuHeaderText: {
+    fontWeight: 'bold'
+  },
+  menuOverlay: {
+    borderRadius: 2,
+    backgroundColor: 'white',
+    position: 'absolute',
+    width: 200,
+
+    // Shadow only works on iOS.
+    shadowColor: 'black',
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 3, height: 3 },
+    shadowRadius: 4,
+
+    // This will elevate the view on Android, causing shadow to be drawn.
+    elevation: 8
+  },
+  menuRow: {
+    flexDirection: 'row',
+    marginBottom: 10,
+    marginHorizontal: 10
+  },
+  menuRowBottom: {
+    borderBottomColor: '#BCBEC0',
+    borderBottomWidth: 1,
+    paddingBottom: 5
+  },
+  menuRowText: {
+    marginLeft: 10
+  },
   modeIcon: {
     marginHorizontal: 2
   },
@@ -426,7 +739,7 @@ const locationAndSettingsStyle: LocationAndSettingsStyle = {
   switchButtonContainer: {
     backgroundColor: '#BCBEC0',
     position: 'absolute',
-    right: 30,
+    right: 45,
     top: 24
   },
   timingIcon: {

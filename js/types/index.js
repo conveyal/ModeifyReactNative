@@ -43,6 +43,12 @@ export type AppConfig = {
   serviceAlertsUrl: string
 }
 
+export type Favorite = {
+  address: string,
+  lat?: number,
+  lon?: number
+}
+
 export type MapRegion = {
   latitude: number,
   latitudeDelta: number,

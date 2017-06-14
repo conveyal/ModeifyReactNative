@@ -3,7 +3,7 @@
 import {fetchAction} from '@conveyal/woonerf/fetch'
 import {setAuth0User} from '@conveyal/woonerf/actions/user'
 
-import type {AppConfig} from '../types'
+import type {AppConfig, Favorite} from '../types'
 import type {
   ModeifyOpts,
   UserMetadata,
@@ -12,14 +12,25 @@ import type {
 
 const config: AppConfig = require('../../config.json')
 
-export function deleteLocation ({
-  locationIdx, user
+export function addFavorite ({
+  location, user
 }: {
-  locationIdx: number,
+  location: Favorite,
   user: UserReducerState
 }) {
   const newMetadata = {...user.userMetadata}
-  newMetadata.modeify_places.splice(locationIdx, 1)
+  newMetadata.modeify_places.push(location)
+  return saveUserMetadata(user, newMetadata)
+}
+
+export function deleteFavorite ({
+  favoriteIdx, user
+}: {
+  favoriteIdx: number,
+  user: UserReducerState
+}) {
+  const newMetadata = {...user.userMetadata}
+  newMetadata.modeify_places.splice(favoriteIdx, 1)
   return saveUserMetadata(user, newMetadata)
 }
 
@@ -27,7 +38,6 @@ function saveUserMetadata (
   user: UserReducerState,
   newMetadata: UserMetadata
 ) {
-  console.log(newMetadata)
   return fetchAction({
     next: (err, res) => {
       if (err) {
@@ -47,6 +57,23 @@ function saveUserMetadata (
     },
     url: `https://${config.auth0.domain}/api/v2/users/${user.userId}`
   })
+}
+
+export function updateFavorite ({
+  oldLocationAddress, newLocationData, user
+}: {
+  oldLocationAddress: number,
+  newLocationData: Favorite,
+  user: UserReducerState
+}) {
+  const favoriteIdx: number = user.userMetadata.modeify_places.find(
+    (favorite: Favorite) => {
+      oldLocationAddress === favorite.address
+    }
+  )
+  const newMetadata = {...user.userMetadata}
+  newMetadata.modeify_places.splice(favoriteIdx, 1, newLocationData)
+  return saveUserMetadata(user, newMetadata)
 }
 
 export function updateSettings ({

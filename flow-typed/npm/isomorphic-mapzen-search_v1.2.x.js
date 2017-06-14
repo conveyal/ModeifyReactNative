@@ -13,6 +13,11 @@
  * https://github.com/flowtype/flow-typed
  */
 
+type FocusPoint = {
+  centerPoint: mixed,
+  radius: number
+}
+
 declare module 'isomorphic-mapzen-search' {
   declare export type MapzenResult = {
     geometry: {
@@ -40,10 +45,7 @@ declare module 'isomorphic-mapzen-search' {
         maxLon: number
       }
     },
-    focusPoint?: {
-      centerPoint: mixed,
-      radius: number
-    },
+    focusPoint?: FocusPoint,
     format?: boolean,
     layers?: any,
     sources?: string,
@@ -56,6 +58,29 @@ declare module 'isomorphic-mapzen-search' {
     point: mixed
   }
 
+  declare export type SearchParams = {
+    apiKey: string,
+    boundary?: {
+      circle?: {
+        centerPoint: mixed,
+        radius: number
+      },
+      country?: string,
+      rect?: {
+        minLat: number,
+        minLon: number,
+        maxLat: number,
+        maxLon: number
+      }
+    },
+    focusPoint?: FocusPoint,
+    format?: boolean,
+    size?: number,
+    sources?: string,
+    text: string
+  }
+
   declare export function autocomplete(AutocompleteParams): Promise<IMSResponse>
   declare export function reverse(ReverseParams): Promise<IMSResponse>
+  declare export function search(SearchParams): Promise<IMSResponse>
 }

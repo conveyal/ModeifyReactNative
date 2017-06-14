@@ -6,9 +6,9 @@
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/@conveyal/lonlat/-/lonlat-1.3.0.tgz#3fe586ee21a9159052156959bc3c3eaa22f056f5"
 
-"@conveyal/woonerf@^2.4.0":
-  version "2.4.0"
-  resolved "https://registry.yarnpkg.com/@conveyal/woonerf/-/woonerf-2.4.0.tgz#25c84ee85638a76238aab9d1f61dab4acb7d8263"
+"@conveyal/woonerf@^2.4.1":
+  version "2.4.1"
+  resolved "https://registry.yarnpkg.com/@conveyal/woonerf/-/woonerf-2.4.1.tgz#690202914aa46ecd076d8bee20846eb489f8cca7"
   dependencies:
     auth0-lock "^10.10.2"
     isomorphic-fetch "^2.2.1"
