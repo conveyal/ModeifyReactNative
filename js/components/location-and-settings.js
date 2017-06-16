@@ -17,7 +17,6 @@ import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons'
 
 import DumbTextButton from './dumb-text-button'
 import ModeifyIcon from './modeify-icon'
-import {collapseString} from '../util'
 import {getDayType, getTimeValue} from '../util/date-time'
 
 import type {
@@ -246,6 +245,7 @@ export default class LocationAndSettings extends Component {
             onPress={this._onFromPress}
             >
             <Text
+              numberOfLines={1}
               style={[
                 styles.locationText,
                 from && from.currentLocation
@@ -254,7 +254,7 @@ export default class LocationAndSettings extends Component {
               ]}
               >
               {from
-                ? collapseString(from.name, 36)
+                ? from.name
                 : 'Where are you coming from?'}
             </Text>
           </TouchableOpacity>
@@ -279,6 +279,7 @@ export default class LocationAndSettings extends Component {
             onPress={this._onToPress}
             >
             <Text
+              numberOfLines={1}
               style={[
                 styles.locationText,
                 to && to.currentLocation
@@ -287,7 +288,7 @@ export default class LocationAndSettings extends Component {
               ]}
               >
               {to
-                ? collapseString(to.name, 36)
+                ? to.name
                 : 'Where do you want to go?'}
             </Text>
           </TouchableOpacity>
@@ -383,9 +384,6 @@ export default class LocationAndSettings extends Component {
   }
 
   _renderCollapsedState (): React.Element<*> {
-    let fromText: string = getCollapsedLocationText('From', this.props.currentQuery.from)
-    let toText: string = getCollapsedLocationText('To', this.props.currentQuery.to)
-
     return (
       <View style={styles.collapsed}>
         <TouchableOpacity
@@ -399,7 +397,12 @@ export default class LocationAndSettings extends Component {
               name='start'
               size={15}
               />
-            <Text>{fromText}</Text>
+            <Text
+              numberOfLines={1}
+              style={styles.collapsedText}
+              >
+              {getCollapsedLocationText('From', this.props.currentQuery.from)}
+            </Text>
           </View>
           <View
             style={styles.flexRow}
@@ -409,7 +412,12 @@ export default class LocationAndSettings extends Component {
               name='end'
               size={15}
               />
-            <Text>{toText}</Text>
+            <Text
+              numberOfLines={1}
+              style={styles.collapsedText}
+              >
+              {getCollapsedLocationText('To', this.props.currentQuery.to)}
+            </Text>
           </View>
           <DumbTextButton
             backgroundColor='#999999'
@@ -568,20 +576,17 @@ function getNumModes (currentQuery: CurrentQuery): number {
 }
 
 function getCollapsedLocationText (prefix: string, location: ?Location): string {
-  let outputText: string = location
-    ? `${prefix} ${location.name}`
-    : '${prefix} location not set'
-
-  if (outputText.length > 35) {
-    outputText = outputText.substring(0, 35) + '...'
-  }
-
-  return outputText
+  return (
+    location
+      ? `${prefix} ${location.name}`
+      : '${prefix} location not set'
+  )
 }
 
 type LocationAndSettingsStyle = {
   cfnmLogo: styleOptions,
   collapsed: styleOptions,
+  collapsedText: styleOptions,
   currentLocationText: styleOptions,
   editSearchButton: styleOptions,
   favoriteDots: styleOptions,
@@ -616,13 +621,8 @@ const locationAndSettingsStyle: LocationAndSettingsStyle = {
   collapsed: {
     padding: 5
   },
-  collapsedIcon: {
-    position: 'absolute',
-    right: 5,
-    top: 0
-  },
   collapsedText: {
-
+    marginRight: 120
   },
   currentLocationText: {
     color: '#15b3ff',
@@ -669,6 +669,9 @@ const locationAndSettingsStyle: LocationAndSettingsStyle = {
     fontSize: 16,
     paddingLeft: 10,
     paddingTop: 7
+  },
+  locationTextContainer: {
+    marginRight: 45
   },
   menuCloseButton: {
     position: 'absolute',

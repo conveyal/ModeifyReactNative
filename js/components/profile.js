@@ -15,7 +15,7 @@ import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons'
 
 import Button from './button'
 import Header from './header'
-import {collapseString, createDataSource} from '../util'
+import {createDataSource} from '../util'
 import tracker from '../util/analytics'
 
 import type {
@@ -80,8 +80,11 @@ export default class Profile extends Component {
             { width: screenWidth - 70 }
           ]}
           >
-          <Text style={styles.locationNameText}>
-            {collapseString(location.address, 34)}
+          <Text
+            numberOfLines={1}
+            style={styles.locationNameText}
+            >
+            {location.address}
           </Text>
         </View>
         <TouchableOpacity
@@ -141,8 +144,11 @@ export default class Profile extends Component {
               source={{ uri: user.picture }}
               style={styles.userAvatar}
               />
-            <Text style={styles.userInfoText}>
-              {collapseString(user.name, 30)}
+            <Text
+              numberOfLines={1}
+              style={styles.userInfoText}
+              >
+              {user.name}
             </Text>
           </View>
           <View style={styles.logoutButtonContainer}>
@@ -240,12 +246,14 @@ const styleConfig: ProfileStyles = {
   },
   userAvatar: {
     height: 60,
-    marginRight: 20,
+    marginRight: 15,
     resizeMode: 'contain',
     width: 60
   },
   userInfoText: {
+    flex: 1,
     fontSize: 18,
+    marginRight: 10,
     paddingTop: 18
   }
 }

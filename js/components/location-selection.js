@@ -22,7 +22,6 @@ import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons'
 
 import Header from './header'
 import {
-  collapseString,
   constructMapboxUrl,
   createDataSource,
   geolocateLocation
@@ -113,7 +112,7 @@ export default class LocationSelection extends Component {
   }
 
   componentDidMount () {
-    this.refs.input.focus()
+    // this.refs.input.focus()
     tracker.trackScreenView('Location Selection')
   }
 
@@ -526,8 +525,11 @@ export default class LocationSelection extends Component {
                     name='heart'
                     size={30}
                     />
-                  <Text style={styles.favoriteText}>
-                    {collapseString(favorite.address, 37)}
+                  <Text
+                    numberOfLines={1}
+                    style={styles.favoriteText}
+                    >
+                    {favorite.address}
                   </Text>
                 </TouchableOpacity>
               )
@@ -604,6 +606,7 @@ const locationSelectionStyle: LocationSelectionStyle = {
     flexDirection: 'row'
   },
   favoriteText: {
+    flex: 1,
     fontSize: 16,
     marginLeft: 10,
     paddingTop: 5

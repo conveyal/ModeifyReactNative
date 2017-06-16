@@ -14,6 +14,7 @@ import type {
 
 type Props = {
   currentQuery: CurrentQuery,
+  onLockDismiss: () => void,
   setUser: SetUser
 }
 
@@ -21,7 +22,7 @@ export default class Login extends Component {
   props: Props
 
   componentDidMount() {
-    const {currentQuery, setUser} = this.props
+    const {currentQuery, onLockDismiss, setUser} = this.props
 
     lock.show({
       authParams: {
@@ -29,8 +30,12 @@ export default class Login extends Component {
       },
       closable: true
     }, (err, profile, token) => {
+      console.log('lock callback', err, profile, token)
       if (err) {
         console.log(err)
+        if (err === 'Lock was dismissed by the user') {
+          onLockDismiss()
+        }
         return
       }
 

@@ -1,7 +1,7 @@
 // @flow
 
 import React, {Component} from 'react'
-import {Image, ScrollView, StyleSheet, Text, View} from 'react-native'
+import {Dimensions, Image, StyleSheet, View} from 'react-native'
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons'
 
 import Header from './header'
@@ -57,6 +57,9 @@ export default class App extends Component {
   }
 
   render () {
+    const screenWidth: number = Dimensions.get('window').width
+    const horizontalOffset: number = (screenWidth - 200) / 2
+
     return (
       <View sytle={styles.app}>
         <Header
@@ -65,7 +68,13 @@ export default class App extends Component {
           >
           <Image
             source={require('../../assets/nav-logo.png')}
-            style={styles.navLogo}
+            style={[
+              styles.navLogo,
+              {
+                left: horizontalOffset,
+                right: horizontalOffset
+              }
+            ]}
             />
         </Header>
         <View style={styles.app}>
@@ -95,12 +104,10 @@ const appStyle: AppStyle = {
   },
   navLogo: {
     height: 37,
-    left: 40,
     position: 'absolute',
     resizeMode: 'contain',
-    right: 40,
     top: 10,
-    width: 300
+    width: 200
   }
 }
 

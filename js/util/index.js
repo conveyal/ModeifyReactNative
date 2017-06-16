@@ -8,14 +8,6 @@ import type {ModeifyAdvancedModeSettings} from '../types/query'
 
 const config: AppConfig = require('../../config.json')
 
-export function collapseString (text: string, maxLength: number): string {
-  let trimmedString: string = text.substr(0, maxLength)
-  if (text.length > maxLength) {
-    trimmedString += '...'
-  }
-  return trimmedString
-}
-
 export function constructMapboxUrl (tileset: string) {
   const mapboxAccessToken = config.map.mapbox_access_token
   const isRetina = PixelRatio.get() > 1 ? '@2x' : ''

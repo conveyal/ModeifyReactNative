@@ -98,6 +98,12 @@ export default class OptionSelected extends Component {
     return params.option
   }
 
+  _onLockDismiss = () => {
+    this.setState({
+      showingLogin: false
+    })
+  }
+
   _onLoginPress = () => {
     this.setState({
       showingLogin: true
@@ -351,7 +357,9 @@ export default class OptionSelected extends Component {
           {this._renderResources()}
         </ScrollView>
         {this.state.showingLogin &&
-          <Login />
+          <Login
+            onLockDismiss={this._onLockDismiss}
+            />
         }
       </View>
     )

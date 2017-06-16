@@ -16,7 +16,6 @@ import {addNavigationHelpers, DrawerItems, DrawerNavigator} from 'react-navigati
 
 import Button from './button'
 import Login from '../containers/login'
-import {collapseString} from '../util'
 
 import type {
   NavigationAction,
@@ -79,6 +78,12 @@ export default class DrawerContent extends Component {
       navigation.navigate('DrawerClose')
       navigation.navigate(routeName)
     }
+  }
+
+  _onLockDismiss = () => {
+    this.setState({
+      showLogin: false
+    })
   }
 
   _onLogin = () => {
@@ -159,8 +164,11 @@ export default class DrawerContent extends Component {
                     source={{ uri: user.picture }}
                     style={styles.userAvatar}
                     />
-                  <Text style={styles.userInfoText}>
-                    {collapseString(user.name, 25)}
+                  <Text
+                    numberOfLines={1}
+                    style={styles.userInfoText}
+                    >
+                    {user.name}
                   </Text>
                 </View>
                 <View style={styles.userButtons}>
@@ -209,7 +217,9 @@ export default class DrawerContent extends Component {
           </View>
         </TouchableOpacity>
         {this.state.showLogin &&
-          <Login/>
+          <Login
+            onLockDismiss={this._onLockDismiss}
+            />
         }
       </ScrollView>
     )
@@ -288,7 +298,7 @@ const styleConfig: DrawerStyles = {
   },
   userAvatar: {
     height: 40,
-    marginRight: 20,
+    marginRight: 15,
     resizeMode: 'contain',
     width: 40
   },
@@ -309,7 +319,9 @@ const styleConfig: DrawerStyles = {
     marginTop: 40
   },
   userInfoText: {
+    flex: 1,
     fontSize: 18,
+    marginRight: 10,
     paddingTop: 10
   }
 }
