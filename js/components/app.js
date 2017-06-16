@@ -17,11 +17,15 @@ import type {
   NavigationScreenProp
 } from 'react-navigation/src/TypeDefinition'
 
+import type {CurrentQuery} from '../types/query'
+import type {UserReducerState} from '../types/reducers'
 import type {styleOptions} from '../types/rn-style-config'
 
 type Props = {
-  currentQuery: Object,
-  navigation: NavigationScreenProp<NavigationRoute, NavigationAction>
+  currentQuery: CurrentQuery,
+  loadUserData: (CurrentQuery) => void,
+  navigation: NavigationScreenProp<NavigationRoute, NavigationAction>,
+  user: UserReducerState
 }
 
 type State = {}
@@ -37,12 +41,19 @@ export default class App extends Component {
         name="home"
         size={24}
         style={{ color: tintColor }}
-      />
+        />
     )
   }
 
   componentDidMount () {
     tracker.trackScreenView('Home')
+  }
+
+  componentWillMount () {
+    const {currentQuery, loadUserData, user} = this.props
+    if (!user.idToken) {
+      loadUserData(currentQuery)
+    }
   }
 
   render () {

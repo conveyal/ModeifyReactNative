@@ -1,9 +1,8 @@
 // @flow
 
-import {logout} from '@conveyal/woonerf/src/actions/user'
 import {connect} from 'react-redux'
 
-import {deleteFavorite} from '../actions/user'
+import {deleteFavorite, logout} from '../actions/user'
 import Profile from '../components/profile'
 
 import type {ReducersState} from '../types/reducers'

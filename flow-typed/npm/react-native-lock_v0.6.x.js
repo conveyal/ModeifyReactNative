@@ -13,8 +13,14 @@
  * https://github.com/flowtype/flow-typed
  */
 
+declare class AuthenticationAPI {
+  userInfo(token: string): Promise<Object>;
+  refreshToken(refreshToken: string): Promise<Object>;
+}
+
 declare class Lock {
   constructor(Object): Lock;
+  authenticationAPI(): AuthenticationAPI;
   show(
     {
       authParams: {
@@ -23,7 +29,7 @@ declare class Lock {
       closable: boolean
     },
     (err: Error, profile: Object, token: Object) => void
-  ): void
+  ): void;
 }
 
 declare module 'react-native-lock' {
