@@ -57,7 +57,9 @@ export default class Profile extends Component {
   }
 
   _onLogout = () => {
-    this.props.logout()
+    const {logout, navigation} = this.props
+    navigation.navigate('Home')
+    logout()
   }
 
   // ------------------------------------------------------------------------
@@ -97,6 +99,22 @@ export default class Profile extends Component {
 
   render (): React.Element<*> {
     const {user} = this.props
+
+    // don't show profile if user isn't logged in
+    // in theory this screen should be impossible to access in this state
+    if (!user.idToken) {
+      return (
+        <View>
+          <Header
+            left={{back: true}}
+            navigation={this.props.navigation}
+            right={{close: true}}
+            title='PROFILE'
+            />
+          <Text style={styles.notLoggedInText}>Not logged in.</Text>
+        </View>
+      )
+    }
 
     const locations = (
       (user.userMetadata &&
@@ -165,6 +183,7 @@ type ProfileStyles = {
   locationNameText: styleOptions,
   logoutButton: styleOptions,
   logoutButtonContainer: styleOptions,
+  notLoggedInText: styleOptions,
   userAvatar: styleOptions,
   userInfoText: styleOptions
 }
@@ -212,6 +231,10 @@ const styleConfig: ProfileStyles = {
     width: 80
   },
   logoutButtonContainer: {
+    alignItems: 'center',
+    margin: 10
+  },
+  notLoggedInText: {
     alignItems: 'center',
     margin: 10
   },

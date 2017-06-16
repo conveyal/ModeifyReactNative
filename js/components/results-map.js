@@ -56,6 +56,14 @@ export default class ResultsMap extends Component {
   props: Props
 
   componentDidUpdate () {
+    this._fitToElements()
+  }
+
+  componentDidMount () {
+    this._fitToElements()
+  }
+
+  _fitToElements () {
     if (this.refs.resultsMap && (this.props.fromLocation || this.props.toLocation)) {
       this.refs.resultsMap.fitToElements(true)
     }

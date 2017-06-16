@@ -17,6 +17,7 @@ import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons'
 
 import DumbTextButton from './dumb-text-button'
 import ModeifyIcon from './modeify-icon'
+import {collapseString} from '../util'
 import {getDayType, getTimeValue} from '../util/date-time'
 
 import type {
@@ -253,7 +254,7 @@ export default class LocationAndSettings extends Component {
               ]}
               >
               {from
-                ? from.name
+                ? collapseString(from.name, 36)
                 : 'Where are you coming from?'}
             </Text>
           </TouchableOpacity>
@@ -286,7 +287,7 @@ export default class LocationAndSettings extends Component {
               ]}
               >
               {to
-                ? to.name
+                ? collapseString(to.name, 36)
                 : 'Where do you want to go?'}
             </Text>
           </TouchableOpacity>

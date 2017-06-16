@@ -12,6 +12,7 @@ import {
 } from 'react-native'
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons'
 
+import Login from '../containers/login'
 import Header from './header'
 import HyperLink from './hyperlink'
 import ModeifyIcon from './modeify-icon'
@@ -27,7 +28,7 @@ import type {
 } from 'react-navigation/src/TypeDefinition'
 
 import type {Resource} from '../types'
-import type {Location} from '../types/reducers'
+import type {Location, UserReducerState} from '../types/reducers'
 import type {NonTransitProfile, TransitProfile} from '../types/results'
 import type {styleOptions} from '../types/rn-style-config'
 
@@ -37,13 +38,15 @@ const workTripsPerYear = 235
 type Props = {
   fromLocation: Location,
   navigation: NavigationScreenProp<NavigationRoute, NavigationAction>,
-  toLocation: Location
+  toLocation: Location,
+  user: UserReducerState
 }
 
 type State = {
   expandedResources: {
     [key: number]: boolean
   },
+  showingLogin: boolean,
   resources: Array<Resource>
 }
 
@@ -55,7 +58,8 @@ export default class OptionSelected extends Component {
     super(props)
     this.state = {
       expandedResources: {},
-      resources: []
+      resources: [],
+      showingLogin: false
     }
   }
 
@@ -77,6 +81,17 @@ export default class OptionSelected extends Component {
     )
   }
 
+  componentWillReceiveProps (nextProps: Props) {
+    const {user} = nextProps
+    const {showingLogin} = this.state
+
+    if (user.idToken && showingLogin) {
+      this.setState({
+        showingLogin: false
+      })
+    }
+  }
+
   _getOption (): TransitProfile | NonTransitProfile {
     const {params} = this.props.navigation.state
     if (!params) throw new Error('Navigation params not set')
@@ -84,11 +99,15 @@ export default class OptionSelected extends Component {
   }
 
   _onLoginPress = () => {
-
+    this.setState({
+      showingLogin: true
+    })
   }
 
   _onSignUpPress = () => {
-
+    this.setState({
+      showingLogin: true
+    })
   }
 
   _toggleResource = (idx: number) => {
@@ -98,55 +117,56 @@ export default class OptionSelected extends Component {
   }
 
   _renderAccountContent () {
+    if (this.props.user.idToken) return null
     const option = this._getOption()
-    if (option.directCar) {
-      return (
-        <View style={styles.carpoolContainer}>
-          <Text style={styles.carpoolHeader}>
-            Interested in carpooling with us?
+    // The following apperas on the website, but I'm omitting from the app
+    // if (option.directCar) {
+    //   return (
+    //     <View style={styles.carpoolContainer}>
+    //       <Text style={styles.carpoolHeader}>
+    //         Interested in carpooling with us?
+    //       </Text>
+    //       <Text>
+    //         Join our network to be matched with commuters in your neighborhood soon!
+    //       </Text>
+    //       <Text
+    //         onPress={this._onLoginPress}
+    //         style={styles.signUpButtonText}
+    //         >
+    //         Sign up for carpooling
+    //       </Text>
+    //     </View>
+    //   )
+    // } else {
+    return (
+      <View>
+        <View style={styles.signUpContainer}>
+          <Text style={styles.signUpTitle}>
+            Sign up for CarFreeAtoZ
           </Text>
-          <Text>
-            Join our network to be matched with commuters in your neighborhood soon!
+          <Text style={styles.signUpText}>
+            Create a free account to access special features and receive future updates!
           </Text>
-          <Text
-            onPress={this._onLoginPress}
-            style={styles.signUpButtonText}
+          <TouchableOpacity
+            onPress={this._onSignUpPress}
             >
-            Sign up for carpooling
-          </Text>
+            <Text style={styles.signUpButtonText}>Sign up!</Text>
+          </TouchableOpacity>
         </View>
-      )
-    } else {
-      return (
-        <View>
-          <View style={styles.signUpContainer}>
-            <Text style={styles.signUpTitle}>
-              Sign up for CarFreeAtoZ
-            </Text>
-            <Text style={styles.signUpText}>
-              Create a free account to access special features and receive future updates!
-            </Text>
+        <View style={styles.loginContainer}>
+          <View style={styles.loginTextContainer}>
+            <Text style={styles.loginText}>Already have an account?  </Text>
             <TouchableOpacity
-              onPress={this._onSignUpPress}
+              onPress={this._onLoginPress}
               >
-              <Text style={styles.signUpButtonText}>Sign up!</Text>
+              <Text style={[styles.loginText, styles.loginTouchableText]}>
+                Log in here.
+              </Text>
             </TouchableOpacity>
           </View>
-          <View style={styles.loginContainer}>
-            <View style={styles.loginTextContainer}>
-              <Text style={styles.loginText}>Already have an account?  </Text>
-              <TouchableOpacity
-                onPress={this._onLoginPress}
-                >
-                <Text style={[styles.loginText, styles.loginTouchableText]}>
-                  Log in here.
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
         </View>
-      )
-    }
+      </View>
+    )
   }
 
   _renderCarComparison () {
@@ -330,6 +350,9 @@ export default class OptionSelected extends Component {
           {this._renderAccountContent()}
           {this._renderResources()}
         </ScrollView>
+        {this.state.showingLogin &&
+          <Login />
+        }
       </View>
     )
   }

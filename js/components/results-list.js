@@ -5,6 +5,7 @@ import React, { Component } from 'react'
 import {
   ActivityIndicator,
   Dimensions,
+  Image,
   ListView,
   Platform,
   ScrollView,
@@ -239,6 +240,7 @@ export default class ResultsList extends Component {
   _renderOptionDetails = (
     optionDetail: SegmentDetail
   ): React.Element<*> => {
+    console.log(optionDetail)
     return (
       <View style={[styles.optionDetailsRow, optionDetail.rowStyle]}>
         <View style={styles.optionDetailIcon}>
@@ -294,6 +296,12 @@ export default class ResultsList extends Component {
               style={{
                 backgroundColor: 'transparent'
               }}
+              />
+          }
+          {optionDetail.icon && optionDetail.icon.stopImage &&
+            <Image
+              source={require('../../assets/stop-dot-100.png')}
+              style={styles.stopImage}
               />
           }
           {optionDetail.icon && optionDetail.icon.fontAwesome &&
@@ -618,6 +626,7 @@ type ResultListStyle = {
   segmentShortNameStroke: styleOptions,
   segmentShortNameContainer: styleOptions,
   selectOptionButton: styleOptions,
+  stopImage: styleOptions,
   summarizedModeContainer: styleOptions,
   summarizedModesContainer: styleOptions,
   summarizedModeTime: styleOptions,
@@ -755,6 +764,11 @@ const resultListStyle: ResultListStyle = {
     position: 'absolute',
     top: 10,
     width: 60
+  },
+  stopImage: {
+    height: 30,
+    resizeMode: 'contain',
+    width: 30
   },
   summarizedModeContainer: {
     alignItems: 'center',

@@ -10,7 +10,8 @@ const mapStateToProps = (state: ReducersState, ownProps) => {
   const {currentQuery} = state.otp
   return {
     fromLocation: currentQuery.from,
-    toLocation: currentQuery.to
+    toLocation: currentQuery.to,
+    user: state.user
   }
 }
 

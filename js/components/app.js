@@ -62,8 +62,12 @@ export default class App extends Component {
         <Header
           left={{menu: true}}
           navigation={this.props.navigation}
-          title='Home'
-          />
+          >
+          <Image
+            source={require('../../assets/nav-logo.png')}
+            style={styles.navLogo}
+            />
+        </Header>
         <View style={styles.app}>
           <LocationAndSettings
             navigation={this.props.navigation}
@@ -81,12 +85,22 @@ export default class App extends Component {
 }
 
 type AppStyle = {
-  app: styleOptions
+  app: styleOptions,
+  navLogo: styleOptions
 }
 
 const appStyle: AppStyle = {
   app: {
     backgroundColor: '#fff'
+  },
+  navLogo: {
+    height: 37,
+    left: 40,
+    position: 'absolute',
+    resizeMode: 'contain',
+    right: 40,
+    top: 10,
+    width: 300
   }
 }
 

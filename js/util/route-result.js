@@ -340,8 +340,7 @@ export function getSegmentDetailsForOption (
       segments.push(setRowStyle({
         description: fromName,
         icon: {
-          materialIcon: true,
-          name: 'checkbox-blank-circle'
+          stopImage: true
         },
         routeStyle: {
           board: true,
@@ -356,8 +355,7 @@ export function getSegmentDetailsForOption (
       segments.push(setRowStyle({
         description: fromName,
         icon: {
-          materialIcon: true,
-          name: 'checkbox-blank-circle'
+          stopImage: true
         },
         routeStyle: {
           color,
@@ -384,8 +382,7 @@ export function getSegmentDetailsForOption (
       segments.push(setRowStyle({
         description: segment.toName,
         icon: {
-          materialIcon: true,
-          name: 'checkbox-blank-circle'
+          stopImage: true
         },
         routeStyle: {
           alight: true,

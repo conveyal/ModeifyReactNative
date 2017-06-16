@@ -21,6 +21,7 @@ import type {
 import type {styleOptions} from '../types/rn-style-config'
 
 type Props = {
+  children?: React.Element<*>,
   left?: {
     back?: boolean,
     menu?: boolean
@@ -29,7 +30,7 @@ type Props = {
   right?: {
     close?: boolean
   },
-  title: any
+  title?: string
 }
 
 export default class Header extends Component {
@@ -85,11 +86,13 @@ export default class Header extends Component {
   }
 
   _renderTitle () {
-    const {title} = this.props
+    const {children, title} = this.props
     if (typeof title === 'string') {
       return <Text style={styles.title}>{title}</Text>
+    } else if (children) {
+      return children
     } else {
-      return title
+      return <Text style={styles.title}>TITLE</Text>
     }
   }
 

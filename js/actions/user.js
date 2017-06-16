@@ -36,22 +36,16 @@ export function addFavorite ({
   return saveUserMetadata(user, newMetadata)
 }
 
-export function deleteFavorite ({
-  favoriteIdx, user
-}: {
-  favoriteIdx: number,
-  user: UserReducerState
-}) {
-  const newMetadata = {...user.userMetadata}
-  newMetadata.modeify_places.splice(favoriteIdx, 1)
-  return saveUserMetadata(user, newMetadata)
-}
-
 function camelCaseObj (obj: Object): Object {
   const newObj = {}
   Object.keys(obj).forEach(k => {
     const val = obj[k]
-    const correctedKey: string = camelcase(k)
+    let correctedKey: string = camelcase(k)
+    // blacklist modeify_places and modeify_opts
+    const blacklist = ['modeify_places', 'modeify_opts']
+    if (blacklist.indexOf(k)) {
+      correctedKey = k
+    }
     if (obj[correctedKey]) {
       // don't overwrite data
       newObj[correctedKey] = obj[correctedKey]
@@ -64,6 +58,17 @@ function camelCaseObj (obj: Object): Object {
     newObj[correctedKey] = val
   })
   return newObj
+}
+
+export function deleteFavorite ({
+  favoriteIdx, user
+}: {
+  favoriteIdx: number,
+  user: UserReducerState
+}) {
+  const newMetadata = {...user.userMetadata}
+  newMetadata.modeify_places.splice(favoriteIdx, 1)
+  return saveUserMetadata(user, newMetadata)
 }
 
 export function loadUserData (currentQuery: CurrentQuery) {
