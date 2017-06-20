@@ -22,6 +22,8 @@ export function createDataSource () {
 export const defaultModeSettings: ModeifyAdvancedModeSettings = {
   bikeSpeed: 8,
   bikeTrafficStress: 4,
+  carCostPerMile: 0.56,
+  carParkingCost: 10,
   maxBikeTime: 20,
   maxWalkTime: 15,
   maxCarTime: 45,

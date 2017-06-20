@@ -7,7 +7,6 @@ import isNumber from 'lodash.isnumber'
 import {setMode} from 'otp-react-redux/lib/actions/form'
 import {AsyncStorage} from 'react-native'
 
-import {changePlanPostpressSetting} from '../actions/app'
 import {defaultModeSettings} from '../util'
 import lock from '../util/auth0'
 
@@ -43,7 +42,7 @@ function camelCaseObj (obj: Object): Object {
     let correctedKey: string = camelcase(k)
     // blacklist modeify_places and modeify_opts
     const blacklist = ['modeify_places', 'modeify_opts']
-    if (blacklist.indexOf(k)) {
+    if (blacklist.indexOf(k) > -1) {
       correctedKey = k
     }
     if (obj[correctedKey]) {
@@ -195,14 +194,23 @@ function saveUserMetadata (
   user: UserReducerState,
   newMetadata: UserMetadata
 ) {
+  console.log('saved new user metadata', newMetadata)
   return fetchAction({
     next: (err, res) => {
       if (err) {
+        // Not sure if I need to account for this, but in local development
+        // I had the app open for so long that the idToken expired which would
+        // cause this call to fail.  I'm not sure how likely this would be in a
+        // production setting.  But if it needs to be fixed I could make a call
+        // to refreshUser to make sure the saving works.
         console.error(err)
         alert('An error occurred while trying to save user data.  Try again later')
       } else {
         // camel casize raw response
         const newUserData = camelCaseObj(res.value)
+        // preserve idToken and refreshToken
+        newUserData.idToken = user.idToken
+        newUserData.refreshToken = user.refreshToken
         saveUserDataInAsyncStorage(newUserData)
         return setAuth0User(newUserData)
       }
@@ -260,6 +268,8 @@ export function setUser ({
     const settingKeys = [
       'bikeSpeed',
       'bikeTrafficStress',
+      'carCostPerMile',
+      'carParkingCost',
       'maxBikeTime',
       'maxWalkTime',
       'maxCarTime',
@@ -280,21 +290,6 @@ export function setUser ({
       { settings }
     )
     actions.push(setMode({ mode: newMode }))
-
-    // plan postprocess settings
-    const postProcessSettingKeys = [
-      'carCostPerMile',
-      'carParkingCost'
-    ]
-
-    postProcessSettingKeys.forEach((setting: string) => {
-      if (modeify_opts[setting]) {
-        changePlanPostpressSetting({
-          setting,
-          value: modeify_opts[setting]
-        })
-      }
-    })
   }
 
   // save user data in async storage
@@ -311,17 +306,17 @@ export function setUser ({
 export function updateFavorite ({
   oldLocationAddress, newLocationData, user
 }: {
-  oldLocationAddress: number,
+  oldLocationAddress: string,
   newLocationData: Favorite,
   user: UserReducerState
 }) {
-  const favoriteIdx: number = user.userMetadata.modeify_places.find(
-    (favorite: Favorite) => {
+  const favoriteIdx: number = user.userMetadata.modeify_places.findIndex(
+    (favorite: Favorite) => (
       oldLocationAddress === favorite.address
-    }
+    )
   )
   const newMetadata = {...user.userMetadata}
-  newMetadata.modeify_places.splice(favoriteIdx, 1, newLocationData)
+  newMetadata.modeify_places[favoriteIdx] = newLocationData
   return saveUserMetadata(user, newMetadata)
 }
 

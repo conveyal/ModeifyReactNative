@@ -231,9 +231,9 @@ export default class ResultsMap extends Component {
     let filteredProfiles: Array<TransitProfile | NonTransitProfile> = []
 
     if (!activePlan.activeItinerary) {
-      filteredProfiles = r5Response.profile
+      filteredProfiles = activePlan.postProcessedResults
     } else {
-      filteredProfiles = [r5Response.profile[activePlan.activeItinerary - 1]]
+      filteredProfiles = [activePlan.postProcessedResults[activePlan.activeItinerary - 1]]
     }
 
     filteredProfiles.forEach((

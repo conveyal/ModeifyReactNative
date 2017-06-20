@@ -30,12 +30,11 @@ export default class Login extends Component {
       },
       closable: true
     }, (err, profile, token) => {
-      console.log('lock callback', err, profile, token)
       if (err) {
-        console.log(err)
         if (err === 'Lock was dismissed by the user') {
-          onLockDismiss()
+          return onLockDismiss()
         }
+        console.log(err)
         return
       }
 

@@ -21,7 +21,7 @@ import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons'
 import DumbTextButton from './dumb-text-button'
 import ModeifyIcon from './modeify-icon'
 import {createDataSource} from '../util'
-import RouteResult, {getSegmentDetailsForOption} from '../util/route-result'
+import {getBestOptionsByMode, getSegmentDetailsForOption} from '../util/route-result'
 
 import type {
   NavigationAction,
@@ -57,8 +57,8 @@ type SlideChangeState = {
 }
 
 type Props = {
-  activeSearch: number,
   changePlanViewState: (string) => void,
+  currentSearch: PlanSearch,
   fromLocation: Location,
   modeSettings: {
     bikeSpeed: number,
@@ -67,107 +67,27 @@ type Props = {
   navigation: NavigationScreenProp<NavigationRoute, NavigationAction>,
   planPostprocessSettings: PlanPostprocessSettings,
   planViewState: string,
-  searches: Array<PlanSearch>,
   setActiveItinerary: ({index: number}) => void,
   toLocation: Location
 }
 
-type State = {
-  isPending: boolean,
-  noPlans?: boolean,
-  resultIndex?: number,
-  resultText: string
-}
-
 export default class ResultsList extends Component {
   props: Props
-  routeResult: RouteResult
-  state: State
 
-  constructor(props: Props) {
-    super(props)
-    this.routeResult = new RouteResult()
-  }
+  _getResultText () {
+    const {currentSearch} = this.props
+    const numResults = currentSearch
+      ? currentSearch.postProcessedResults.length
+      : 0
 
-  state = {
-    isPending: true,
-    noPlans: true,
-    resultIndex: 0,
-    resultText: 'No results yet'
-  }
-
-  componentWillMount () {
-    this.state = this._calculateState(this.props, true)
-  }
-
-  componentWillReceiveProps (nextProps: Props) {
-    this.setState(this._calculateState(nextProps))
-  }
-
-  shouldComponentUpdate (nextProps: Props, nextState: State) {
-    return nextProps.planViewState !== this.props.planViewState ||
-      nextState.isPending !== this.state.isPending ||
-      nextState.resultIndex !== this.state.resultIndex
-  }
-
-  _calculateState (nextProps: Props, returnFullState?: boolean): State {
-    let {resultIndex} = this.state
-    const {searches} = nextProps
-
-    if (searches.length === 0) {
-      return this.state
-    }
-
-    const currentSearch = searches[searches.length - 1]
-
-    const nextState: State = {
-      isPending: currentSearch.pending,
-      noPlans: false,
-      resultText: ''
-    }
-
-    this.routeResult.setLocation('from', nextProps.fromLocation)
-    this.routeResult.setLocation('to', nextProps.toLocation)
-    this.routeResult.setScorerRate(
-      'bikeSpeed',
-      nextProps.modeSettings.bikeSpeed
-    )
-    this.routeResult.setScorerRate(
-      'walkSpeed',
-      nextProps.modeSettings.walkSpeed
-    )
-    this.routeResult.setScorerRate(
-      'carParkingCost',
-      nextProps.planPostprocessSettings.carParkingCost
-    )
-    this.routeResult.setScorerRate(
-      'mileageRate',
-      nextProps.planPostprocessSettings.carCostPerMile
-    )
-    this.routeResult.parseResponse(currentSearch.planResponse)
-
-    if (this.routeResult.hasChanged) {
-      nextState.resultIndex = resultIndex + 1
-    }
-
-    this.routeResult.hasChanged = false
-
-    const numResults: number = this.routeResult.getResults().length
-
-    if (currentSearch.pending) {
-      nextState.resultText = 'Calculating...'
+    if (!currentSearch || currentSearch.pending) {
+      return 'Calculating...'
     } else {
-      if (this.routeResult.hasError) {
-        nextState.resultText = 'An error occurred'
+      if (currentSearch.planResponse.error) {
+        return 'An error occurred'
       } else {
-        nextState.resultText = `Found ${numResults > 0 ? numResults : 'no'} options`
+        return `Found ${numResults > 0 ? numResults : 'no'} options`
       }
-    }
-
-    if (returnFullState) {
-      return Object.assign(this.state, nextState)
-    } else {
-      return nextState
     }
   }
 
@@ -221,7 +141,7 @@ export default class ResultsList extends Component {
         style={styles.summaryTitle}
         >
         <Text style={styles.summaryText}>
-          {this.state.resultText}
+          {this._getResultText()}
         </Text>
         <DumbTextButton
           backgroundColor='#F5A729'
@@ -464,30 +384,32 @@ export default class ResultsList extends Component {
   _renderResults (): React.Element<*> {
     const screenHeight: number = Dimensions.get('window').height
 
-    const {searches} = this.props
-    const {isPending, resultText} = this.state
+    const {currentSearch} = this.props
 
-    const currentSearch: PlanSearch = searches[searches.length - 1]
     const slideIdx: number = (
       currentSearch && currentSearch.activeItinerary > -1
         ? currentSearch.activeItinerary
         : 0
     )
 
-    const allOptions: Array<ModeifyResult> = this.routeResult.getResults()
+    const allOptions: Array<ModeifyResult> = (
+      currentSearch
+        ? currentSearch.postProcessedResults
+        : []
+    )
     const bestOptionsByMode: Array<ModeifyResult> = (
-      this.routeResult.getBestOptionsByMode()
+      getBestOptionsByMode(allOptions)
     )
     const hasResults: boolean = allOptions.length > 0
 
     const slides: Array<React.Element<*>> = []
 
-    if (isPending) {
+    if (!currentSearch || currentSearch.isPending) {
       slides.push(
         <View>
           <View style={styles.summaryTitle}>
             <Text style={styles.summaryText}>
-              {resultText}
+              {this._getResultText()}
             </Text>
           </View>
           <ActivityIndicator
@@ -536,7 +458,7 @@ export default class ResultsList extends Component {
         <View style={styles.summaryContent}>
           <View style={styles.summaryTitle}>
             <Text style={styles.summaryText}>
-              {resultText}
+              {this._getResultText()}
             </Text>
           </View>
           {content}

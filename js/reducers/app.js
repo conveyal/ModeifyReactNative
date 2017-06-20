@@ -1,15 +1,8 @@
 // @flow
+
 import update from 'immutability-helper'
 
 import type {AppReducerState} from '../types/reducers'
-
-type changePlanPostprocessSettingAction = {
-  payload: {
-    setting: string,
-    value: string
-  },
-  type: string
-}
 
 type changePlanViewStateAction = {
   payload: string,
@@ -22,18 +15,6 @@ type searchingOnMapAction = {
 }
 
 export const reducers = {
-  'CHANGE_PLAN_POSTPROCESS_SETTING' (
-    state: AppReducerState,
-    action: changePlanPostprocessSettingAction
-  ): AppReducerState {
-    return update(state, {
-      planPostprocessSettings: {
-        [action.payload.setting]: {
-          $set: action.payload.value
-        }
-      }
-    })
-  },
   'CHANGE_PLAN_VIEW_STATE' (
     state: AppReducerState,
     action: changePlanViewStateAction
@@ -58,10 +39,6 @@ export const reducers = {
 }
 
 export const initialState: AppReducerState = {
-  planPostprocessSettings: {
-    carCostPerMile: 0.56,
-    carParkingCost: 10
-  },
   planViewState: 'init',
   searchingOnMap: false
 }

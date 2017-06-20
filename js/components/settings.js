@@ -34,10 +34,6 @@ import type {
 import type {styleOptions} from '../types/rn-style-config'
 
 type Props = {
-  changePlanPostpressSetting: ({
-    setting: string,
-    value: string
-  }) => void,
   currentQuery: CurrentQuery,
   navigation: NavigationScreenProp<NavigationRoute, NavigationAction>,
   planPostprocessSettings: PlanPostprocessSettings,
@@ -120,14 +116,14 @@ export default class Settings extends Component {
     if (!isValidDecimal(text)) {
       return
     }
-    this._setPostprocessSetting('carCostPerMile', text)
+    this._setModeSetting('carCostPerMile', parseFloat(text))
   }
 
   _onParkingCostChange = (text: string) => {
     if (!isValidDecimal(text)) {
       return
     }
-    this._setPostprocessSetting('carParkingCost', text)
+    this._setModeSetting('carParkingCost', parseFloat(text))
   }
 
   _onRailPress = () => {
@@ -155,15 +151,6 @@ export default class Settings extends Component {
     newModeSettings[key] = value
     const newMode = Object.assign({}, currentQuery.mode, { settings: newModeSettings })
     setMode({ mode: newMode })
-    this._updateUserSettings(key, value)
-  }
-
-  _setPostprocessSetting (key: string, value: string) {
-    const {changePlanPostpressSetting} = this.props
-    changePlanPostpressSetting({
-      setting: key,
-      value
-    })
     this._updateUserSettings(key, value)
   }
 

@@ -169,10 +169,13 @@ export default class Profile extends Component {
               Favorite Places
             </Text>
           </View>
-          <ListView
-            dataSource={locationsDataSource}
-            renderRow={this._renderLocation}
-            />
+          {locations.length > 0
+            ? <ListView
+                dataSource={locationsDataSource}
+                renderRow={this._renderLocation}
+                />
+            : <Text style={styles.noFavoritesText}>No favorites added yet!</Text>
+          }
         </ScrollView>
       </View>
     )
@@ -189,6 +192,7 @@ type ProfileStyles = {
   locationNameText: styleOptions,
   logoutButton: styleOptions,
   logoutButtonContainer: styleOptions,
+  noFavoritesText: styleOptions,
   notLoggedInText: styleOptions,
   userAvatar: styleOptions,
   userInfoText: styleOptions
@@ -238,6 +242,10 @@ const styleConfig: ProfileStyles = {
   },
   logoutButtonContainer: {
     alignItems: 'center',
+    margin: 10
+  },
+  noFavoritesText: {
+    fontSize: 18,
     margin: 10
   },
   notLoggedInText: {

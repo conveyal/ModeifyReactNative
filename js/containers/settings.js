@@ -3,7 +3,6 @@
 import {setMode} from 'otp-react-redux/lib/actions/form'
 import {connect} from 'react-redux'
 
-import {changePlanPostpressSetting} from '../actions/app'
 import {updateSettings} from '../actions/user'
 import Settings from '../components/settings'
 
@@ -18,7 +17,6 @@ const mapStateToProps = (state: ReducersState, ownProps) => {
 }
 
 const mapDispatchToProps = {
-  changePlanPostpressSetting,
   setMode,
   updateSettings
 }

@@ -243,6 +243,7 @@ export default class LocationAndSettings extends Component {
             />
           <TouchableOpacity
             onPress={this._onFromPress}
+            style={styles.locationTextContainer}
             >
             <Text
               numberOfLines={1}
@@ -277,6 +278,7 @@ export default class LocationAndSettings extends Component {
             />
           <TouchableOpacity
             onPress={this._onToPress}
+            style={styles.locationTextContainer}
             >
             <Text
               numberOfLines={1}
@@ -595,6 +597,7 @@ type LocationAndSettingsStyle = {
   homeInputText: styleOptions,
   locationContainer: styleOptions,
   locationText: styleOptions,
+  locationTextContainer: styleOptions,
   menuCloseButton: styleOptions,
   menuHeader: styleOptions,
   menuHeaderText: styleOptions,
@@ -671,7 +674,7 @@ const locationAndSettingsStyle: LocationAndSettingsStyle = {
     paddingTop: 7
   },
   locationTextContainer: {
-    marginRight: 45
+    marginRight: 48
   },
   menuCloseButton: {
     position: 'absolute',

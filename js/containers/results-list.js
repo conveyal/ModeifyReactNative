@@ -11,12 +11,11 @@ import type {ReducersState} from '../types/reducers'
 const mapStateToProps = (state: ReducersState, ownProps) => {
   const {activeSearch, currentQuery, searches} = state.otp
   return {
-    activeSearch,
+    currentSearch: searches.length > 0 ? searches[activeSearch] : null,
     fromLocation: currentQuery.from,
     modeSettings: currentQuery.mode.settings,
     planPostprocessSettings: state.app.planPostprocessSettings,
     planViewState: state.app.planViewState,
-    searches,
     toLocation: currentQuery.to
   }
 }

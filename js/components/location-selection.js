@@ -230,7 +230,7 @@ export default class LocationSelection extends Component {
         })
     } else {
       this._setLocation((({
-        address: favorite.address,
+        name: favorite.address,
         lat: favorite.lat,
         lon: favorite.lon
       }): any))

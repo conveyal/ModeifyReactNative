@@ -48,17 +48,6 @@ export default class RouteResult {
   hasError = false
   lastResponse = {}
 
-  getBestOptionsByMode (): Array<ModeifyResult> {
-    const modesSeen: {[key: string]: boolean} = {}
-    return this.getResults()
-      .filter((option: ModeifyResult): ModeifyResult => {
-        if (modesSeen[option.dominantMode]) return false
-
-        modesSeen[option.dominantMode] = true
-        return true
-      })
-  }
-
   getResults (): Array<ModeifyResult> {
     if (this.hasError || !this.lastResponse || !this.lastResponse.r5) return []
     if (this._results) return this._results
@@ -212,6 +201,19 @@ function getAgencyName (internalName: string): string {
   }
   return internalName
 }
+
+export function getBestOptionsByMode(
+  options: Array<ModeifyResult>
+): Array<ModeifyResult> {
+  const modesSeen: {[key: string]: boolean} = {}
+  return options.filter((option: ModeifyResult): ModeifyResult => {
+    if (modesSeen[option.dominantMode]) return false
+
+    modesSeen[option.dominantMode] = true
+    return true
+  })
+}
+
 
 function getRouteNames (routes: Array<Route>): string {
   var agencyRoutes: {

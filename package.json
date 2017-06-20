@@ -21,7 +21,7 @@
 		"lodash.throttle": "^4.1.1",
 		"moment": "^2.17.1",
 		"otp-profile-score": "^0.6.3",
-		"otp-react-redux": "^0.6.0",
+		"otp-react-redux": "https://github.com/opentripplanner/otp-react-redux#result-post-processor",
 		"polyline": "^0.2.0",
 		"qs": "^6.3.1",
 		"react": "~15.4.0",
