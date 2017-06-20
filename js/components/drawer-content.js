@@ -1,6 +1,7 @@
 // @flow
 
 import isEqual from 'lodash.isequal'
+import lonlat from '@conveyal/lonlat'
 import React, {Component} from 'react'
 import {
   Image,
@@ -78,6 +79,30 @@ export default class DrawerContent extends Component {
       navigation.navigate('DrawerClose')
       navigation.navigate(routeName)
     }
+  }
+
+  _onCFNMPress = () => {
+    navigator.geolocation.getCurrentPosition(
+      (position: Position) => {
+        const normalizedPosition = lonlat(position.coords)
+        const cfnmLink = 'http://carfreenearme.com/dashboard.cfm?' +
+          `cfnmLat=${normalizedPosition.lat}&cfnmLon=${normalizedPosition.lon}` +
+          '&cfnmRadius=0.125#map:art:metrobus:metrorail:cabi:car2go'
+        Linking.canOpenURL(cfnmLink)
+          .then((supported: boolean) => {
+            if (!supported) {
+              console.log('Can\'t handle url: ', cfnmLink)
+            } else {
+              return Linking.openURL(cfnmLink)
+            }
+          })
+          .catch(err => console.error('An error occurred', err))
+      },
+      (error) => {
+        Linking.openURL('http://carfreenearme.com/')
+      },
+      {enableHighAccuracy: true, timeout: 10000, maximumAge: 1000}
+    )
   }
 
   _onLockDismiss = () => {
@@ -206,7 +231,7 @@ export default class DrawerContent extends Component {
         </View>
         {this._renderMenuItems()}
         <TouchableOpacity
-          onPress={() => Linking.openURL('http://carfreenearme.com/')}
+          onPress={this._onCFNMPress}
           >
           <View style={styles.cfnmContainer}>
             <Image

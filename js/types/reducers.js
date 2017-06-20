@@ -1,13 +1,7 @@
 import type {CurrentQuery} from './query'
 import type {TripPlanResponse} from './results'
 
-export type PlanPostprocessSettings = {
-  carCostPerMile: number,
-  carParkingCost: number
-}
-
 export type AppReducerState = {
-  planPostprocessSettings: PlanPostprocessSettings,
   planViewState: 'init' | 'result-collapsed' | 'result-summarized' | 'result-expanded',
   searchingOnMap: boolean
 }

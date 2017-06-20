@@ -215,14 +215,58 @@ export default class ResultsMap extends Component {
       )
     }
 
-    function streetEdgesToCoordinates (streetEdges: Array<StreetEdge>) {
+    function streetEdgesToCoordinates (
+      streetEdges: Array<StreetEdge>,
+      mode: string
+    ) {
       let combinedLineCoordinates: Coordinate[] = []
-      streetEdges.forEach((edge: StreetEdge) => {
-        addCabiStationIfNeeded(edge.bikeRentalOffStation)
-        addCabiStationIfNeeded(edge.bikeRentalOnStation)
-        combinedLineCoordinates = combinedLineCoordinates
-          .concat(polyline.decode(edge.geometry.points))
-      })
+
+      if (mode === 'BICYCLE_RENT') {
+        let bikeShareAccessCoordinates: Coordinate[] = []
+        let walking: boolean = true
+
+        streetEdges.forEach((edge: StreetEdge) => {
+          if (walking) {
+            // walking to/from bikeshare station
+            // add coordinate to walk access array
+            bikeShareAccessCoordinates = bikeShareAccessCoordinates
+              .concat(polyline.decode(edge.geometry.points))
+
+            if (edge.bikeRentalOnStation) {
+              // got to starting bikeshare station
+              // add bikeshare station and walking polyline
+              addCabiStationIfNeeded(edge.bikeRentalOnStation)
+              if (bikeShareAccessCoordinates.length > 0) {
+                addPolylineIfNeeded('WALK', bikeShareAccessCoordinates)
+              }
+              bikeShareAccessCoordinates = []
+              walking = false
+            }
+          } else {
+            // biking on bike rental
+            // add coordinate to biking array
+            combinedLineCoordinates = combinedLineCoordinates
+              .concat(polyline.decode(edge.geometry.points))
+
+            if (edge.bikeRentalOffStation) {
+              // got to ending bikeshare station
+              addCabiStationIfNeeded(edge.bikeRentalOffStation)
+              walking = true
+            }
+          }
+        })
+
+        // add final walking to transit
+        if (bikeShareAccessCoordinates.length > 0) {
+          addPolylineIfNeeded('WALK', bikeShareAccessCoordinates)
+        }
+      } else {
+        streetEdges.forEach((edge: StreetEdge) => {
+          combinedLineCoordinates = combinedLineCoordinates
+            .concat(polyline.decode(edge.geometry.points))
+        })
+      }
+
       return combinedLineCoordinates
     }
 
@@ -245,7 +289,10 @@ export default class ResultsMap extends Component {
           if (!getPolylineStylesForMode(modeOption.mode)) return
           addPolylineIfNeeded(
             modeOption.mode,
-            streetEdgesToCoordinates(modeOption.streetEdges)
+            streetEdgesToCoordinates(
+              modeOption.streetEdges,
+              modeOption.mode
+            )
           )
         })
       }

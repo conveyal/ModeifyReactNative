@@ -29,6 +29,7 @@ import type {
   NavigationScreenProp
 } from 'react-navigation/src/TypeDefinition'
 
+import type {CurrentQuery} from '../types/query'
 import type {
   Location,
   PlanPostprocessSettings,
@@ -58,25 +59,19 @@ type SlideChangeState = {
 
 type Props = {
   changePlanViewState: (string) => void,
+  currentQuery: CurrentQuery,
   currentSearch: PlanSearch,
-  fromLocation: Location,
-  modeSettings: {
-    bikeSpeed: number,
-    walkSpeed: number
-  },
   navigation: NavigationScreenProp<NavigationRoute, NavigationAction>,
-  planPostprocessSettings: PlanPostprocessSettings,
   planViewState: string,
-  setActiveItinerary: ({index: number}) => void,
-  toLocation: Location
+  setActiveItinerary: ({index: number}) => void
 }
 
 export default class ResultsList extends Component {
   props: Props
 
   _getResultText () {
-    const {currentSearch, fromLocation, toLocation} = this.props
-    const numResults = currentSearch
+    const {currentSearch} = this.props
+    const numResults = currentSearch && currentSearch.postProcessedResults
       ? currentSearch.postProcessedResults.length
       : 0
 
@@ -96,14 +91,14 @@ export default class ResultsList extends Component {
   ): ListView.DataSource {
     if (option.dataSource) return option.dataSource
 
-    const {fromLocation, toLocation} = this.props
+    const {from, to} = this.props.currentQuery
     option.dataSource = createDataSource()
     option.dataSource =
       option.dataSource.cloneWithRows(
         getSegmentDetailsForOption(
           option,
-          fromLocation,
-          toLocation))
+          from,
+          to))
     return option.dataSource
   }
 
@@ -383,7 +378,7 @@ export default class ResultsList extends Component {
   _renderResults (): React.Element<*> {
     const screenHeight: number = Dimensions.get('window').height
 
-    const {currentSearch} = this.props
+    const {currentQuery, currentSearch} = this.props
 
     const slideIdx: number = (
       currentSearch && currentSearch.activeItinerary > -1
@@ -392,7 +387,7 @@ export default class ResultsList extends Component {
     )
 
     const allOptions: Array<ModeifyResult> = (
-      currentSearch
+      currentSearch && currentSearch.postProcessedResults
         ? currentSearch.postProcessedResults
         : []
     )
@@ -403,7 +398,7 @@ export default class ResultsList extends Component {
 
     const slides: Array<React.Element<*>> = []
 
-    if (!currentSearch) {
+    if (!currentSearch || (!currentQuery.from || !currentQuery.to)) {
       slides.push(
         <View>
           <View style={styles.summaryTitle}>
@@ -416,7 +411,7 @@ export default class ResultsList extends Component {
           </View>
         </View>
       )
-    } else if (currentSearch.isPending) {
+    } else if (currentSearch.pending) {
       slides.push(
         <View>
           <View style={styles.summaryTitle}>
