@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   Dimensions,
   ListView,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -71,7 +72,7 @@ export default class ServiceAlerts extends Component {
     alertsDataSource = alertsDataSource.cloneWithRows(activeAlerts)
 
     return (
-      <View>
+      <View style={styles.container}>
         <Header
           left={{back: true}}
           navigation={this.props.navigation}
@@ -145,6 +146,7 @@ type ServiceAlertsStyle = {
   alertContainer: styleOptions,
   alertIcon: styleOptions,
   alertText: styleOptions,
+  container: styleOptions,
   infoText: styleOptions,
   loading: styleOptions
 }
@@ -162,6 +164,13 @@ const serviceAlertsStyle: ServiceAlertsStyle = {
   alertText: {
     color: '#a94442'
   },
+  container: Platform.select({
+    ios: {},
+    android: {
+      backgroundColor: '#fff',
+      flex: 1
+    },
+  }),
   infoText: {
     fontSize: 18,
     margin: 20

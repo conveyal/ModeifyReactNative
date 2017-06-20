@@ -301,10 +301,10 @@ export default class ResultsMap extends Component {
         curMapHeight = screenHeight - 112
         break
       case 'result-collapsed':
-        curMapHeight = screenHeight - 323
+        curMapHeight = screenHeight - (Platform.OS === 'ios' ? 323: 330)
         break
       case 'result-summarized':
-        curMapHeight = screenHeight - 250
+        curMapHeight = screenHeight - (Platform.OS === 'ios' ? 250: 270)
         break
       case 'result-expanded':
         return this._renderCollapsedMap()

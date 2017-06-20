@@ -28,7 +28,6 @@ import type {
   CurrentQuery,
   ModeifyModeSettings,
   ModeifyOpts,
-  PlanPostprocessSettings,
   UserReducerState
 } from '../types/reducers'
 import type {styleOptions} from '../types/rn-style-config'
@@ -36,7 +35,6 @@ import type {styleOptions} from '../types/rn-style-config'
 type Props = {
   currentQuery: CurrentQuery,
   navigation: NavigationScreenProp<NavigationRoute, NavigationAction>,
-  planPostprocessSettings: PlanPostprocessSettings,
   setMode: ({ mode: ModeifyModeSettings }) => void,
   updateSettings: ({ settings: ModeifyOpts, user: UserReducerState }) => void,
   user: UserReducerState
@@ -228,14 +226,12 @@ export default class Settings extends Component {
     const {
       bikeSpeed,
       bikeTrafficStress,
+      carCostPerMile,
+      carParkingCost,
       maxBikeTime,
       maxWalkTime,
       walkSpeed
     } = mode.settings
-    const {
-      carCostPerMile,
-      carParkingCost
-    } = this.props.planPostprocessSettings
 
     return (
       <View style={styles.content}>
@@ -456,7 +452,7 @@ export default class Settings extends Component {
     const {activeTab} = this.state
 
     return (
-      <View>
+      <View style={styles.container}>
         <Header
           left={{back: true}}
           navigation={this.props.navigation}
@@ -511,6 +507,7 @@ function isValidNumericText (number: string): boolean {
 // ------------------------------------------------------------------------
 
 type SettingsStyle = {
+  container: styleOptions,
   content: styleOptions,
   dropdown: styleOptions,
   dropdownText: styleOptions,
@@ -531,6 +528,13 @@ type SettingsStyle = {
 }
 
 const settingsStyle: SettingsStyle = {
+  container: Platform.select({
+    ios: {},
+    android: {
+      backgroundColor: '#fff',
+      flex: 1
+    },
+  }),
   content: {
     paddingHorizontal: 10,
     paddingVertical: 20

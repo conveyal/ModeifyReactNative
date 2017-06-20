@@ -4,6 +4,7 @@ import currencyFormatter from 'currency-formatter'
 import React, { Component } from 'react'
 import {
   Linking,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -341,7 +342,7 @@ export default class OptionSelected extends Component {
 
   render () {
     return (
-      <View>
+      <View style={styles.container}>
         <Header
           left={{back: true}}
           navigation={this.props.navigation}
@@ -349,7 +350,7 @@ export default class OptionSelected extends Component {
           title='YOUR SELECTION'
           />
         <ScrollView
-          style={styles.container}
+          style={styles.scrollContainer}
           >
           {this._renderSegments()}
           {this._renderCarComparison()}
@@ -408,6 +409,7 @@ type OptionSelectedStyle = {
   resourceContainer: styleOptions,
   resourceLink: styleOptions,
   resourceText: styleOptions,
+  scrollContainer: styleOptions,
   segmentRouteBackground: styleOptions,
   segments: styleOptions,
   segmentsContainer: styleOptions,
@@ -452,10 +454,13 @@ const optionSelectedStyle: OptionSelectedStyle = {
     fontSize: 14,
     marginBottom: 10
   },
-  container: {
-    backgroundColor: '#fff',
-    padding: 10
-  },
+  container: Platform.select({
+    ios: {},
+    android: {
+      backgroundColor: '#fff',
+      flex: 1
+    },
+  }),
   footnote: {
     fontSize: 11,
     textAlign: 'right'
@@ -490,6 +495,10 @@ const optionSelectedStyle: OptionSelectedStyle = {
   resourceText: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    padding: 10
+  },
+  scrollContainer: {
+    backgroundColor: '#fff',
     padding: 10
   },
   segmentRouteBackground: {

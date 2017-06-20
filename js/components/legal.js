@@ -1,7 +1,7 @@
 // @flow
 
 import React, {Component} from 'react'
-import {View, ScrollView, StyleSheet, Text} from 'react-native'
+import {Platform, ScrollView, StyleSheet, Text, View} from 'react-native'
 import Markdown from 'react-native-simple-markdown'
 
 import Header from './header'
@@ -38,7 +38,7 @@ export default class Legal extends Component {
 
   render () {
     return (
-      <View>
+      <View style={styles.container}>
         <Header
           left={{back: true}}
           navigation={this.props.navigation}
@@ -106,6 +106,7 @@ export default class Legal extends Component {
 }
 
 type AboutStyle = {
+  container: styleOptions,
   content: styleOptions,
   paragraph: styleOptions,
   sectionHeader: styleOptions,
@@ -113,6 +114,12 @@ type AboutStyle = {
 }
 
 const aboutStyle: AboutStyle = {
+  container: Platform.select({
+    ios: {},
+    android: {
+      backgroundColor: '#fff'
+    },
+  }),
   content: {
     padding: 10,
     marginBottom: 80

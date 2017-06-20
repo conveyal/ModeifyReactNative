@@ -3,6 +3,7 @@
 import moment from 'moment'
 import React, { Component } from 'react'
 import {
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -127,7 +128,7 @@ export default class Timing extends Component {
   render () {
     const {currentQuery} = this.props
     return (
-      <View>
+      <View style={styles.container}>
         <Header
           left={{back: true}}
           navigation={this.props.navigation}
@@ -171,6 +172,7 @@ export default class Timing extends Component {
 }
 
 type TimingStyle = {
+  container: styleOptions,
   content: styleOptions,
   dropdown: styleOptions,
   dropdownText: styleOptions,
@@ -178,6 +180,13 @@ type TimingStyle = {
 }
 
 const settingsStyle: TimingStyle = {
+  container: Platform.select({
+    ios: {},
+    android: {
+      backgroundColor: '#fff',
+      flex: 1
+    },
+  }),
   content: {
     paddingHorizontal: 10,
     paddingVertical: 20

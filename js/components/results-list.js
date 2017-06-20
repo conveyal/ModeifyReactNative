@@ -75,7 +75,7 @@ export default class ResultsList extends Component {
   props: Props
 
   _getResultText () {
-    const {currentSearch} = this.props
+    const {currentSearch, fromLocation, toLocation} = this.props
     const numResults = currentSearch
       ? currentSearch.postProcessedResults.length
       : 0
@@ -160,7 +160,6 @@ export default class ResultsList extends Component {
   _renderOptionDetails = (
     optionDetail: SegmentDetail
   ): React.Element<*> => {
-    console.log(optionDetail)
     return (
       <View style={[styles.optionDetailsRow, optionDetail.rowStyle]}>
         <View style={styles.optionDetailIcon}>
@@ -244,10 +243,10 @@ export default class ResultsList extends Component {
   }
 
   _renderOption = (
-    option: ModeifyResult,
-    idx: number
+    expandedHeight: number,
+    idx: number,
+    option: ModeifyResult
   ): React.Element<*> => {
-    const screenHeight: number = Dimensions.get('window').height
 
     const {planViewState} = this.props
 
@@ -370,7 +369,7 @@ export default class ResultsList extends Component {
           </View>
         </View>
         {planViewState === 'result-expanded' &&
-          <View style={{height: screenHeight - 300}}>
+          <View style={{height: expandedHeight}}>
             <ListView
               dataSource={this._getOptionDetailListviewDatasource(option)}
               renderRow={this._renderOptionDetails}
@@ -404,7 +403,20 @@ export default class ResultsList extends Component {
 
     const slides: Array<React.Element<*>> = []
 
-    if (!currentSearch || currentSearch.isPending) {
+    if (!currentSearch) {
+      slides.push(
+        <View>
+          <View style={styles.summaryTitle}>
+            <Text style={styles.summaryText}>
+              Awaiting input
+            </Text>
+          </View>
+          <View style={styles.summarizedModeContainer}>
+            <Text>Please select a from and to location</Text>
+          </View>
+        </View>
+      )
+    } else if (currentSearch.isPending) {
       slides.push(
         <View>
           <View style={styles.summaryTitle}>
@@ -465,8 +477,13 @@ export default class ResultsList extends Component {
         </View>
       )
 
+      const screenHeight: number = Dimensions.get('window').height
+      const expandedHeight: number = (
+        screenHeight - (Platform.OS === 'ios' ? 300 : 310)
+      )
+
       allOptions.forEach((option: ModeifyResult, idx: number) => {
-        slides.push(this._renderOption(option, idx))
+        slides.push(this._renderOption(expandedHeight, idx, option))
       })
     }
 
@@ -589,6 +606,7 @@ const resultListStyle: ResultListStyle = {
     backgroundColor: '#fff'
   },
   optionDetailDescription: {
+    paddingRight: 60,
     paddingTop: 11
   },
   optionDetailsRow: {
