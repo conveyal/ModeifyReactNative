@@ -312,7 +312,13 @@ const styleConfig: DrawerStyles = {
     margin: 20
   },
   userContainer: {
-    alignItems: 'center'
+    alignItems: 'center',
+    ...Platform.select({
+      ios: {},
+      android: {
+        marginTop: 15
+      },
+    })
   },
   userInfoContainer: {
     flexDirection: 'row',

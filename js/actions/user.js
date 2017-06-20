@@ -70,6 +70,39 @@ export function deleteFavorite ({
   return saveUserMetadata(user, newMetadata)
 }
 
+export function getUserData ({
+  currentQuery, oldUserData
+}: {
+  currentQuery: CurrentQuery,
+  oldUserData: UserReducerState
+}) {
+  return fetchAction({
+    next: (err, res) => {
+      if (err) {
+        console.error(err)
+        alert('An error occurred while trying to load your profile data.  Please try logging in again.')
+        return logout()
+      } else {
+        console.log('successfully got updated user data')
+        // camel casize raw response
+        const newUserData = camelCaseObj(res.value)
+        newUserData.idToken = oldUserData.idToken
+        newUserData.refreshToken = oldUserData.refreshToken
+        return setUser({
+          currentQuery,
+          newUserData,
+          saveToAsyncStorage: true
+        })
+      }
+    },
+    options: {
+      headers: { Authorization: `bearer ${oldUserData.idToken}` },
+      method: 'GET'
+    },
+    url: `https://${config.auth0.domain}/api/v2/users/${oldUserData.userId}`
+  })
+}
+
 export function loadUserData (currentQuery: CurrentQuery) {
   return (
     AsyncStorage
@@ -146,35 +179,15 @@ function refreshUser ({
 
         // Call the management API to get the user data
         const newToken = { idToken: refreshResult.idToken }
+        const newUserData = {
+          ...oldUserData,
+          ...newToken
+        }
         return [
-          setAuth0User({
-            ...oldUserData,
-            ...newToken
-          }),
-          fetchAction({
-            next: (err, res) => {
-              if (err) {
-                console.error(err)
-                alert('An error occurred while trying to load your profile data.  Please try logging in again.')
-                return logout()
-              } else {
-                console.log('successfully got updated user data')
-                // camel casize raw response
-                const newUserData = camelCaseObj(res.value)
-                newUserData.idToken = refreshResult.idToken
-                newUserData.refreshToken = oldUserData.refreshToken
-                return setUser({
-                  currentQuery,
-                  newUserData,
-                  saveToAsyncStorage: true
-                })
-              }
-            },
-            options: {
-              headers: { Authorization: `bearer ${refreshResult.idToken}` },
-              method: 'GET'
-            },
-            url: `https://${config.auth0.domain}/api/v2/users/${oldUserData.userId}`
+          setAuth0User(newUserData),
+          getUserData ({
+            currentQuery,
+            oldUserData: newUserData
           })
         ]
       })

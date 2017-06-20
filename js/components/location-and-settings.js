@@ -581,7 +581,7 @@ function getCollapsedLocationText (prefix: string, location: ?Location): string 
   return (
     location
       ? `${prefix} ${location.name}`
-      : '${prefix} location not set'
+      : `${prefix} location not set`
   )
 }
 

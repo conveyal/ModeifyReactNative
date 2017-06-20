@@ -5,6 +5,7 @@ import {
   Dimensions,
   Image,
   ListView,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -131,7 +132,7 @@ export default class Profile extends Component {
     locationsDataSource = locationsDataSource.cloneWithRows(locations)
 
     return (
-      <View>
+      <View style={styles.container}>
         <Header
           left={{back: true}}
           navigation={this.props.navigation}
@@ -183,6 +184,7 @@ export default class Profile extends Component {
 }
 
 type ProfileStyles = {
+  container: styleOptions,
   favoriteIcon: styleOptions,
   flexRow: styleOptions,
   headerContainer: styleOptions,
@@ -199,6 +201,13 @@ type ProfileStyles = {
 }
 
 const styleConfig: ProfileStyles = {
+  container: Platform.select({
+    ios: {},
+    android: {
+      backgroundColor: '#fff',
+      flex: 1
+    },
+  }),
   favoriteIcon: {
     margin: 10
   },

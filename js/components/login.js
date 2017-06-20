@@ -2,10 +2,11 @@
 
 import isNumber from 'lodash.isnumber'
 import React, {Component} from 'react'
+import {Platform} from 'react-native'
 
 import lock from '../util/auth0'
 
-import type {SetUser} from '../types/actions/user'
+import type {GetUserData, SetUser} from '../types/actions/user'
 import type {
   CurrentQuery,
   ModeifyModeSettings,
@@ -14,6 +15,7 @@ import type {
 
 type Props = {
   currentQuery: CurrentQuery,
+  getUserData: GetUserData,
   onLockDismiss: () => void,
   setUser: SetUser
 }
@@ -22,7 +24,7 @@ export default class Login extends Component {
   props: Props
 
   componentDidMount() {
-    const {currentQuery, onLockDismiss, setUser} = this.props
+    const {currentQuery, getUserData, onLockDismiss, setUser} = this.props
 
     lock.show({
       authParams: {
@@ -40,14 +42,27 @@ export default class Login extends Component {
 
       // Authentication worked!
       console.log('Logged in with Auth0!')
+
+      const newUserData = {
+        ...profile,
+        ...token
+      }
+
       setUser({
         currentQuery,
-        newUserData: {
-          ...profile,
-          ...token
-        },
+        newUserData,
         saveToAsyncStorage: true
       })
+
+      // There seems to be a bug with Android lock
+      // The array of modeify_places always comes back as empty
+      // so if on Android, also perform a getUserData action
+      if (Platform.OS === 'android') {
+        getUserData({
+          currentQuery,
+          oldUserData: newUserData
+        })
+      }
     })
   }
 
