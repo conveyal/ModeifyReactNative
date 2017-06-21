@@ -50,6 +50,6 @@ export function geolocateLocation (locationType: string, setLocation: Function) 
       alert(`Your location could not be determined.
         Please search for an address.`)
     },
-    {enableHighAccuracy: true, timeout: 10000, maximumAge: 1000}
+    {enableHighAccuracy: true, timeout: 3000, maximumAge: 20000}
   )
 }

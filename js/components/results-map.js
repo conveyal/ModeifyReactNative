@@ -4,6 +4,7 @@ import polyline from 'polyline'
 import React, { Component } from 'react'
 import {
   Dimensions,
+  Image,
   Platform,
   StyleSheet,
   Text,
@@ -203,15 +204,22 @@ export default class ResultsMap extends Component {
       stopKeys[stop.stop_id] = true
       itemsToRender.push(
         <MapView.Marker
+          anchor={{
+            x: 0.5,
+            y: 0.5
+          }}
           coordinate={{
             latitude: stop.stop_lat,
             longitude: stop.stop_lon
           }}
-          image={require('../../assets/stop-dot.png')}
           key={stop.stop_id}
           title={stop.stop_name}
           zIndex={500}
-          />
+          >
+          <Image
+            source={require('../../assets/stop-dot-10.png')}
+            />
+        </MapView.Marker>
       )
     }
 
