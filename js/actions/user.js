@@ -203,7 +203,7 @@ function refreshUser ({
   )
 }
 
-function saveUserMetadata (
+export function saveUserMetadata (
   user: UserReducerState,
   newMetadata: UserMetadata
 ) {

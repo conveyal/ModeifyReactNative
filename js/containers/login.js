@@ -2,7 +2,7 @@
 
 import {connect} from 'react-redux'
 
-import {getUserData, setUser} from '../actions/user'
+import {getUserData, saveUserMetadata, setUser} from '../actions/user'
 import Login from '../components/login'
 
 import type {ReducersState} from '../types/reducers'
@@ -16,6 +16,7 @@ const mapStateToProps = (state: ReducersState, ownProps) => {
 
 const mapDispatchToProps = {
   getUserData,
+  saveUserMetadata,
   setUser
 }
 
