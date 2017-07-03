@@ -3,8 +3,8 @@
   <item android:drawable="@color/splash_color" />
   <item>
     <bitmap
-      android:gravity="center"
-      android:src="@mipmap/ic_launcher"
+      android:gravity="fill_horizontal|fill_vertical"
+      android:src="@drawable/splash_1242x2208"
       />
   </item>
 </layer-list>
