@@ -211,7 +211,7 @@ export default class DrawerContent extends Component {
               </View>
             : <View style={styles.userContainer}>
                 <Image
-                  source={require('../../assets/cfaz-drawer-logo.png')}
+                  source={require('../../assets/drawer_header_hires.png')}
                   style={styles.cfazLogo}
                   />
                 <View style={styles.userButtons}>
