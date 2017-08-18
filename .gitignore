@@ -55,6 +55,8 @@ fastlane/screenshots
 
 # project secrets
 config.json
+config-dev.json
+config-prod.json
 
 # testing
 tmp
