@@ -392,15 +392,8 @@ export default class ResultsList extends Component {
   }
 
   _renderResults (): React.Element<*> {
-    const screenHeight: number = Dimensions.get('window').height
-
     const {currentQuery, currentSearch, planViewState} = this.props
-
-    const slideIdx: number = (
-      currentSearch && currentSearch.activeItinerary > -1
-        ? currentSearch.activeItinerary
-        : 0
-    )
+    const screenHeight: number = Dimensions.get('window').height
 
     const allOptions: Array<ModeifyResult> = (
       currentSearch && currentSearch.postProcessedResults
@@ -410,8 +403,15 @@ export default class ResultsList extends Component {
     const bestOptionsByMode: Array<ModeifyResult> = (
       getBestOptionsByMode(allOptions)
     )
+    const optionExpandedHeight: number = (
+      screenHeight - (Platform.OS === 'ios' ? 320 : 330)
+    )
     const hasResults: boolean = allOptions.length > 0
-
+    const slideIdx: number = (
+      currentSearch && currentSearch.activeItinerary > -1
+        ? currentSearch.activeItinerary
+        : 0
+    )
     const slides: Array<React.Element<*>> = []
 
     if (!currentSearch || (!currentQuery.from || !currentQuery.to)) {
@@ -483,19 +483,15 @@ export default class ResultsList extends Component {
         </View>
       )
 
-      const expandedHeight: number = (
-        screenHeight - (Platform.OS === 'ios' ? 320 : 330)
-      )
-
       allOptions.forEach((option: ModeifyResult, idx: number) => {
-        slides.push(this._renderOption(expandedHeight, idx, option))
+        slides.push(this._renderOption(optionExpandedHeight, idx, option))
       })
     }
 
     const swiperHeight: number = (
       planViewState === 'result-expanded'
         ? screenHeight - (Platform.OS === 'ios' ? 148 : 155)
-        : screenHeight - (Platform.OS === 'ios' ? 515 : 520)
+        : Platform.OS === 'ios' ? 150 : 164
     )
 
     const swiperDotAndButtonColor: string = (
