@@ -484,7 +484,7 @@ export default class ResultsList extends Component {
       )
 
       const expandedHeight: number = (
-        screenHeight - (Platform.OS === 'ios' ? 300 : 310)
+        screenHeight - (Platform.OS === 'ios' ? 320 : 330)
       )
 
       allOptions.forEach((option: ModeifyResult, idx: number) => {
@@ -494,7 +494,7 @@ export default class ResultsList extends Component {
 
     const swiperHeight: number = (
       planViewState === 'result-expanded'
-        ? screenHeight - (Platform.OS === 'ios' ? 155 : 155)
+        ? screenHeight - (Platform.OS === 'ios' ? 148 : 155)
         : screenHeight - (Platform.OS === 'ios' ? 515 : 520)
     )
 
