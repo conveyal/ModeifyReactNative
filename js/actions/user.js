@@ -31,6 +31,9 @@ export function addFavorite ({
   user: UserReducerState
 }) {
   const newMetadata = {...user.userMetadata}
+  if (!newMetadata.modeify_places) {
+    newMetadata.modeify_places = []
+  }
   newMetadata.modeify_places.push(location)
   return saveUserMetadata(user, newMetadata)
 }

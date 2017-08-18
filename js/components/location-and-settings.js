@@ -75,9 +75,9 @@ export default class LocationAndSettings extends Component {
     const {locationMenuType, showingLocationMenu} = this.state
     if (showingLocationMenu) {
       if (locationMenuType === 'from') {
-        this._onFromMenuPress()
+        this._setMenuState('from', nextProps)
       } else {
-        this._onToMenuPress()
+        this._setMenuState('to', nextProps)
       }
     }
   }
