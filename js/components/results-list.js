@@ -245,6 +245,37 @@ export default class ResultsList extends Component {
 
     const {planViewState} = this.props
 
+    let walkBikeText: string = ''
+    let shouldOffsetWalkBikeText: boolean = false
+
+    function addText (s: string) {
+      if (walkBikeText.length > 0) {
+        walkBikeText += ', '
+        shouldOffsetWalkBikeText = true
+      }
+      walkBikeText += s
+    }
+
+    if (option.freeflowTime) {
+      addText(`${option.freeflowTime} w/o traffic`)
+    }
+
+    if (option.hasTransit && option.bikeDistances > 0) {
+      addText(`${option.bikeTime} min bike`)
+    }
+
+    if (option.hasTransit && option.walkDistances > 0) {
+      addText(`${option.walkTime} min walk`)
+    }
+
+    if (!option.hasTransit && option.bikeDistances > 0) {
+      addText(`${option.bikeDistances} mi bike`)
+    }
+
+    if (!option.hasTransit && option.walkDistances > 0) {
+      addText(`${option.walkDistances} mi walk`)
+    }
+
     return (
       <View style={styles.optionContent}>
         <View style={styles.optionHeader}>
@@ -325,31 +356,16 @@ export default class ResultsList extends Component {
               <Text style={styles.timeMinutes}>mins</Text>
             </View>
             <View style={styles.walkBikeTimeContainer}>
-              {option.freeflowTime &&
-                <WalkBikeText
-                  text={`${option.freeflowTime} without traffic`}
-                  />
-              }
-              {option.hasTransit && option.bikeDistances > 0 &&
-                <WalkBikeText
-                  text={`${option.bikeTime} min biking`}
-                  />
-              }
-              {option.hasTransit && option.walkDistances > 0 &&
-                <WalkBikeText
-                  text={`${option.walkTime} min walking`}
-                  />
-              }
-              {!option.hasTransit && option.bikeDistances > 0 &&
-                <WalkBikeText
-                  text={`${option.bikeDistances} mi biking`}
-                  />
-              }
-              {!option.hasTransit && option.walkDistances > 0 &&
-                <WalkBikeText
-                  text={`${option.walkDistances} mi walking`}
-                  />
-              }
+              <Text
+                style={[
+                  styles.walkBikeTimeText,
+                  shouldOffsetWalkBikeText
+                    ? styles.walkBikeTextOffset
+                    : null
+                ]}
+                >
+                {walkBikeText}
+              </Text>
             </View>
           </View>
           <View style={styles.detailsButton}>
@@ -378,7 +394,7 @@ export default class ResultsList extends Component {
   _renderResults (): React.Element<*> {
     const screenHeight: number = Dimensions.get('window').height
 
-    const {currentQuery, currentSearch} = this.props
+    const {currentQuery, currentSearch, planViewState} = this.props
 
     const slideIdx: number = (
       currentSearch && currentSearch.activeItinerary > -1
@@ -442,11 +458,6 @@ export default class ResultsList extends Component {
                   />
               )}
             </View>
-            <Text
-              style={styles.summaryText}
-              >
-              Swipe to view each option
-            </Text>
           </View>
         )
       } else {
@@ -472,7 +483,6 @@ export default class ResultsList extends Component {
         </View>
       )
 
-      const screenHeight: number = Dimensions.get('window').height
       const expandedHeight: number = (
         screenHeight - (Platform.OS === 'ios' ? 300 : 310)
       )
@@ -482,10 +492,49 @@ export default class ResultsList extends Component {
       })
     }
 
+    const swiperHeight: number = (
+      planViewState === 'result-expanded'
+        ? screenHeight - (Platform.OS === 'ios' ? 155 : 155)
+        : screenHeight - (Platform.OS === 'ios' ? 515 : 520)
+    )
+
+    const swiperDotAndButtonColor: string = (
+      slideIdx === 0 ? '#fff' : 'rgba(0,0,0,.2)'
+    )
+
+    const nextButton: React.Element<*> = (
+      <SwiperButton
+        color={swiperDotAndButtonColor}
+        type='next'
+        />
+    )
+
+    const prevButton: React.Element<*> = (
+      <SwiperButton
+        color={swiperDotAndButtonColor}
+        type='prev'
+        />
+    )
+
     return (
       <Swiper
+        activeDotColor='#455a71'
+        buttonWrapperStyle={planViewState !== 'result-expanded'
+          ? [
+            styles.swiperButtonWrapperColllapsed,
+            slideIdx === 0
+              ? { paddingBottom: 40 }
+              : null
+          ]
+          : null}
+        dotColor={swiperDotAndButtonColor}
+        height={swiperHeight}
         index={slideIdx}
+        loop={false}
+        nextButton={nextButton}
         onMomentumScrollEnd={this._onSlideChange}
+        prevButton={prevButton}
+        showsButtons
         >
         {slides}
       </Swiper>
@@ -531,11 +580,11 @@ const SummarizedMode = (props: {option: ModeifyResult}) : React.Element<*> => (
   </View>
 )
 
-const WalkBikeText = (props: {text: string}): React.Element<*> => (
+const SwiperButton = (props: {type: 'prev' | 'next', color: string }): React.Element<*> => (
   <Text
-    style={styles.walkBikeTimeText}
+    style={[styles.swiperButton, { color: props.color }]}
     >
-    {props.text}
+    {props.type === 'prev' ? '‹' : '›'}
   </Text>
 )
 
@@ -570,9 +619,12 @@ type ResultListStyle = {
   summaryText: styleOptions,
   summaryTimingAndButtons: styleOptions,
   summaryTitle: styleOptions,
+  swiperButton: styleOptions,
+  swiperButtonWrapperColllapsed: styleOptions,
   time: styleOptions,
   timeContainer: styleOptions,
   timeMinutes: styleOptions,
+  walkBikeTextOffset: styleOptions,
   walkBikeTimeText: styleOptions,
   walkBikeTimeContainer: styleOptions
 }
@@ -745,6 +797,22 @@ const resultListStyle: ResultListStyle = {
     backgroundColor: '#455a71',
     padding: 10
   },
+  swiperButton: {
+    fontSize: 50,
+    fontFamily: 'Arial'
+  },
+  swiperButtonWrapperColllapsed: {
+    backgroundColor: 'transparent',
+    flexDirection: 'row',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    flex: 1,
+    paddingHorizontal: 10,
+    paddingBottom: (Platform.OS === 'ios' ? 60 : 70),
+    justifyContent: 'space-between',
+    alignItems: 'center'
+  },
   time: {
     fontSize: 18,
     fontWeight: 'bold',
@@ -755,6 +823,9 @@ const resultListStyle: ResultListStyle = {
   },
   timeMinutes: {
     fontSize: 18
+  },
+  walkBikeTextOffset: {
+    paddingRight: 15
   },
   walkBikeTimeText: {
     color: '#748395'
