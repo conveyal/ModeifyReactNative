@@ -36,6 +36,12 @@ export default class Login extends Component {
       setUser
     } = this.props
 
+    // As of 8 June 2017 this following code is deprecated.
+    // See more notes in '../util/auth0'
+    // The lock widget will need to be replaced with something else.
+    // auth0 currently recommends using the hosted login page:
+    // https://auth0.com/docs/quickstart/native/react-native
+
     lock.show({
       authParams: {
         scope: "openid email offline_access",
