@@ -23,18 +23,15 @@ import ModeifyIcon from './modeify-icon'
 import {createDataSource} from '../util'
 import {getBestOptionsByMode, getSegmentDetailsForOption} from '../util/route-result'
 
+import type {Element} from 'react'
 import type {
   NavigationAction,
   NavigationRoute,
   NavigationScreenProp
 } from 'react-navigation/src/TypeDefinition'
 
-import type {CurrentQuery} from '../types/query'
-import type {
-  Location,
-  PlanPostprocessSettings,
-  PlanSearch
-} from '../types/reducers'
+import type {CurrentQuery, Location} from '../types/query'
+import type {PlanSearch} from '../types/reducers'
 import type {
   ModeifyResult,
   SegmentDetail,
@@ -66,12 +63,12 @@ type Props = {
   setActiveItinerary: ({index: number}) => void
 }
 
-export default class ResultsList extends Component {
-  props: Props
+export default class ResultsList extends Component<Props> {
 
   _getResultText () {
     const {currentSearch} = this.props
     const numResults = currentSearch && currentSearch.postProcessedResults
+      // $FlowFixMe ignoring silly flow error
       ? currentSearch.postProcessedResults.length
       : 0
 
@@ -110,6 +107,24 @@ export default class ResultsList extends Component {
     this.props.navigation.navigate('OptionSelected', { option })
   }
 
+  _handlePressSummarized (option: ModeifyResult) {
+    // find the first result matching the option
+    const {currentSearch} = this.props
+    const allOptions: Array<ModeifyResult> = (
+      // $FlowFixMe ignoring silly flow error
+      currentSearch && currentSearch.postProcessedResults
+        ? currentSearch.postProcessedResults
+        : []
+    )
+
+    for (let i = 0; i < allOptions.length; i++) {
+      if (allOptions[i].dominantMode === option.dominantMode) {
+        this.refs.swiper.scrollBy(i + 1, true)
+        return this.props.setActiveItinerary({ index: i + 1 })
+      }
+    }
+  }
+
   _onCollapsedContainerPress = () => {
     this.props.changePlanViewState('result-summarized')
   }
@@ -129,7 +144,7 @@ export default class ResultsList extends Component {
   // renderers
   // ------------------------------------------------------------------------
 
-  _renderCollapsed (): React.Element<*> {
+  _renderCollapsed (): Element<*> {
     return (
       <TouchableOpacity
         onPress={this._onCollapsedContainerPress}
@@ -154,7 +169,7 @@ export default class ResultsList extends Component {
 
   _renderOptionDetails = (
     optionDetail: SegmentDetail
-  ): React.Element<*> => {
+  ): Element<*> => {
     return (
       <View style={[styles.optionDetailsRow, optionDetail.rowStyle]}>
         <View style={styles.optionDetailIcon}>
@@ -241,7 +256,7 @@ export default class ResultsList extends Component {
     expandedHeight: number,
     idx: number,
     option: ModeifyResult
-  ): React.Element<*> => {
+  ): Element<*> => {
 
     const {planViewState} = this.props
 
@@ -391,11 +406,12 @@ export default class ResultsList extends Component {
     )
   }
 
-  _renderResults (): React.Element<*> {
+  _renderResults (): Element<*> {
     const {currentQuery, currentSearch, planViewState} = this.props
     const screenHeight: number = Dimensions.get('window').height
 
     const allOptions: Array<ModeifyResult> = (
+      // $FlowFixMe ignoring silly flow error
       currentSearch && currentSearch.postProcessedResults
         ? currentSearch.postProcessedResults
         : []
@@ -408,11 +424,12 @@ export default class ResultsList extends Component {
     )
     const hasResults: boolean = allOptions.length > 0
     const slideIdx: number = (
+      // $FlowFixMe ignoring silly flow error
       currentSearch && currentSearch.activeItinerary > -1
         ? currentSearch.activeItinerary
         : 0
     )
-    const slides: Array<React.Element<*>> = []
+    const slides: Array<Element<*>> = []
 
     if (!currentSearch || (!currentQuery.from || !currentQuery.to)) {
       slides.push(
@@ -443,7 +460,7 @@ export default class ResultsList extends Component {
         </View>
       )
     } else {
-      let content: React.Element<*>
+      let content: Element<*>
 
       if (hasResults) {
         content = (
@@ -452,11 +469,7 @@ export default class ResultsList extends Component {
             style={styles.summaryAllOptions}
             >
             <View style={styles.summarizedModesContainer}>
-              {bestOptionsByMode.map((option: ModeifyResult) =>
-                <SummarizedMode
-                  option={option}
-                  />
-              )}
+              {bestOptionsByMode.map(this._renderSummarizedMode)}
             </View>
           </View>
         )
@@ -498,14 +511,14 @@ export default class ResultsList extends Component {
       slideIdx === 0 ? '#fff' : 'rgba(0,0,0,.2)'
     )
 
-    const nextButton: React.Element<*> = (
+    const nextButton: Element<*> = (
       <SwiperButton
         color={swiperDotAndButtonColor}
         type='next'
         />
     )
 
-    const prevButton: React.Element<*> = (
+    const prevButton: Element<*> = (
       <SwiperButton
         color={swiperDotAndButtonColor}
         type='prev'
@@ -530,6 +543,7 @@ export default class ResultsList extends Component {
         nextButton={nextButton}
         onMomentumScrollEnd={this._onSlideChange}
         prevButton={prevButton}
+        ref='swiper'
         showsButtons
         >
         {slides}
@@ -537,7 +551,34 @@ export default class ResultsList extends Component {
     )
   }
 
-  render (): ?React.Element<*> {
+  _renderSummarizedMode = (option: ModeifyResult): Element<*> => {
+    return (
+      <TouchableOpacity
+        onPress={() => this._handlePressSummarized(option)}
+        style={styles.summarizedModeContainer}
+        >
+        {['cabi', 'carshare'].indexOf(option.dominantModeIcon) > -1
+          ? <ModeifyIcon
+              color='#fff'
+              name={option.dominantModeIcon}
+              size={20}
+              />
+          : <MaterialIcon
+              color='#fff'
+              name={option.dominantModeIcon}
+              size={20}
+              />
+        }
+        <Text
+          style={styles.summarizedModeTime}
+          >
+          {option.averageTime} mins
+        </Text>
+      </TouchableOpacity>
+    )
+  }
+
+  render (): ?Element<*> {
     switch (this.props.planViewState) {
       case 'init':
         return null
@@ -554,29 +595,7 @@ export default class ResultsList extends Component {
 // helper components
 // ------------------------------------------------------------------------
 
-const SummarizedMode = (props: {option: ModeifyResult}) : React.Element<*> => (
-  <View style={styles.summarizedModeContainer}>
-    {['cabi', 'carshare'].indexOf(props.option.dominantModeIcon) > -1
-      ? <ModeifyIcon
-          color='#fff'
-          name={props.option.dominantModeIcon}
-          size={20}
-          />
-      : <MaterialIcon
-          color='#fff'
-          name={props.option.dominantModeIcon}
-          size={20}
-          />
-    }
-    <Text
-      style={styles.summarizedModeTime}
-      >
-      {props.option.averageTime} mins
-    </Text>
-  </View>
-)
-
-const SwiperButton = (props: {type: 'prev' | 'next', color: string }): React.Element<*> => (
+const SwiperButton = (props: {type: 'prev' | 'next', color: string }): Element<*> => (
   <Text
     style={[styles.swiperButton, { color: props.color }]}
     >
