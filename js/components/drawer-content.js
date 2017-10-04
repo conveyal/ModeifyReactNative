@@ -18,6 +18,7 @@ import {addNavigationHelpers, DrawerItems, DrawerNavigator} from 'react-navigati
 import Button from './button'
 import Login from '../containers/login'
 
+import type {Element} from 'react'
 import type {
   NavigationAction,
   NavigationScreenProp,
@@ -25,15 +26,15 @@ import type {
 } from 'react-navigation/src/TypeDefinition'
 import type { DrawerScene } from 'react-navigation/src/views/Drawer/DrawerView'
 
-import type {UserReducer} from '../types/reducers'
+import type {UserReducerState} from '../types/reducers'
 import type {styleOptions} from '../types/rn-style-config'
 
 type Props = {
-  getLabel: (scene: DrawerScene) => ?(React.Element<*> | string),
+  getLabel: (scene: DrawerScene) => ?(Element<*> | string),
   logout: () => void,
   navigation: NavigationScreenProp<NavigationState, NavigationAction>,
-  renderIcon: (scene: DrawerScene) => ?React.Element<*>,
-  user: UserReducer
+  renderIcon: (scene: DrawerScene) => ?Element<*>,
+  user: UserReducerState
 }
 
 type State = {
@@ -53,9 +54,7 @@ const activeBackgroundColor = 'rgba(0, 0, 0, .04)'
 const inactiveTintColor = 'rgba(0, 0, 0, .87)'
 const inactiveBackgroundColor = 'transparent'
 
-export default class DrawerContent extends Component {
-  props: Props
-  state: State
+export default class DrawerContent extends Component<Props, State> {
 
   state = {
     showLogin: false
@@ -73,7 +72,7 @@ export default class DrawerContent extends Component {
   // handlers
   // ------------------------------------------------------------------------
 
-  _createNavigationHandlerForRoute = (routeName) => {
+  _createNavigationHandlerForRoute = (routeName: string) => {
     const {navigation} = this.props
     return () => {
       navigation.navigate('DrawerClose')

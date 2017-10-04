@@ -13,8 +13,7 @@ type Props = {
 }
 
 
-export default class DumbTextButton extends Component {
-  props: Props
+export default class DumbTextButton extends Component<Props> {
 
   render () {
     const {backgroundColor, color, containerStyle, text} = this.props

@@ -25,8 +25,7 @@ type LegalSection = {
   section: string
 }
 
-export default class Legal extends Component {
-  props: Props
+export default class Legal extends Component<Props> {
 
   static navigationOptions = {
     drawerLabel: 'LEGAL'

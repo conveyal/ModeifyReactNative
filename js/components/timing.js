@@ -45,7 +45,7 @@ type Props = {
 }
 
 
-export default class Timing extends Component {
+export default class Timing extends Component<Props, State> {
   props: Props
 
   static navigationOptions = {

@@ -1,3 +1,5 @@
+// @flow
+
 import {ListView} from 'react-native'
 
 import type {styleOptions} from './rn-style-config'
@@ -38,13 +40,13 @@ export type Route = {
 
 export type SegmentDetail = {
   description: string,
-  fromName: string,
+  fromName?: string,
   icon: {
     modeifyIcon: boolean,
     name: string
   },
   iconColor: string,
-  routes: Array<Route>,
+  routes?: Array<Route>,
   routeStyle?: {
     alight?: boolean,
     board?: boolean,
@@ -54,9 +56,9 @@ export type SegmentDetail = {
     transfer?: boolean
   },
   rowStyle: styleOptions,
-  segmentPatterns: Array<Pattern>,
+  segmentPatterns?: Array<Pattern>,
   textStyle: styleOptions,
-  walkTime: number
+  walkTime?: number
 }
 
 export type SegmentDisplay = {
@@ -109,6 +111,7 @@ export type Stop = {
 export type NonTransitProfile = {
   access: Array<NonTransitModeDetails>,
   modes: Array<string>,
+  segmentDetails?: Array<SegmentDetail>,
   stats: Stats,
   summary: string
 }
@@ -118,6 +121,7 @@ export type TransitProfile = {
   egress: Array<NonTransitModeDetails>,
   fares: Array<Fare>,
   modes: Array<string>,
+  segmentDetails?: Array<SegmentDetail>,
   stats: Stats,
   summary: string,
   transit: Array<TransitModeDetails>

@@ -19,13 +19,15 @@ import DumbTextButton from './dumb-text-button'
 import ModeifyIcon from './modeify-icon'
 import {getDayType, getTimeValue} from '../util/date-time'
 
+import type {Element} from 'react'
 import type {
   NavigationAction,
   NavigationRoute,
   NavigationScreenProp
 } from 'react-navigation/src/TypeDefinition'
 
-import type {CurrentQuery, Location, UserReducerState} from '../types/reducers'
+import type {CurrentQuery, Location} from '../types/query'
+import type {UserReducerState} from '../types/reducers'
 import type {styleOptions} from '../types/rn-style-config'
 
 type Props = {
@@ -49,7 +51,7 @@ type State = {
   locationIsCurrentLocation: boolean,
   locationIsFavorite: boolean,
   locationMenuTop: number,
-  locationMenuType: string,
+  locationMenuType: '' | 'from' | 'to',
   showingLocationMenu: boolean
 }
 
@@ -58,7 +60,7 @@ const Linking2: {
   openURL: (string) => void
 } = Linking
 
-export default class LocationAndSettings extends Component {
+export default class LocationAndSettings extends Component<Props, State> {
   props: Props
   state: State
 
@@ -89,11 +91,11 @@ export default class LocationAndSettings extends Component {
 
     const {currentQuery, user} = props
 
-    const location: Location = currentQuery[type]
+    const location: Location = (currentQuery[type]: any)
 
     return {
-      isCurrent: location.currentLocation,
-      isFavorite: (
+      isCurrent: !!location.currentLocation,
+      isFavorite: !!(
         user.idToken &&
         user.userMetadata &&
         user.userMetadata.modeify_places &&
@@ -163,7 +165,8 @@ export default class LocationAndSettings extends Component {
       locationMenuType
     } = this.state
 
-    const location: Location = currentQuery[locationMenuType]
+    // casting because locationMenuType must be set to for this to be activated
+    const location: Location = currentQuery[(locationMenuType: any)]
 
     if (locationIsCurrentLocation) {
       return alert('Only addresses can be favorited')
@@ -200,11 +203,13 @@ export default class LocationAndSettings extends Component {
   }
 
   _onViewInCFNMPress = () => {
-    const location: Location = this.props.currentQuery[this.state.locationMenuType]
+    // casting because locationMenuType must be set for this fn to be called
+    const location: Location = this.props.currentQuery[(this.state.locationMenuType: any)]
 
     if (isNumber(location.lat) && isNumber(location.lon)) {
+      // casting lat/lon because of above check
       const cfnmLink = 'http://carfreenearme.com/dashboard.cfm?' +
-        `cfnmLat=${location.lat}&cfnmLon=${location.lon}` +
+        `cfnmLat=${(location.lat: any)}&cfnmLon=${(location.lon: any)}` +
         '&cfnmRadius=0.125#map:art:metrobus:metrorail:cabi:car2go'
       Linking2.canOpenURL(cfnmLink)
         .then((supported: boolean) => {
@@ -222,9 +227,9 @@ export default class LocationAndSettings extends Component {
   // handlers
   // --------------------------------------------------
 
-  _renderBothLocations (): React.Element<*> {
-    const from: Location = this.props.currentQuery.from
-    const to: Location = this.props.currentQuery.to
+  _renderBothLocations (): Element<*> {
+    const from: ?Location = this.props.currentQuery.from
+    const to: ?Location = this.props.currentQuery.to
 
     const {
       locationIsFavorite,
@@ -385,7 +390,7 @@ export default class LocationAndSettings extends Component {
     )
   }
 
-  _renderCollapsedState (): React.Element<*> {
+  _renderCollapsedState (): Element<*> {
     return (
       <View style={styles.collapsed}>
         <TouchableOpacity
@@ -432,7 +437,7 @@ export default class LocationAndSettings extends Component {
     )
   }
 
-  _renderInitialState (): React.Element<*> {
+  _renderInitialState (): Element<*> {
     return (
       <View style={styles.homeInputContainer}>
         <MaterialIcon
@@ -451,7 +456,7 @@ export default class LocationAndSettings extends Component {
   _renderModeIconIfNeeded (
     modeName: string,
     iconName: string
-  ): ?React.Element<*> {
+  ): ?Element<*> {
     if (this.props.currentQuery.mode[modeName]) {
       return (
         <ModeifyIcon
@@ -463,7 +468,7 @@ export default class LocationAndSettings extends Component {
     }
   }
 
-  _renderModes (): React.Element<*> {
+  _renderModes (): Element<*> {
     const {currentQuery} = this.props
     const numModes: number = getNumModes(currentQuery)
 
@@ -499,7 +504,7 @@ export default class LocationAndSettings extends Component {
     )
   }
 
-  _renderTiming (): React.Element<*> {
+  _renderTiming (): Element<*> {
     const {currentQuery} = this.props
 
     const timeRange: string = `${getTimeValue('start', currentQuery)}-${getTimeValue('end', currentQuery)}`
@@ -538,7 +543,7 @@ export default class LocationAndSettings extends Component {
     )
   }
 
-  render (): React.Element<*> {
+  render (): Element<*> {
     switch (this.props.planViewState) {
       case 'init':
         return this._renderInitialState()
@@ -560,7 +565,10 @@ const possibleModes: string[] = [
 ]
 
 function getfavoriteIdx (location: Location, user: UserReducerState): number {
-  return user.userMetadata.modeify_places.findIndex((place: { address: string }) =>
+  if (!user.userMetadata || !user.userMetadata.modeify_places) {
+    return -1
+  }
+  return user.userMetadata.modeify_places.findIndex(place =>
     location.name === place.address
   )
 }

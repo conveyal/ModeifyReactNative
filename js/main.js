@@ -51,6 +51,9 @@ reducers.nav = navReducer
 const store = createStore(reducers)
 
 class AppWithNavigationState extends React.Component {
+  props: {}
+  state: {}
+
   render() {
     return (
       <AppNavigator

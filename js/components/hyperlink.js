@@ -8,10 +8,12 @@ import {
   TouchableOpacity
 } from 'react-native'
 
+import type {Element} from 'react'
+
 import type {styleOptions} from '../types/rn-style-config'
 
 type Props = {
-  children?: React.Element<*>,
+  children?: Element<*>,
   text?: string,
   url?: string
 }
@@ -21,8 +23,7 @@ const Linking2: {
   openURL: (string) => void
 } = Linking
 
-export default class HyperLink extends Component {
-  props: Props
+export default class HyperLink extends Component<Props> {
 
   _onPress = () => {
     const {url} = this.props

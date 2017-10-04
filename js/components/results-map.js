@@ -53,7 +53,7 @@ type Props = {
   toLocation: Location
 }
 
-export default class ResultsMap extends Component {
+export default class ResultsMap extends Component<Props, State> {
   props: Props
 
   componentDidUpdate () {

@@ -17,6 +17,7 @@ import type {
 } from '../types/query'
 import type {
   ModeifyOpts,
+  ModeifyPlace,
   UserMetadata,
   UserReducerState
 } from '../types/reducers'
@@ -79,6 +80,16 @@ export function getUserData ({
   currentQuery: CurrentQuery,
   oldUserData: UserReducerState
 }) {
+  const bearerToken = 'bearer ' + (
+    oldUserData.idToken
+      ? oldUserData.idToken
+      : ''
+  )
+  const userId = (
+    oldUserData.userId
+      ? oldUserData.userId
+      : ''
+  )
   return fetchAction({
     next: (err, res) => {
       if (err) {
@@ -99,10 +110,10 @@ export function getUserData ({
       }
     },
     options: {
-      headers: { Authorization: `bearer ${oldUserData.idToken}` },
+      headers: { Authorization: bearerToken },
       method: 'GET'
     },
-    url: `https://${config.auth0.domain}/api/v2/users/${oldUserData.userId}`
+    url: `https://${config.auth0.domain}/api/v2/users/${userId}`
   })
 }
 
@@ -169,7 +180,7 @@ function refreshUser ({
   // Refresh the id token
   return (
     authenticationAPI
-      .refreshToken(oldUserData.refreshToken)
+      .refreshToken(oldUserData.refreshToken ? oldUserData.refreshToken : '')
       .then((refreshResult: {
         expiresIn: number,
         idToken: string,
@@ -326,10 +337,12 @@ export function updateFavorite ({
   newLocationData: Favorite,
   user: UserReducerState
 }) {
-  const favoriteIdx: number = user.userMetadata.modeify_places.findIndex(
-    (favorite: Favorite) => (
-      oldLocationAddress === favorite.address
-    )
+  // this only gets called when updating a legacy favorite that doesn't have lat/lon
+  // therefore, we cast modeify_places
+  const userMetadata: UserMetadata = (user.userMetadata: any)
+  const modeify_places: Array<ModeifyPlace> = (userMetadata.modeify_places: any)
+  const favoriteIdx: number = modeify_places.findIndex(
+    favorite => oldLocationAddress === favorite.address
   )
   const newMetadata = {...user.userMetadata}
   newMetadata.modeify_places[favoriteIdx] = newLocationData

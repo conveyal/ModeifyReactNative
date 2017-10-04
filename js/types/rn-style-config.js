@@ -1,3 +1,5 @@
+// @flow
+
 export type styleOptions = {
   backgroundColor?: string,
   bottom?: number,

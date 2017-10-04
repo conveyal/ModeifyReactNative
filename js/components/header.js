@@ -12,6 +12,7 @@ import {
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons'
 import HeaderBackButton from 'react-navigation/src/views/HeaderBackButton'
 
+import type {Element} from 'react'
 import type {
   NavigationAction,
   NavigationRoute,
@@ -21,7 +22,7 @@ import type {
 import type {styleOptions} from '../types/rn-style-config'
 
 type Props = {
-  children?: React.Element<*>,
+  children?: Element<*>,
   left?: {
     back?: boolean,
     menu?: boolean
@@ -33,10 +34,9 @@ type Props = {
   title?: string
 }
 
-export default class Header extends Component {
-  props: Props
+export default class Header extends Component<Props> {
 
-  _renderLeft (): ?React.Element<View> {
+  _renderLeft (): ?Element<View> {
     const {left, navigation} = this.props
     if (left) {
       if (left.back) {

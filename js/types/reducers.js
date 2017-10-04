@@ -1,3 +1,6 @@
+// @flow
+
+import type {AppConfig} from './'
 import type {CurrentQuery} from './query'
 import type {TripPlanResponse} from './results'
 
@@ -31,7 +34,7 @@ export type ServiceAlertsReducerState = {
   success: boolean
 }
 
-type ModeifyPlace = {
+export type ModeifyPlace = {
   address: string
 }
 
@@ -54,6 +57,8 @@ export type UserReducerState = {
   idToken?: string,
   name?: string,
   picture?: string,
+  refreshToken?: string,
+  userId: string,
   userMetadata?: UserMetadata
 }
 

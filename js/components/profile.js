@@ -38,7 +38,7 @@ type Props = {
   user: UserReducerState
 }
 
-export default class Profile extends Component {
+export default class Profile extends Component<Props, State> {
   props: Props
 
   componentDidMount () {

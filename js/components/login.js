@@ -8,13 +8,8 @@ import {Platform} from 'react-native'
 import lock from '../util/auth0'
 
 import type {GetUserData, SetUser} from '../types/actions/user'
-import type {
-  CurrentQuery,
-  ModeifyModeSettings,
-  PlanPostprocessSettings,
-  UserMetadata,
-  UserReducerState
-} from '../types/reducers'
+import type {CurrentQuery, ModeifyModeSettings} from '../types/query'
+import type {UserMetadata, UserReducerState} from '../types/reducers'
 
 type Props = {
   currentQuery: CurrentQuery,
@@ -24,8 +19,7 @@ type Props = {
   setUser: SetUser
 }
 
-export default class Login extends Component {
-  props: Props
+export default class Login extends Component<Props> {
 
   componentDidMount() {
     const {

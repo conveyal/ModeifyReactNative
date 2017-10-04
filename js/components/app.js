@@ -30,10 +30,8 @@ type Props = {
 
 type State = {}
 
-export default class App extends Component {
-  props: Props
-  state: State
-
+export default class App extends Component<Props, State> {
+  
   static navigationOptions = {
     drawerLabel: 'HOME',
     drawerIcon: ({ tintColor }) => (

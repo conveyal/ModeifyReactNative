@@ -6,7 +6,7 @@ import toSentenceCase from 'to-sentence-case'
 
 import convert from './convert'
 
-import type {Location} from '../types/reducers'
+import type {Location} from '../types/query'
 import type {
   ModeifyResult,
   NonTransitModeDetails,
@@ -25,7 +25,7 @@ import type {styleOptions} from '../types/rn-style-config'
 
 type Step = {
   description: string,
-  icon?: {
+  stepIcon?: {
     fontAwesome?: boolean,
     modeifyIcon?: boolean,
     name: string,
@@ -52,8 +52,9 @@ export default class RouteResult {
     if (this.hasError || !this.lastResponse || !this.lastResponse.r5) return []
     if (this._results) return this._results
 
-    // console.log(this.lastResponse.r5.profile)
-    const scoredOptions = scorer.processOptions(this.lastResponse.r5.profile)
+    // cast to make flow happy
+    const r5Response = ((this.lastResponse.r5: any): TripPlanResult)
+    const scoredOptions = scorer.processOptions(r5Response.profile)
     const driveOption = addModeifyData(scoredOptions.find(option =>
       option.access[0].mode === 'CAR' &&
       (!option.transit || option.transit.length < 1)))
@@ -163,7 +164,7 @@ const DIRECTION_TO_CARDINALITY_TRANSFORM: StringLookup = {
 
 function addModeifyData (
   option: NonTransitProfile | TransitProfile,
-  driveOption: NonTransitProfile
+  driveOption?: NonTransitProfile
 ) {
   if (!option) return  // might happen if results returned don't include driving
   setModePresence(option)
@@ -206,7 +207,7 @@ export function getBestOptionsByMode(
   options: Array<ModeifyResult>
 ): Array<ModeifyResult> {
   const modesSeen: {[key: string]: boolean} = {}
-  return options.filter((option: ModeifyResult): ModeifyResult => {
+  return options.filter(option => {
     if (modesSeen[option.dominantMode]) return false
 
     modesSeen[option.dominantMode] = true
@@ -216,11 +217,11 @@ export function getBestOptionsByMode(
 
 
 function getRouteNames (routes: Array<Route>): string {
-  var agencyRoutes: {
-    [key: string]: Array<string>
+  const agencyRoutes: {
+    [key: string]: Array<Route>
   } = {} // maps agency name to array of routes
-  routes.forEach((r: Route) => {
-    let agencyName: string = r.agencyName
+  routes.forEach(r => {
+    let agencyName = r.agencyName
     // FIXME: fix this in the R5 response
     if (!agencyName || agencyName === 'UNKNOWN') {
       agencyName = r.id.split(':')[0]
@@ -265,7 +266,9 @@ export function getOptionTags (
   // add a generic 'transit' tag and add tags for each transit leg
   if (option.hasTransit) {
     tags.push('transit')
-    option.transit.forEach((transitLeg: TransitModeDetails) => {
+    // cast to make flow happy
+    const option2: TransitProfile = (option: any)
+    option2.transit.forEach((transitLeg: TransitModeDetails) => {
       tags.push(transitLeg.mode) // add the transit mode tag
       if (transitLeg.routes.length > 0) { // add the agency tag
         tags.push(transitLeg.routes[0].id.split(':')[0])
@@ -285,7 +288,8 @@ export function getSegmentDetailsForOption (
   toLocation: Location
 ): Array<SegmentDetail> {
   if (option.segmentDetails) {
-    return option.segmentDetails
+    // cast to make flow happy
+    return (option.segmentDetails: any)
   }
 
   let segments: Array<SegmentDetail> = []
@@ -314,23 +318,27 @@ export function getSegmentDetailsForOption (
 
   // Add transit segments
   let lastColor = ''
-  const transitSegments: Array<SegmentDetail> = option.transit || []
+  // cast to make flow happy
+  const transitSegments: Array<SegmentDetail> = (option.transit || []: any)
   const length = transitSegments.length
   for (let i = 0; i < length; i++) {
     const segment: SegmentDetail = transitSegments[i]
-    const fromName: string = segment.fromName
-    const patterns: Array<Pattern> = segment.segmentPatterns
+    const fromName: string = segment.fromName || ''
+    const patterns: Array<Pattern> = segment.segmentPatterns || []
     const color: string = patterns[0].color
     const routeAgencyNames = {}
-    segment.routes.forEach((route: Route) => {
-      routeAgencyNames[route.id] = route.agencyName
-    })
+    if (segment.routes) {
+      segment.routes.forEach((route: Route) => {
+        routeAgencyNames[route.id] = route.agencyName
+      })
+    }
 
     // Check for a walking distance to see if you are boarding or transferring
     if (segment.walkTime !== 0 || i === 0) {
       if (i > 0) {
         segments.push(setRowStyle({
-          description: 'Walk ' + (Math.ceil(segment.walkTime / 60) + 1) + ' min',
+          // cast to make flow happy
+          description: 'Walk ' + (Math.ceil((segment.walkTime: any) / 60) + 1) + ' min',
           icon: {
             materialIcon: true,
             name: 'walk'
@@ -371,7 +379,7 @@ export function getSegmentDetailsForOption (
     }
 
     segments.push(setRowStyle({
-      description: 'Take ' + getRouteNames(segment.routes),
+      description: 'Take ' + getRouteNames(segment.routes || []),
       routeStyle: {
         take: true,
         color
@@ -380,9 +388,9 @@ export function getSegmentDetailsForOption (
     }))
 
     // Check if you are deboarding
-    if (i + 1 >= length || transitSegments[i + 1].walkTime > 0) {
+    if (i + 1 >= length || (transitSegments[i + 1].walkTime || 0) > 0) {
       segments.push(setRowStyle({
-        description: segment.toName,
+        description: segment.toName || '',
         icon: {
           stopImage: true
         },
@@ -399,10 +407,14 @@ export function getSegmentDetailsForOption (
     lastColor = color
   }
 
-  if (option.egress && option.egress.length > 0) {
-    segments = segments.concat(
-      narrativeDirections(option.egress[0].streetEdges)
-    )
+  if (option.egress) {
+    // make flow happy
+    const option2: TransitProfile = (option: any)
+    if (option2.egress.length > 0) {
+      segments = segments.concat(
+        narrativeDirections(option2.egress[0].streetEdges)
+      )
+    }
   }
 
   // add to location
@@ -467,13 +479,13 @@ function narrativeDirections (edges: Array<StreetEdge>): Array<Step> {
         ' and ride ',
         streetEdge.absoluteDirection.toLowerCase(),
         streetSuffix].join('')
-      step.icon = {
+      step.stepIcon = {
         modeifyIcon: true,
         name: 'cabi'
       }
     } else if (streetEdge.bikeRentalOffStation) {
       step.description = `Park bike at ${streetEdge.bikeRentalOffStation.name}`
-      step.icon = {
+      step.stepIcon = {
         modeifyIcon: true,
         name: 'cabi'
       }
@@ -482,10 +494,10 @@ function narrativeDirections (edges: Array<StreetEdge>): Array<Step> {
         ' ',
         streetEdge.absoluteDirection.toLowerCase(),
         streetSuffix].join('')
-      step.icon = MODE_TO_ICON[streetEdge.mode]
+      step.stepIcon = MODE_TO_ICON[streetEdge.mode]
     } else {
       step.description = toSentenceCase(streetEdge.relativeDirection) + streetSuffix
-      step.icon = {
+      step.stepIcon = {
         fontAwesome: true,
         name: DIRECTION_TO_CARDINALITY[streetEdge.relativeDirection],
         transform: DIRECTION_TO_CARDINALITY_TRANSFORM[streetEdge.relativeDirection]
@@ -510,8 +522,11 @@ function patternFilter (
       pattern.shortName = pattern.shortName || pattern.longName
     }
 
-    if (names.indexOf(pattern[by]) === -1) {
-      names.push(pattern[by])
+    // $FlowFixMe ignoring silly flow error
+    const name = pattern.hasOwnProperty(by) ? pattern[by] : ''
+
+    if (names.indexOf(name) === -1) {
+      names.push(name)
       return true
     } else {
       return false
@@ -659,12 +674,12 @@ function setModeStrings (option: NonTransitProfile | TransitProfile) {
   option.modeDescriptor = modeStr
 }
 
-function setRowStyle (step: Step) {
+function setRowStyle (step: Object): SegmentDetail {
   step.rowStyle = {
     backgroundColor: segmentRowIdx % 2 ? '#edeff0' : '#fff'
   }
   segmentRowIdx++
-  return step
+  return (step: any)
 }
 
 function setSegments (option: NonTransitProfile | TransitProfile) {

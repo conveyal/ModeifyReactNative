@@ -43,7 +43,8 @@ import type {
 } from 'react-navigation/src/TypeDefinition'
 
 import type {AppConfig, Favorite, MapRegion} from '../types'
-import type {CurrentQuery, UserReducerState} from '../types/reducers'
+import type {CurrentQuery} from '../types/query'
+import type {UserReducerState} from '../types/reducers'
 import type {styleOptions} from '../types/rn-style-config'
 
 const config: AppConfig = require('../../config.json')
@@ -87,7 +88,7 @@ type State = {
 const geocodeQueries: GeocodeQueryCache = {}
 
 
-export default class LocationSelection extends Component {
+export default class LocationSelection extends Component<Props, State> {
   currentAutocompleteQuery: string
   currentReverseQuery: MapRegion
   props: Props
@@ -430,23 +431,30 @@ export default class LocationSelection extends Component {
         break
     }
 
-    const hasFavorites: boolean = (
+    let hasFavorites: boolean = false
+    let favorites: ListView.DataSource
+
+    if (
       user &&
       user.userMetadata &&
       user.userMetadata.modeify_places &&
       user.userMetadata.modeify_places.length > 0
-    )
+    ) {
+      favorites = createDataSource()
+      // make flow happy *sigh*
+      favorites = favorites.cloneWithRows(
+        user.userMetadata && user.userMetadata.modeify_places
+          ? user.userMetadata.modeify_places
+          : []
+      )
+      hasFavorites = true
+    }
+
     const showSearchOnly: boolean = (
       inputValue !== undefined &&
       inputValue.length > 3 &&
       !noGeocodeResultsFound
     )
-
-    let favorites: ListView.DataSource
-    if (hasFavorites) {
-      favorites = createDataSource()
-      favorites = favorites.cloneWithRows(user.userMetadata.modeify_places)
-    }
 
     return (
       <View style={styles.resultContainer}>

@@ -1,3 +1,5 @@
+// @flow
+
 export type Location = {
   currentLocation?: boolean,
   lat?: number,

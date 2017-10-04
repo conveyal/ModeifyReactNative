@@ -34,7 +34,7 @@ type Props = {
   serviceAlerts: ServiceAlertsReducerState
 }
 
-export default class ServiceAlerts extends Component {
+export default class ServiceAlerts extends Component<Props, State> {
   props: Props
 
   static navigationOptions = {

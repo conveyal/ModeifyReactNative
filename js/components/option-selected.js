@@ -29,7 +29,8 @@ import type {
 } from 'react-navigation/src/TypeDefinition'
 
 import type {Resource} from '../types'
-import type {Location, UserReducerState} from '../types/reducers'
+import type {Location} from '../types/query'
+import type {UserReducerState} from '../types/reducers'
 import type {NonTransitProfile, TransitProfile} from '../types/results'
 import type {styleOptions} from '../types/rn-style-config'
 
@@ -51,7 +52,7 @@ type State = {
   resources: Array<Resource>
 }
 
-export default class OptionSelected extends Component {
+export default class OptionSelected extends Component<Props, State> {
   props: Props
   state: State
 

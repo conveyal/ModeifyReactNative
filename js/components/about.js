@@ -21,9 +21,7 @@ type Props = {
   navigation: NavigationScreenProp<NavigationRoute, NavigationAction>
 }
 
-export default class About extends Component {
-  props: Props
-
+export default class About extends Component<Props> {
   static navigationOptions = {
     drawerLabel: 'ABOUT'
   }

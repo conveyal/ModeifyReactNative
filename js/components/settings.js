@@ -52,7 +52,7 @@ const walkSpeedOptions: string[] = ['2 mph', '3 mph', '4 mph']
 const walkSpeedValues: number[] = [2, 3, 4]
 
 
-export default class Settings extends Component {
+export default class Settings extends Component<Props, State> {
   props: Props
   state: State
 
