@@ -403,7 +403,7 @@ const polylineStyles: { [key: string]: styleOptions } = {
     strokeWidth: 3
   },
   BUS: {
-    strokeWidth: 5
+    strokeWidth: 4
   },
   CAR: {
     lineDashPattern: [10, 10],
@@ -416,13 +416,13 @@ const polylineStyles: { [key: string]: styleOptions } = {
     strokeWidth: 3
   },
   RAIL: {
-    strokeWidth: 8
+    strokeWidth: 6
   },
   SUBWAY: {
-    strokeWidth: 8
+    strokeWidth: 6
   },
   TRAM: {
-    strokeWidth: 8
+    strokeWidth: 6
   },
   WALK: {
     lineDashPattern: [3, 3],
