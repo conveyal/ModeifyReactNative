@@ -21,6 +21,7 @@ export type OtpReducerState = {
 export type ServiceAlert = {
   alertUrl: string,
   fromDate: string,
+  iconCode?: string,
   text: string,
   toDate: string
 }

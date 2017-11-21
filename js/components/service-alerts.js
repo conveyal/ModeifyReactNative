@@ -12,6 +12,7 @@ import {
   Text,
   View
 } from 'react-native'
+import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome'
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons'
 
 import Header from './header'
@@ -124,11 +125,18 @@ function renderAlert (alert: ServiceAlert): React.Element<*> {
       url={alert.alertUrl}
       >
       <View style={styles.alertContainer}>
-        <MaterialIcon
-          name='alert'
-          size={30}
-          style={styles.alertIcon}
-          />
+        {!!alert.iconCode
+          ? <FontAwesomeIcon
+              name={alert.iconCode.replace(/^fa-/, '')}
+              size={30}
+              style={styles.alertIcon}
+              />
+          : <MaterialIcon
+              name='alert'
+              size={30}
+              style={styles.alertIcon}
+              />
+        }
         <Text
           style={[
             styles.alertText,
