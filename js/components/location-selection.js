@@ -1,9 +1,9 @@
 // @flow
 
+import {autocomplete, search, reverse} from '@conveyal/geocoder-arcgis-geojson'
 import lonlat from '@conveyal/lonlat'
 import isEqual from 'lodash.isequal'
 import isNumber from 'lodash.isnumber'
-import {autocomplete, reverse, search} from 'isomorphic-mapzen-search'
 import throttle from 'lodash.throttle'
 import React, {Component} from 'react'
 import {
@@ -31,11 +31,12 @@ import {headerStyles} from '../util/styles'
 
 import type {
   AutocompleteParams,
+  AutcompleteResult,
   IMSResponse,
   MapzenResult,
   ReverseParams,
   SearchParams
-} from 'isomorphic-mapzen-search'
+} from '@conveyal/geocoder-arcgis-geojson'
 import type {
   NavigationAction,
   NavigationRoute,
@@ -48,8 +49,8 @@ import type {styleOptions} from '../types/rn-style-config'
 
 const config: AppConfig = require('../../config.json')
 
-type GeocodeQueryCache = {
-  [key: string]: Array<MapzenResult>
+type AutocompleteQueryCache = {
+  [key: string]: Array<AutoCompleteResult>
 }
 
 type SetLocation = {
@@ -77,14 +78,14 @@ type Props = {
 }
 
 type State = {
-  geocodeResults: ListView.DataSource;
+  autoCompleteResults: ListView.DataSource;
   inputValue?: string;
   markerLocation: MapRegion;
   noGeocodeResultsFound?: boolean;
   selectingOnMap?: boolean;
 }
 
-const geocodeQueries: GeocodeQueryCache = {}
+const autocompleteQueries: AutocompleteQueryCache = {}
 
 
 export default class LocationSelection extends Component {
@@ -105,7 +106,7 @@ export default class LocationSelection extends Component {
     }
 
     this.state = {
-      geocodeResults: createDataSource(),
+      autoCompleteResults: createDataSource(),
       inputValue: '',
       markerLocation: config.map.initialRegion
     }
@@ -123,18 +124,18 @@ export default class LocationSelection extends Component {
   _autocompleteText = throttle((text: string) => {
     if (!text) return
 
-    const {geocodeResults, selectingOnMap} = this.state
+    const {autoCompleteResults, selectingOnMap} = this.state
 
     if (selectingOnMap) return
 
     if (text.length < 4) {
-      return this.setState({ geocodeResults: geocodeResults.cloneWithRows([]) })
+      return this.setState({ autoCompleteResults: autoCompleteResults.cloneWithRows([]) })
     }
 
-    if (geocodeQueries[text]) {
+    if (autocompleteQueries[text]) {
       return this.setState({
-        geocodeResults: geocodeResults.cloneWithRows(geocodeQueries[text]),
-        noGeocodeResultsFound: geocodeQueries[text].length === 0
+        autoCompleteResults: autoCompleteResults.cloneWithRows(autocompleteQueries[text]),
+        noGeocodeResultsFound: autocompleteQueries[text].length === 0
       })
     }
 
@@ -150,27 +151,25 @@ export default class LocationSelection extends Component {
     ): any)
 
     autocomplete(autocompleteQuery)
-      .then((geojson) => {
-        if (geojson.isomorphicMapzenSearchQuery.text !==
-          this.currentAutocompleteQuery) return
+      .then(response => {
+        if (response.query.text !== this.currentAutocompleteQuery) return
 
-
-        const {features} = geojson
+        const {features} = response
 
         if (features) {
           // console.log(`successful geocode for ${text}`)
-          geocodeQueries[text] = features
+          autocompleteQueries[text] = features
           this.setState({
-            geocodeResults: geocodeResults.cloneWithRows(features),
+            autoCompleteResults: autoCompleteResults.cloneWithRows(features),
             noGeocodeResultsFound: features.length === 0
           })
         } else {
-          throw geojson
+          throw response
         }
       })
       .catch((err) => {
         this.setState({
-          geocodeResults: geocodeResults.cloneWithRows([]),
+          autoCompleteResults: autoCompleteResults.cloneWithRows([]),
           noGeocodeResultsFound: true
         })
       })
@@ -198,6 +197,7 @@ export default class LocationSelection extends Component {
         {},
         config.geocoderSettings,
         {
+          forStorage: true,
           text: favorite.address
         }
       ): any)
@@ -237,11 +237,26 @@ export default class LocationSelection extends Component {
     }
   }
 
-  _onGeocodeResultSelect = (value: MapzenResult) => {
-    this._setLocation(({
-      ...lonlat(value.geometry.coordinates),
-      name: value.properties.label
-    }: any))
+  _onAutocompleteResultSelect = (value: AutoCompleteResult) => {
+    // autocomplete result selected, find actual coordinates
+    search(Object.assign(
+      {},
+      config.geocoderSettings,
+      {
+        forStorage: true,
+        magicKey: value.magicKey,
+        text: value.text
+      }
+    ))
+      .then((response: AutoCompleteResult) => {
+        if (response.features) {
+          const value = response.features[0]
+          this._setLocation(({
+            ...lonlat(value.geometry.coordinates),
+            name: value.properties.label
+          }: any))
+        }
+      })
   }
 
   _onMapRegionChange = (region: MapRegion) => {
@@ -258,7 +273,10 @@ export default class LocationSelection extends Component {
     const reverseQuery: ReverseParams = Object.assign(
       {},
       config.geocoderSettings,
-      { point: region }
+      {
+        forStorage: true,
+        point: region
+      }
     )
 
     reverse(reverseQuery)
@@ -267,10 +285,7 @@ export default class LocationSelection extends Component {
         if (
           lonlat.isEqual(
             this.currentReverseQuery,
-            {
-              lat: geojson.isomorphicMapzenSearchQuery['point.lat'],
-              lon: geojson.isomorphicMapzenSearchQuery['point.lon']
-            }
+            geojson.query
           ) &&
           features &&
           features.length > 0
@@ -409,9 +424,9 @@ export default class LocationSelection extends Component {
   _renderResults () {
     const {currentQuery, navigation, user} = this.props
     const {
+      autoCompleteResults,
       inputValue,
       noGeocodeResultsFound,
-      geocodeResults,
       selectingOnMap
     } = this.state
     const {params} = navigation.state
@@ -484,15 +499,15 @@ export default class LocationSelection extends Component {
             <View style={styles.resultDividerContainer}>
               <Text style={styles.resultDividerText}>Search Results</Text>
             </View>
-            {(geocodeResults.getRowCount() > 0
+            {(autoCompleteResults.getRowCount() > 0
               ? <ListView
-                  dataSource={geocodeResults}
-                  renderRow={(geocodeResult: MapzenResult) => (
+                  dataSource={autoCompleteResults}
+                  renderRow={(autocompleteResult: AutoCompleteResult) => (
                     <TouchableOpacity
-                      onPress={() => this._onGeocodeResultSelect(geocodeResult)}
+                      onPress={() => this._onAutocompleteResultSelect(autocompleteResult)}
                       >
                       <Text style={styles.geocodeResult}>
-                        {geocodeResult.properties.label}
+                        {autocompleteResult.text}
                       </Text>
                     </TouchableOpacity>
                   )}

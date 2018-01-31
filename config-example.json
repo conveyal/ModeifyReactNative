@@ -30,7 +30,8 @@
         "maxLat": 39.6987
       }
     },
-    "apiKey": "MAPZEN_KEY"
+    "clientId": "ArcGIS-KEY",
+    "clientSecret": "ArcGIS-KEY"
   },
   "modes": [
     "TRANSIT,WALK"

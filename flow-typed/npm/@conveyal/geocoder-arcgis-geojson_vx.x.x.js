@@ -18,7 +18,18 @@ type FocusPoint = {
   radius: number
 }
 
-declare module 'isomorphic-mapzen-search' {
+type BaseQuery = {
+  clientId?: string,
+  clientSecret?: string,
+  url?: string
+}
+
+declare module '@conveyal/geocoder-arcgis-geojson' {
+  declare export type AutocompleteResult = {
+    magicKey: string,
+    text: string
+  }
+
   declare export type MapzenResult = {
     geometry: {
       coordinates: [number, number]
@@ -29,15 +40,18 @@ declare module 'isomorphic-mapzen-search' {
     }
   }
 
-  declare export type IMSResponse = {
-    features?: Array<MapzenResult>,
-    isomorphicMapzenSearchQuery: Object
+  declare export type AutocompleteResponse = {
+    features?: Array<AutocompleteResult>,
+    query: Object
   }
 
-  declare export type AutocompleteParams = {
-    apiKey: string,
-    boundary: {
-      country?: string,
+  declare export type IMSResponse = {
+    features?: Array<MapzenResult>,
+    query: Object
+  }
+
+  declare export type AutocompleteParams = BaseQuery & {
+    boundary?: {
       rect?: {
         minLat: number,
         minLon: number,
@@ -46,26 +60,15 @@ declare module 'isomorphic-mapzen-search' {
       }
     },
     focusPoint?: FocusPoint,
-    format?: boolean,
-    layers?: any,
-    sources?: string,
     text: string
   }
 
-  declare export type ReverseParams = {
-    apiKey: string,
-    format?: boolean,
+  declare export type ReverseParams = BaseQuery & {
     point: mixed
   }
 
-  declare export type SearchParams = {
-    apiKey: string,
+  declare export type SearchParams = BaseQuery & {
     boundary?: {
-      circle?: {
-        centerPoint: mixed,
-        radius: number
-      },
-      country?: string,
       rect?: {
         minLat: number,
         minLon: number,
@@ -74,13 +77,18 @@ declare module 'isomorphic-mapzen-search' {
       }
     },
     focusPoint?: FocusPoint,
-    format?: boolean,
     size?: number,
     sources?: string,
     text: string
   }
 
-  declare export function autocomplete(AutocompleteParams): Promise<IMSResponse>
+  declare export function autocomplete(AutocompleteParams): Promise<{
+    features?: Array<{
+      magicKey: string,
+      text: string
+    }>,
+    query: Object
+  }>
   declare export function reverse(ReverseParams): Promise<IMSResponse>
   declare export function search(SearchParams): Promise<IMSResponse>
 }
