@@ -142,11 +142,11 @@ android {
 }
 
 dependencies {
+    compile project(':react-native-auth0')
     compile project(':react-native-google-analytics-bridge')
     compile("com.google.android.gms:play-services-analytics:9.+"){
       force = true
     }
-    compile project(':react-native-lock')
     compile project(':react-native-vector-icons')
     compile project(':react-native-maps')
     compile fileTree(dir: "libs", include: ["*.jar"])

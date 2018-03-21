@@ -27,6 +27,7 @@
       <activity
         android:name=".MainActivity"
         android:label="@string/app_name"
+        android:launchMode="singleTask"
         android:screenOrientation="portrait"
         android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
         android:theme="@style/SplashTheme"
@@ -35,34 +36,17 @@
           <action android:name="android.intent.action.MAIN" />
           <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
+        <intent-filter>
+          <action android:name="android.intent.action.VIEW" />
+          <category android:name="android.intent.category.DEFAULT" />
+          <category android:name="android.intent.category.BROWSABLE" />
+          <data
+              android:host="carfreeatoz-dev.auth0.com"
+              android:pathPrefix="/android/${applicationId}/callback"
+              android:scheme="${applicationId}" />
+        </intent-filter>
       </activity>
       <activity android:name="com.facebook.react.devsupport.DevSettingsActivity" />
-      <!--Auth0 Lock-->
-      <activity
-        android:name="com.auth0.lock.LockActivity"
-        android:theme="@style/Lock.Theme"
-        android:screenOrientation="portrait"
-        android:launchMode="singleTask">
-      </activity>
-      <!--Auth0 Lock End-->
-      <!--Auth0 Lock Embedded WebView-->
-      <activity
-          android:name="com.auth0.identity.web.WebViewActivity"
-          android:theme="@style/Lock.Theme">
-      </activity>
-      <!--Auth0 Lock Embedded WebView End-->
-      <!--Auth0 Lock Passwordless-->
-      <activity
-          android:name="com.auth0.lock.passwordless.LockPasswordlessActivity"
-          android:theme="@style/Lock.Theme"
-          android:screenOrientation="portrait"
-          android:launchMode="singleTask">
-      </activity>
-      <activity
-          android:name="com.auth0.lock.passwordless.CountryCodeActivity"
-          android:theme="@style/Lock.Theme">
-      </activity>
-      <!--Auth0 Lock Passwordless End-->
       <meta-data
        android:name="com.google.android.geo.API_KEY"
        android:value="AIzaSyBIudOvTOpNH5L4WfSaR83Y2O62_PHt71c"

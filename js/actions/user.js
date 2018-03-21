@@ -8,7 +8,6 @@ import {setMode} from 'otp-react-redux/lib/actions/form'
 import {AsyncStorage} from 'react-native'
 
 import {defaultModeSettings} from '../util'
-import lock from '../util/auth0'
 
 import type {AppConfig, Favorite} from '../types'
 import type {
@@ -21,7 +20,6 @@ import type {
   UserReducerState
 } from '../types/reducers'
 
-const authenticationAPI = lock.authenticationAPI()
 const config: AppConfig = require('../../config.json')
 
 export function addFavorite ({
@@ -167,43 +165,42 @@ function refreshUser ({
   oldUserData: UserReducerState
 }) {
   // Refresh the id token
-  return (
-    authenticationAPI
-      .refreshToken(oldUserData.refreshToken)
-      .then((refreshResult: {
-        expiresIn: number,
-        idToken: string,
-        tokenType: string
-      }) => {
-        if (!refreshResult.idToken) {
-          throw new Error('Token refresh failed')
-        }
-        console.log('token refreshed successfully')
-
-        // Call the management API to get the user data
-        const newToken = { idToken: refreshResult.idToken }
-        const newUserData = {
-          ...oldUserData,
-          ...newToken
-        }
-        return [
-          setAuth0User(newUserData),
-          getUserData ({
-            currentQuery,
-            oldUserData: newUserData
-          })
-        ]
-      })
-      .catch((err) => {
-        if (err.message === 'Token refresh failed') {
-          console.log('Token refresh failed')
-          return logout()
-        }
-        console.error('error occurred while refreshing token')
-        console.error(err)
-        return logout()
-      })
-  )
+  return
+  // authenticationAPI
+  //   .refreshToken(oldUserData.refreshToken)
+  //   .then((refreshResult: {
+  //     expiresIn: number,
+  //     idToken: string,
+  //     tokenType: string
+  //   }) => {
+  //     if (!refreshResult.idToken) {
+  //       throw new Error('Token refresh failed')
+  //     }
+  //     console.log('token refreshed successfully')
+  //
+  //     // Call the management API to get the user data
+  //     const newToken = { idToken: refreshResult.idToken }
+  //     const newUserData = {
+  //       ...oldUserData,
+  //       ...newToken
+  //     }
+  //     return [
+  //       setAuth0User(newUserData),
+  //       getUserData ({
+  //         currentQuery,
+  //         oldUserData: newUserData
+  //       })
+  //     ]
+  //   })
+  //   .catch((err) => {
+  //     if (err.message === 'Token refresh failed') {
+  //       console.log('Token refresh failed')
+  //       return logout()
+  //     }
+  //     console.error('error occurred while refreshing token')
+  //     console.error(err)
+  //     return logout()
+  //   })
 }
 
 export function saveUserMetadata (

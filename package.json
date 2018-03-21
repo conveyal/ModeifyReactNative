@@ -10,7 +10,7 @@
 		"test": "npm run flow && jest"
 	},
 	"dependencies": {
-		"@conveyal/geocoder-arcgis-geojson": "https://github.com/conveyal/geocoder-arcgis-geojson#dev",
+		"@conveyal/geocoder-arcgis-geojson": "^0.0.2",
 		"@conveyal/lonlat": "^1.3.0",
 		"@conveyal/woonerf": "^2.4.1",
 		"currency-formatter": "^1.2.1",
@@ -26,11 +26,11 @@
 		"qs": "^6.3.1",
 		"react": "~15.4.0",
 		"react-native": "0.41.2",
+		"react-native-auth0": "^1.2.2",
 		"react-native-google-analytics-bridge": "^5.0.1",
 		"react-native-html-parser": "^0.0.4",
-		"react-native-lock": "^0.6.0",
 		"react-native-maps": "0.13.0",
-		"react-native-modal-dropdown": "evansiroky/react-native-modal-dropdown",
+		"react-native-modal-dropdown": "^0.6.2",
 		"react-native-simple-markdown": "^1.0.60-rc.3",
 		"react-native-swiper": "^1.5.4",
 		"react-native-vector-icons": "^4.0.0",
