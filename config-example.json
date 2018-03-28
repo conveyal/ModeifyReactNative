@@ -6,7 +6,8 @@
   },
   "auth0": {
     "clientId": "",
-    "domain": ""
+    "domain": "",
+    "namespace": "https://example.com/"
   },
   "debouncePlanTimeMs": 500,
   "map": {

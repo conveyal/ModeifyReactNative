@@ -37,6 +37,7 @@ type Props = {
 }
 
 type State = {
+  promptSignup: boolean,
   showLogin: boolean
 }
 
@@ -58,6 +59,7 @@ export default class DrawerContent extends Component {
   state: State
 
   state = {
+    promptSignup: false,
     showLogin: false
   }
 
@@ -107,12 +109,14 @@ export default class DrawerContent extends Component {
 
   _onLockDismiss = () => {
     this.setState({
+      promptSignup: false,
       showLogin: false
     })
   }
 
   _onLogin = () => {
     this.setState({
+      promptSignup: false,
       showLogin: true
     })
   }
@@ -123,6 +127,7 @@ export default class DrawerContent extends Component {
 
   _onSignup = () => {
     this.setState({
+      promptSignup: true,
       showLogin: true
     })
   }
@@ -177,6 +182,7 @@ export default class DrawerContent extends Component {
 
   render () {
     const {user} = this.props
+    const {showLogin, promptSignup} = this.state
     const userLoggedIn: boolean = !!user.idToken
 
     return (
@@ -241,9 +247,10 @@ export default class DrawerContent extends Component {
             <Text style={styles.cfnmText}>CAR FREE NEAR ME</Text>
           </View>
         </TouchableOpacity>
-        {this.state.showLogin &&
+        {showLogin &&
           <Login
             onLockDismiss={this._onLockDismiss}
+            signUp={promptSignup}
             />
         }
       </ScrollView>

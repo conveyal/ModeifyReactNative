@@ -5,9 +5,10 @@ import {logout as logoutFromStore, setAuth0User} from '@conveyal/woonerf/actions
 import camelcase from 'lodash.camelcase'
 import isNumber from 'lodash.isnumber'
 import {setMode} from 'otp-react-redux/lib/actions/form'
-import {AsyncStorage} from 'react-native'
+import {AsyncStorage, Platform} from 'react-native'
 
 import {defaultModeSettings} from '../util'
+import auth0 from '../util/auth0'
 
 import type {AppConfig, Favorite} from '../types'
 import type {
@@ -152,6 +153,14 @@ export function logout (removeFromAsyncStorage: boolean = true) {
         console.error(err)
       })
   }
+  // logout from auth0 so that the webAuth doesn't act like we're still logged in
+  auth0.webAuth
+    .clearSession({})
+    .then(result => console.log('successfully logged out', result))
+    .catch(error => {
+      console.log('logout unsuccessful!')
+      console.log(error)
+    })
   return logoutFromStore()
 }
 
@@ -165,42 +174,44 @@ function refreshUser ({
   oldUserData: UserReducerState
 }) {
   // Refresh the id token
-  return
-  // authenticationAPI
-  //   .refreshToken(oldUserData.refreshToken)
-  //   .then((refreshResult: {
-  //     expiresIn: number,
-  //     idToken: string,
-  //     tokenType: string
-  //   }) => {
-  //     if (!refreshResult.idToken) {
-  //       throw new Error('Token refresh failed')
-  //     }
-  //     console.log('token refreshed successfully')
-  //
-  //     // Call the management API to get the user data
-  //     const newToken = { idToken: refreshResult.idToken }
-  //     const newUserData = {
-  //       ...oldUserData,
-  //       ...newToken
-  //     }
-  //     return [
-  //       setAuth0User(newUserData),
-  //       getUserData ({
-  //         currentQuery,
-  //         oldUserData: newUserData
-  //       })
-  //     ]
-  //   })
-  //   .catch((err) => {
-  //     if (err.message === 'Token refresh failed') {
-  //       console.log('Token refresh failed')
-  //       return logout()
-  //     }
-  //     console.error('error occurred while refreshing token')
-  //     console.error(err)
-  //     return logout()
-  //   })
+  auth0
+    .auth
+    .refreshToken({refreshToken: oldUserData.refreshToken})
+    .then((refreshResult: {
+      accessToken: string,
+      expiresIn: number,
+      tokenType: string
+    }) => {
+      console.log('successfully renewed auth')
+      console.log(refreshResult)
+      if (!refreshResult.accessToken) {
+        throw new Error('Token refresh failed')
+      }
+      console.log('token refreshed successfully')
+
+      // Call the management API to get the user data
+      const newToken = { accessToken: refreshResult.accessToken }
+      const newUserData = {
+        ...oldUserData,
+        ...newToken
+      }
+      return [
+        setAuth0User(newUserData),
+        getUserData ({
+          currentQuery,
+          oldUserData: newUserData
+        })
+      ]
+    })
+    .catch((err) => {
+      if (err.message === 'Token refresh failed') {
+        console.log('Token refresh failed')
+        return logout()
+      }
+      console.error('error occurred while refreshing token')
+      console.error(err)
+      return logout()
+    })
 }
 
 export function saveUserMetadata (
@@ -268,6 +279,8 @@ export function setUser ({
   newUserData: UserReducerState,
   saveToAsyncStorage: boolean
 }) {
+
+  newUserData = camelCaseObj(newUserData)
 
   // update user store
   const actions = [setAuth0User(newUserData)]

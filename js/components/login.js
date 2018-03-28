@@ -1,10 +1,15 @@
 // @flow
 
+import decodeJwt from 'jwt-decode'
 import isNumber from 'lodash.isnumber'
 import moment from 'moment'
 import React, {Component} from 'react'
 import {Platform} from 'react-native'
+import uuid from 'uuid/v4'
 
+import auth0 from '../util/auth0'
+
+import type {AppConfig} from '../types'
 import type {GetUserData, SetUser} from '../types/actions/user'
 import type {
   CurrentQuery,
@@ -14,12 +19,15 @@ import type {
   UserReducerState
 } from '../types/reducers'
 
+const config: AppConfig = require('../../config.json')
+
 type Props = {
   currentQuery: CurrentQuery,
   getUserData: GetUserData,
   onLockDismiss: () => void,
   saveUserMetadata: (UserReducerState, UserMetadata) => void,
-  setUser: SetUser
+  setUser: SetUser,
+  signUp?: boolean
 }
 
 export default class Login extends Component {
@@ -31,65 +39,79 @@ export default class Login extends Component {
       getUserData,
       onLockDismiss,
       saveUserMetadata,
-      setUser
+      setUser,
+      signUp
     } = this.props
 
-    // As of 8 June 2017 this following code is deprecated.
-    // See more notes in '../util/auth0'
-    // The lock widget will need to be replaced with something else.
-    // auth0 currently recommends using the hosted login page:
-    // https://auth0.com/docs/quickstart/native/react-native
+    const nonce = uuid()
 
-    // lock.show({
-    //   authParams: {
-    //     scope: "openid email offline_access",
-    //   },
-    //   closable: true
-    // }, (err, profile, token) => {
-    //   if (err) {
-    //     if (err === 'Lock was dismissed by the user') {
-    //       return onLockDismiss()
-    //     }
-    //     console.log(err)
-    //     return
-    //   }
-    //
-    //   // Authentication worked!
-    //   console.log('Logged in with Auth0!')
-    //
-    //   const newUserData = {
-    //     ...profile,
-    //     ...token
-    //   }
-    //
-    //   setUser({
-    //     currentQuery,
-    //     newUserData,
-    //     saveToAsyncStorage: true
-    //   })
-    //
-    //   // make sure that user has a createdAtUnix entry
-    //   let savingUserMetadata = false
-    //   const userMetadata = newUserData.user_metadata || newUserData.userMetadata || {}
-    //   if (!userMetadata.createdAtUnix) {
-    //     userMetadata.createdAtUnix = moment(profile.created_at).unix()
-    //
-    //     savingUserMetadata = true
-    //     saveUserMetadata(newUserData, userMetadata)
-    //   }
-    //
-    //   // There seems to be a bug with Android lock
-    //   // The array of modeify_places always comes back as empty
-    //   // so if on Android, also perform a getUserData action
-    //   // if we've already initiated a save on the userMetadata then
-    //   // don't perform this action
-    //   if (!savingUserMetadata && Platform.OS === 'android') {
-    //     getUserData({
-    //       currentQuery,
-    //       oldUserData: newUserData
-    //     })
-    //   }
-    // })
+    const authParams = {}
+    authParams.nonce = nonce
+    authParams.scope = 'email offline_access openid profile'
+
+    if (signUp) {
+      authParams.prompt = 'signup'
+    } else if (Platform.OS === 'android') {
+      authParams.prompt = 'login'
+      authParams.state = '';
+    }
+
+    auth0
+      .webAuth
+      .authorize(authParams)
+      .then(response => {
+        // Authentication worked!
+        console.log('Logged in with Auth0!')
+        console.log(response)
+        const tokenData = decodeJwt(response.idToken)
+
+        if (tokenData.nonce != nonce) {
+          throw new Error('Mismatched nonce found while logging in!')
+        }
+
+        // assume response is OIDC-complaint and contains user metadata that
+        // is prefixed by the auth0 domain
+        const {namespace} = config.auth0
+        Object.keys(tokenData).forEach(k => {
+          if (k.indexOf(namespace) > -1) {
+            tokenData[k.replace(namespace, '')] = tokenData[k]
+            delete tokenData[k]
+          }
+        })
+
+        tokenData.userId = tokenData.sub
+
+        console.log(tokenData)
+
+        const newUserData = {
+          ...tokenData,
+          ...response
+        }
+
+        setUser({
+          currentQuery,
+          newUserData,
+          saveToAsyncStorage: true
+        })
+
+        // make sure that user has a createdAtUnix entry
+        let savingUserMetadata = false
+        const userMetadata = newUserData.user_metadata || newUserData.userMetadata || {}
+        if (!userMetadata.createdAtUnix) {
+          userMetadata.createdAtUnix = moment(tokenData.created_at).unix()
+
+          savingUserMetadata = true
+          saveUserMetadata(newUserData, userMetadata)
+        }
+      })
+      .catch(error => {
+        if (error.error === 'a0.session.user_cancelled') {
+          return onLockDismiss()
+        }
+        console.error('error logging in!')
+        console.error(error)
+        return
+      })
   }
 
   render () {

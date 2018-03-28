@@ -12,7 +12,8 @@ export type AppConfig = {
   api: RequestApi,
   auth0: {
     clientId: string,
-    domain: string
+    domain: string,
+    namespace: string
   },
   customOtpQueryBuilder?: (RequestApi, CurrentQuery) => string,
   debouncePlanTimeMs: number,

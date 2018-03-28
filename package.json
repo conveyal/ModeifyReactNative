@@ -15,6 +15,7 @@
 		"@conveyal/woonerf": "^2.4.1",
 		"currency-formatter": "^1.2.1",
 		"immutability-helper": "^2.1.2",
+		"jwt-decode": "^2.2.0",
 		"lodash.camelcase": "^4.3.0",
 		"lodash.isequal": "^4.5.0",
 		"lodash.isnumber": "^3.0.3",
@@ -39,7 +40,8 @@
 		"redux": "^3.6.0",
 		"redux-actions": "^2.0.1",
 		"redux-thunk": "^2.2.0",
-		"to-sentence-case": "^1.0.0"
+		"to-sentence-case": "^1.0.0",
+		"uuid": "^3.2.1"
 	},
 	"devDependencies": {
 		"babel-preset-react-native": "1.9.1",
