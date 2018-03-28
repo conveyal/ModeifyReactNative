@@ -50,7 +50,6 @@
 		832341BD1AAA6AB300B99B32 /* libRCTText.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 832341B51AAA6A8300B99B32 /* libRCTText.a */; };
 		9CCD26759E764819B0729EA5 /* EvilIcons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0301BEA4440A4E3F9208E472 /* EvilIcons.ttf */; };
 		A85390F76D304204B38AF587 /* FontAwesome.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3CA0DF16FBC347618547705B /* FontAwesome.ttf */; };
-		B150302522354B73B5D62DA7 /* libA0RNLock.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 97A34EF0DCA743F0860B7327 /* libA0RNLock.a */; };
 		B26E36B3129F4765B77E0CAF /* libA0Auth0.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5DCEDDB7D5B54393AA61FB69 /* libA0Auth0.a */; };
 		B76BC1C97CBC4639A77B5672 /* Entypo.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 7629AA5224A8443F976C4D8E /* Entypo.ttf */; };
 		D6964F169332FE2BF06C4242 /* libPods-ModeifyReactNative.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8ECD67CBCD0F1AF0AD22E5E9 /* libPods-ModeifyReactNative.a */; };
@@ -321,7 +320,6 @@
 		8ECD67CBCD0F1AF0AD22E5E9 /* libPods-ModeifyReactNative.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-ModeifyReactNative.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		9114B95C4D994F0387525D18 /* SimpleLineIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = SimpleLineIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/SimpleLineIcons.ttf"; sourceTree = "<group>"; };
 		930A146E0CC446FBB79695FA /* libRNVectorIcons.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = libRNVectorIcons.a; sourceTree = "<group>"; };
-		97A34EF0DCA743F0860B7327 /* libA0RNLock.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = libA0RNLock.a; sourceTree = "<group>"; };
 		B4B591FCA10A451EA634EF8C /* AirMaps.xcodeproj */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "wrapper.pb-project"; name = AirMaps.xcodeproj; path = "../node_modules/react-native-maps/ios/AirMaps.xcodeproj"; sourceTree = "<group>"; };
 		C7A74C2AB2F24D8197A85165 /* libAirMaps.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = libAirMaps.a; sourceTree = "<group>"; };
 		CF9F22E43999211F1F634BAD /* Pods-ModeifyReactNative.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ModeifyReactNative.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ModeifyReactNative/Pods-ModeifyReactNative.debug.xcconfig"; sourceTree = "<group>"; };
@@ -361,7 +359,6 @@
 				139FDEF61B0652A700C62182 /* libRCTWebSocket.a in Frameworks */,
 				46233984001A44198F17397F /* libAirMaps.a in Frameworks */,
 				12648E528CC442DB9292C80B /* libRNVectorIcons.a in Frameworks */,
-				B150302522354B73B5D62DA7 /* libA0RNLock.a in Frameworks */,
 				D6964F169332FE2BF06C4242 /* libPods-ModeifyReactNative.a in Frameworks */,
 				E19459C975B84B66ABCF37CF /* libRCTGoogleAnalyticsBridge.a in Frameworks */,
 				B26E36B3129F4765B77E0CAF /* libA0Auth0.a in Frameworks */,
@@ -536,7 +533,6 @@
 			children = (
 				C7A74C2AB2F24D8197A85165 /* libAirMaps.a */,
 				930A146E0CC446FBB79695FA /* libRNVectorIcons.a */,
-				97A34EF0DCA743F0860B7327 /* libA0RNLock.a */,
 				D26B76F12A3A47D89B8EA83E /* libRCTGoogleAnalyticsBridge.a */,
 				5DCEDDB7D5B54393AA61FB69 /* libA0Auth0.a */,
 			);
